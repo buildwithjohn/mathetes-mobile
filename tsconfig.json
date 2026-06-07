@@ -2,6 +2,11 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    // Modern resolution so TypeScript reads the `exports` maps that
+    // @tanstack/react-query and @supabase/* use to publish their types.
+    // Metro/Babel handle the actual bundling; this only affects typecheck.
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "paths": {
       "@/*": ["./src/*"]
     }
