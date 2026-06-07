@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Mathetes",
+    "slug": "mathetes-mobile",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "mathetes",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/images/icon.png",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F5F1EB"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.mathetes.mobile"
+    },
+    "android": {
+      "package": "app.mathetes.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#F5F1EB"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
