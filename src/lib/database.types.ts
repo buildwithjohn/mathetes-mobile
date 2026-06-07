@@ -112,6 +112,7 @@ export interface Database {
           dept: string | null;
           pinned_verse_ref: string | null;
           joined_at: string;
+          discipler_id: string | null;
         };
         Insert: {
           id?: string;
@@ -127,6 +128,7 @@ export interface Database {
           dept?: string | null;
           pinned_verse_ref?: string | null;
           joined_at?: string;
+          discipler_id?: string | null;
         };
         Update: {
           id?: string;
@@ -142,6 +144,7 @@ export interface Database {
           dept?: string | null;
           pinned_verse_ref?: string | null;
           joined_at?: string;
+          discipler_id?: string | null;
         };
         Relationships: [];
       };
