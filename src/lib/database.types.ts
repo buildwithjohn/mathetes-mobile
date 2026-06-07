@@ -23,6 +23,8 @@ export type UserRole =
   | "admin";
 export type Gender = "male" | "female";
 export type DmWho = "all_parish" | "house" | "discipler" | "none";
+export type ContentStatus = "draft" | "scheduled" | "published";
+export type AssetKind = "image" | "audio";
 
 export interface Database {
   public: {
@@ -162,8 +164,131 @@ export interface Database {
         };
         Relationships: [];
       };
+      devotional_series: {
+        Row: {
+          id: string;
+          parish_id: string;
+          title: string;
+          description: string | null;
+          total_days: number | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          parish_id: string;
+          title: string;
+          description?: string | null;
+          total_days?: number | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["devotional_series"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      devotionals: {
+        Row: {
+          id: string;
+          parish_id: string;
+          series_id: string | null;
+          day_in_series: number | null;
+          title: string;
+          body_md: string;
+          scripture_refs: string[];
+          reading_time_minutes: number | null;
+          audio_url: string | null;
+          author_id: string | null;
+          publish_date: string | null;
+          status: ContentStatus;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          parish_id: string;
+          series_id?: string | null;
+          day_in_series?: number | null;
+          title: string;
+          body_md?: string;
+          scripture_refs?: string[];
+          reading_time_minutes?: number | null;
+          audio_url?: string | null;
+          author_id?: string | null;
+          publish_date?: string | null;
+          status?: ContentStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["devotionals"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      word_of_day: {
+        Row: {
+          id: string;
+          parish_id: string;
+          verse_ref: string;
+          verse_text: string;
+          reflection_md: string | null;
+          prompt: string | null;
+          author_id: string | null;
+          publish_date: string | null;
+          status: ContentStatus;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          parish_id: string;
+          verse_ref: string;
+          verse_text: string;
+          reflection_md?: string | null;
+          prompt?: string | null;
+          author_id?: string | null;
+          publish_date?: string | null;
+          status?: ContentStatus;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["word_of_day"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      content_assets: {
+        Row: {
+          id: string;
+          devotional_id: string | null;
+          word_of_day_id: string | null;
+          url: string;
+          kind: AssetKind;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          devotional_id?: string | null;
+          word_of_day_id?: string | null;
+          url: string;
+          kind: AssetKind;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["content_assets"]["Insert"]
+        >;
+        Relationships: [];
+      };
     };
-    Views: Record<string, { Row: Record<string, unknown>; Relationships: [] }>;
+    Views: {
+      todays_word_of_day: {
+        Row: Database["public"]["Tables"]["word_of_day"]["Row"];
+        Relationships: [];
+      };
+      todays_devotional: {
+        Row: Database["public"]["Tables"]["devotionals"]["Row"];
+        Relationships: [];
+      };
+    };
     Functions: Record<string, { Args: Record<string, unknown>; Returns: unknown }>;
     Enums: {
       photo_visibility: PhotoVisibility;
@@ -180,3 +305,9 @@ export type Parish = Database["public"]["Tables"]["parishes"]["Row"];
 export type House = Database["public"]["Tables"]["houses"]["Row"];
 export type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 export type UserPrivacy = Database["public"]["Tables"]["user_privacy"]["Row"];
+export type DevotionalSeries =
+  Database["public"]["Tables"]["devotional_series"]["Row"];
+export type Devotional = Database["public"]["Tables"]["devotionals"]["Row"];
+export type WordOfDay = Database["public"]["Tables"]["word_of_day"]["Row"];
+export type ContentAsset =
+  Database["public"]["Tables"]["content_assets"]["Row"];
