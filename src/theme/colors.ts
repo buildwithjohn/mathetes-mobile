@@ -26,3 +26,12 @@ export const houseColors = {
 } as const;
 
 export type HouseSlug = keyof typeof houseColors;
+
+// Verse highlight palette (matches backend highlights.color check constraint).
+export const highlightColors = {
+  copper: "#B87333",
+  gold: "#C9A24A",
+  sage: "#7A8A6E",
+  oxblood: "#722F37",
+  blue: "#6B7F8A",
+} as const;
