@@ -2,13 +2,8 @@ import { View, Text, ScrollView, Pressable, ActivityIndicator } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { format } from "date-fns";
-import {
-  ChevronRight,
-  Flame,
-  BookOpen,
-  Layers,
-  Sparkles,
-} from "lucide-react-native";
+import { ChevronRight, BookOpen, Layers, Sparkles } from "lucide-react-native";
+import { AnimatedFlame } from "@/components/AnimatedFlame";
 import {
   useTodaysWordOfDay,
   useTodaysDevotional,
@@ -50,7 +45,7 @@ export default function Today() {
           </View>
           {/* Daily streak from record_check_in() (grace-day aware). */}
           <View className="mt-1 flex-row items-center gap-1.5 rounded-full bg-surface2 px-3 py-1.5">
-            <Flame color={colors.copper} size={16} />
+            <AnimatedFlame size={16} />
             <Text className="font-sans-semibold text-sm text-ink">{streak}</Text>
           </View>
         </View>

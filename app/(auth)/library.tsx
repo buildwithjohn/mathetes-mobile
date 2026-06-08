@@ -3,6 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { ChevronLeft, Bookmark, Highlighter, BookOpen } from "lucide-react-native";
 import { useLibraryEntries } from "@/lib/queries/library";
+import { EmptyState } from "@/components/EmptyState";
 import { colors, highlightColors } from "@/theme/colors";
 
 // The member's saved verses: bookmarks and highlights in one place. Tapping an
@@ -47,16 +48,12 @@ export default function Library() {
           </Pressable>
         </View>
       ) : !entries || entries.length === 0 ? (
-        <View className="flex-1 items-center justify-center px-10">
-          <View className="h-16 w-16 items-center justify-center rounded-2xl bg-surface2">
-            <BookOpen color={colors.copper} size={28} />
-          </View>
-          <Text className="mt-5 text-center font-display text-xl text-ink">
-            Nothing saved yet
-          </Text>
-          <Text className="mt-2 text-center text-sm leading-6 text-ink/60">
-            Bookmark or highlight a verse while you read and it will gather here.
-          </Text>
+        <View className="flex-1 items-center justify-center">
+          <EmptyState
+            icon={BookOpen}
+            title="Nothing saved yet"
+            body="Bookmark or highlight a verse while you read and it will gather here."
+          />
         </View>
       ) : (
         <ScrollView

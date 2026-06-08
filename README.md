@@ -60,11 +60,19 @@ migration `0015_chat_media.sql` (mathetes-backend, branch
 `claude/chat-media-storage`) to be deployed, which also makes the `avatars`
 bucket public so profile photos resolve by URL.
 
+Phase 10+ adds the verse-image gallery (saved studio creations persist to the
+`verse_images` table + `verse-images` bucket, viewable under You with re-share
+and delete), an animation/illustration polish pass (animated illustrated empty
+states and a flickering streak flame via Reanimated + react-native-svg, plus
+list entrance motion), and an expanded test suite (component + screen smoke
+tests with React Native Testing Library).
+
 ## Quality
 
 - `npm run typecheck` — strict TypeScript, no emit.
-- `npm test` — Jest unit tests (jest-expo preset) over the pure logic
-  (formatting, photo-visibility resolution, verse type scale).
+- `npm test` — Jest (jest-expo). Unit tests cover pure logic (formatting,
+  photo-visibility resolution, verse type scale); component/screen smoke tests
+  (React Native Testing Library) cover the Avatar and the Welcome screen.
 - GitHub Actions (`.github/workflows/ci.yml`) runs typecheck + tests on push
   to `main` and on every pull request.
 

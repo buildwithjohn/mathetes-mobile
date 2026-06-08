@@ -22,6 +22,7 @@ import {
   useMarkNotificationRead,
   useMarkAllNotificationsRead,
 } from "@/lib/queries/notifications";
+import { EmptyState } from "@/components/EmptyState";
 import { colors } from "@/theme/colors";
 import type { Notification, NotificationType } from "@/lib/database.types";
 
@@ -143,15 +144,11 @@ export default function Notifications() {
             );
           }}
           ListEmptyComponent={
-            <View className="items-center py-24 px-10">
-              <Bell color={colors.copper} size={30} />
-              <Text className="mt-4 text-center font-display text-xl text-ink">
-                You are all caught up
-              </Text>
-              <Text className="mt-2 text-center text-sm leading-6 text-ink/60">
-                Messages, announcements, and answers will show up here.
-              </Text>
-            </View>
+            <EmptyState
+              icon={Bell}
+              title="You are all caught up"
+              body="Messages, announcements, and answers will show up here."
+            />
           }
         />
       )}

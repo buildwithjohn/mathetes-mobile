@@ -11,8 +11,10 @@ import {
   verseThemes,
   houseTheme,
   verseTypeScale,
+  galleryTheme,
   type VerseTheme,
 } from "@/lib/verseImage";
+import { useSaveVerseImage } from "@/lib/queries/verseImages";
 import { colors } from "@/theme/colors";
 
 // Renders a verse onto a branded, shareable card and saves or shares it as a
@@ -45,6 +47,7 @@ export default function Studio() {
   const scale = verseTypeScale(text.length);
 
   const cardRef = useRef<View>(null);
+  const saveToGallery = useSaveVerseImage();
   const [busy, setBusy] = useState<null | "save" | "share">(null);
   const [flash, setFlash] = useState<string | null>(null);
 
@@ -69,7 +72,17 @@ export default function Studio() {
       }
       const uri = await capture();
       await MediaLibrary.saveToLibraryAsync(uri);
-      showFlash("Saved to Photos");
+      // Also keep it in the in-app gallery (best-effort; never blocks the save).
+      saveToGallery.mutate(
+        {
+          localUri: uri,
+          verseRef: reference,
+          verseText: text,
+          theme: galleryTheme(theme.key),
+        },
+        { onError: () => undefined }
+      );
+      showFlash("Saved to Photos & gallery");
     } catch {
       Alert.alert("Could not save", "Something went wrong creating the image.");
     } finally {

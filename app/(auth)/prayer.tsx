@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { formatDistanceToNowStrict } from "date-fns";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { ChevronLeft, Plus, HandHeart, X, Check } from "lucide-react-native";
 import {
   usePrayerRequests,
@@ -23,6 +24,7 @@ import {
 } from "@/lib/queries/prayer";
 import { useProfile } from "@/lib/queries/profile";
 import { Avatar } from "@/components/Avatar";
+import { EmptyState } from "@/components/EmptyState";
 import { visiblePhotoUrl } from "@/utils/profile";
 import { colors } from "@/theme/colors";
 
@@ -83,15 +85,11 @@ export default function PrayerWall() {
             />
           )}
           ListEmptyComponent={
-            <View className="items-center py-20 px-10">
-              <HandHeart color={colors.copper} size={30} />
-              <Text className="mt-4 text-center font-display text-xl text-ink">
-                Carry one another
-              </Text>
-              <Text className="mt-2 text-center text-sm leading-6 text-ink/60">
-                Share the first request and let your house pray with you.
-              </Text>
-            </View>
+            <EmptyState
+              icon={HandHeart}
+              title="Carry one another"
+              body="Share the first request and let your house pray with you."
+            />
           }
         />
       )}
@@ -116,7 +114,8 @@ function PrayerCard({
   onPray: () => void;
 }) {
   return (
-    <View
+    <Animated.View
+      entering={FadeInDown.duration(320)}
       className={`rounded-2xl border bg-surface1 p-4 ${
         entry.urgent ? "border-oxblood/40" : "border-border"
       }`}
@@ -171,7 +170,7 @@ function PrayerCard({
           {entry.prayedCount > 0 ? ` · ${entry.prayedCount}` : ""}
         </Text>
       </Pressable>
-    </View>
+    </Animated.View>
   );
 }
 

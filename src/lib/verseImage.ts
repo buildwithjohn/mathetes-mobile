@@ -65,3 +65,14 @@ export function verseTypeScale(length: number): {
   if (length <= 320) return { fontSize: 19, lineHeight: 29 };
   return { fontSize: 16, lineHeight: 25 };
 }
+
+// Map a studio theme key onto the backend verse_images.theme enum
+// ('minimal' | 'organic' | 'bold'). Parchment is the light, minimal look;
+// house colors read as organic; the dark/strong palettes are bold.
+export function galleryTheme(
+  themeKey: string
+): "minimal" | "organic" | "bold" {
+  if (themeKey === "parchment") return "minimal";
+  if (themeKey.startsWith("house-")) return "organic";
+  return "bold";
+}

@@ -14,13 +14,21 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { format } from "date-fns";
-import { ChevronLeft, Plus, X, Check, Clock } from "lucide-react-native";
+import {
+  ChevronLeft,
+  Plus,
+  X,
+  Check,
+  Clock,
+  MessageCircleQuestion,
+} from "lucide-react-native";
 import {
   useMyQuestions,
   usePublicQa,
   useSubmitQuestion,
   useWithdrawQuestion,
 } from "@/lib/queries/ask";
+import { EmptyState } from "@/components/EmptyState";
 import { colors } from "@/theme/colors";
 import type { AskQuestion, PublicQa } from "@/lib/database.types";
 
@@ -84,7 +92,8 @@ export default function AskPastor() {
           mine.isLoading ? (
             <ActivityIndicator className="mt-10" color={colors.copper} />
           ) : (mine.data ?? []).length === 0 ? (
-            <EmptyHint
+            <EmptyState
+              icon={Clock}
               title="Ask in confidence"
               body="Your question goes to the pastor, who answers within 48 hours. Choose to keep it private or share the answer anonymously."
             />
@@ -94,7 +103,8 @@ export default function AskPastor() {
         ) : publicQa.isLoading ? (
           <ActivityIndicator className="mt-10" color={colors.copper} />
         ) : (publicQa.data ?? []).length === 0 ? (
-          <EmptyHint
+          <EmptyState
+            icon={MessageCircleQuestion}
             title="No public answers yet"
             body="Answers the pastor chooses to share appear here, with the asker kept anonymous."
           />
@@ -105,17 +115,6 @@ export default function AskPastor() {
 
       <ComposeModal visible={composing} onClose={() => setComposing(false)} />
     </SafeAreaView>
-  );
-}
-
-function EmptyHint({ title, body }: { title: string; body: string }) {
-  return (
-    <View className="mt-16 items-center px-8">
-      <Text className="text-center font-display text-xl text-ink">{title}</Text>
-      <Text className="mt-2 text-center text-sm leading-6 text-ink/60">
-        {body}
-      </Text>
-    </View>
   );
 }
 

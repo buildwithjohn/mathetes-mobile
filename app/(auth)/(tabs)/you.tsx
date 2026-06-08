@@ -8,17 +8,18 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import {
-  Flame,
   ChevronRight,
   PenLine,
   BookMarked,
   Settings,
+  ImageIcon,
   type LucideIcon,
 } from "lucide-react-native";
 import { useAuth } from "@/lib/stores/auth";
 import { useProfile, useHouses } from "@/lib/queries/profile";
 import { useStreak } from "@/lib/queries/engagement";
 import { Avatar } from "@/components/Avatar";
+import { AnimatedFlame } from "@/components/AnimatedFlame";
 import { colors } from "@/theme/colors";
 
 export default function You() {
@@ -82,7 +83,7 @@ export default function You() {
         <View className="mt-8 flex-row items-center rounded-2xl border border-border bg-surface1 py-5">
           <View className="flex-1 items-center">
             <View className="flex-row items-center gap-1.5">
-              <Flame color={colors.copper} size={20} />
+              <AnimatedFlame size={20} />
               <Text className="font-display text-3xl text-ink">{count}</Text>
             </View>
             <Text className="mt-1 text-xs uppercase tracking-widest text-ink/50">
@@ -109,6 +110,11 @@ export default function You() {
             icon={BookMarked}
             label="Your library"
             onPress={() => router.push("/library")}
+          />
+          <MenuRow
+            icon={ImageIcon}
+            label="Verse images"
+            onPress={() => router.push("/gallery")}
           />
           <MenuRow
             icon={Settings}
