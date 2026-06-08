@@ -1,5 +1,8 @@
 import { render, fireEvent } from "@testing-library/react-native";
 
+// Screen tests live outside app/ so Expo Router's require.context does not pull
+// them (and their test-only deps) into the app bundle.
+
 const mockPush = jest.fn();
 
 jest.mock("expo-router", () => ({
@@ -14,7 +17,7 @@ jest.mock("react-native-safe-area-context", () => {
   };
 });
 
-import Welcome from "./welcome";
+import Welcome from "../../app/(onboarding)/welcome";
 
 describe("Welcome screen", () => {
   beforeEach(() => mockPush.mockClear());

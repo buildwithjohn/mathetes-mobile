@@ -7,8 +7,8 @@ module.exports = {
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
   },
-  testMatch: [
-    "<rootDir>/src/**/*.test.{ts,tsx}",
-    "<rootDir>/app/**/*.test.{ts,tsx}",
-  ],
+  // Tests live under src/ only. Files in app/ are bundled as routes by Expo
+  // Router's require.context, so test files (and their Node-only deps) must not
+  // be colocated there.
+  testMatch: ["<rootDir>/src/**/*.test.{ts,tsx}"],
 };
