@@ -16,7 +16,7 @@ import {
 } from "lucide-react-native";
 import { useAuth } from "@/lib/stores/auth";
 import { useProfile, useHouses } from "@/lib/queries/profile";
-import { useStreak } from "@/lib/stores/streak";
+import { useStreak } from "@/lib/queries/engagement";
 import { Avatar } from "@/components/Avatar";
 import { colors } from "@/theme/colors";
 

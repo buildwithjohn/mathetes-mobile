@@ -28,6 +28,41 @@ export type AssetKind = "image" | "audio";
 export type Testament = "OT" | "NT";
 export type HighlightColor = "copper" | "gold" | "sage" | "oxblood" | "blue";
 
+// Community (chat, prayer, ask-pastor, safety, notifications) enums.
+export type ChatKind =
+  | "house_group"
+  | "announcements"
+  | "ask_pastor_thread"
+  | "discipler"
+  | "dm";
+export type ChatMemberRole = "member" | "leader" | "pastor" | "discipler";
+export type MessageKind = "text" | "voice" | "image" | "system" | "daily_prompt";
+export type ReactionEmoji = "🙏" | "❤️" | "amen" | "🔥" | "✋";
+export type AskPrivacy = "public" | "private";
+export type AskStatus = "awaiting" | "answered";
+export type ReportTargetType =
+  | "message"
+  | "user"
+  | "prayer_request"
+  | "ask_question";
+export type ReportStatus = "open" | "reviewing" | "resolved" | "dismissed";
+export type ModerationSeverity = "low" | "medium" | "high";
+export type ModerationAction = "logged" | "soft_deleted" | "escalated";
+export type NotificationType =
+  | "message"
+  | "announcement"
+  | "ask_answered"
+  | "mention"
+  | "daily_prompt"
+  | "streak"
+  | "prayer"
+  | "system";
+export type NotificationChannel = "push" | "in_app";
+export type PushPlatform = "ios" | "android";
+export type VerseImageTheme = "minimal" | "organic" | "bold";
+export type VerseImageAspect = "square" | "story";
+export type AnnouncementBanner = "event" | "urgent";
+
 export interface Database {
   public: {
     Tables: {
@@ -445,6 +480,434 @@ export interface Database {
         >;
         Relationships: [];
       };
+      streaks: {
+        Row: {
+          user_id: string;
+          current_count: number;
+          longest: number;
+          last_check_in: string | null;
+          grace_used_this_month: number;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          current_count?: number;
+          longest?: number;
+          last_check_in?: string | null;
+          grace_used_this_month?: number;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["streaks"]["Insert"]>;
+        Relationships: [];
+      };
+      engagement_events: {
+        Row: {
+          id: string;
+          user_id: string;
+          event_type: string;
+          target_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          event_type: string;
+          target_id?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["engagement_events"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      chats: {
+        Row: {
+          id: string;
+          kind: ChatKind;
+          parish_id: string;
+          house_id: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          kind: ChatKind;
+          parish_id: string;
+          house_id?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["chats"]["Insert"]>;
+        Relationships: [];
+      };
+      chat_members: {
+        Row: {
+          chat_id: string;
+          user_id: string;
+          role: ChatMemberRole;
+          joined_at: string;
+          last_read_at: string | null;
+          muted: boolean;
+        };
+        Insert: {
+          chat_id: string;
+          user_id: string;
+          role?: ChatMemberRole;
+          joined_at?: string;
+          last_read_at?: string | null;
+          muted?: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["chat_members"]["Insert"]>;
+        Relationships: [];
+      };
+      messages: {
+        Row: {
+          id: string;
+          chat_id: string;
+          author_id: string | null;
+          body: string | null;
+          voice_url: string | null;
+          image_url: string | null;
+          kind: MessageKind;
+          reply_to_id: string | null;
+          edited_at: string | null;
+          deleted_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          chat_id: string;
+          author_id?: string | null;
+          body?: string | null;
+          voice_url?: string | null;
+          image_url?: string | null;
+          kind?: MessageKind;
+          reply_to_id?: string | null;
+          edited_at?: string | null;
+          deleted_at?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["messages"]["Insert"]>;
+        Relationships: [];
+      };
+      message_reactions: {
+        Row: {
+          message_id: string;
+          user_id: string;
+          emoji: ReactionEmoji;
+          created_at: string;
+        };
+        Insert: {
+          message_id: string;
+          user_id: string;
+          emoji: ReactionEmoji;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["message_reactions"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      pinned_messages: {
+        Row: {
+          chat_id: string;
+          message_id: string;
+          pinned_by: string | null;
+          pinned_at: string;
+        };
+        Insert: {
+          chat_id: string;
+          message_id: string;
+          pinned_by?: string | null;
+          pinned_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["pinned_messages"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      prayer_requests: {
+        Row: {
+          id: string;
+          parish_id: string;
+          house_id: string | null;
+          author_id: string;
+          body: string;
+          anonymous: boolean;
+          urgent: boolean;
+          praise: boolean;
+          archived_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          parish_id: string;
+          house_id?: string | null;
+          author_id: string;
+          body: string;
+          anonymous?: boolean;
+          urgent?: boolean;
+          praise?: boolean;
+          archived_at?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["prayer_requests"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      prayer_pray: {
+        Row: {
+          request_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          request_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["prayer_pray"]["Insert"]>;
+        Relationships: [];
+      };
+      prayer_reactions: {
+        Row: {
+          request_id: string;
+          user_id: string;
+          emoji: ReactionEmoji;
+          created_at: string;
+        };
+        Insert: {
+          request_id: string;
+          user_id: string;
+          emoji: ReactionEmoji;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["prayer_reactions"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      ask_questions: {
+        Row: {
+          id: string;
+          parish_id: string;
+          asker_id: string;
+          body: string;
+          category: string | null;
+          privacy: AskPrivacy;
+          urgent: boolean;
+          status: AskStatus;
+          response_body: string | null;
+          answered_by: string | null;
+          answered_at: string | null;
+          public_anonymized: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          parish_id: string;
+          asker_id: string;
+          body: string;
+          category?: string | null;
+          privacy?: AskPrivacy;
+          urgent?: boolean;
+          status?: AskStatus;
+          response_body?: string | null;
+          answered_by?: string | null;
+          answered_at?: string | null;
+          public_anonymized?: boolean;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["ask_questions"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      blocks: {
+        Row: {
+          blocker_id: string;
+          blocked_id: string;
+          created_at: string;
+        };
+        Insert: {
+          blocker_id: string;
+          blocked_id: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["blocks"]["Insert"]>;
+        Relationships: [];
+      };
+      reports: {
+        Row: {
+          id: string;
+          parish_id: string;
+          reporter_id: string;
+          target_type: ReportTargetType;
+          target_id: string;
+          reason: string | null;
+          status: ReportStatus;
+          resolved_by: string | null;
+          resolved_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          parish_id: string;
+          reporter_id: string;
+          target_type: ReportTargetType;
+          target_id: string;
+          reason?: string | null;
+          status?: ReportStatus;
+          resolved_by?: string | null;
+          resolved_at?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["reports"]["Insert"]>;
+        Relationships: [];
+      };
+      moderation_log: {
+        Row: {
+          id: string;
+          message_id: string | null;
+          flag: string;
+          severity: ModerationSeverity;
+          action_taken: ModerationAction;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          message_id?: string | null;
+          flag: string;
+          severity?: ModerationSeverity;
+          action_taken?: ModerationAction;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["moderation_log"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      push_tokens: {
+        Row: {
+          id: string;
+          user_id: string;
+          expo_token: string;
+          platform: PushPlatform;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          expo_token: string;
+          platform: PushPlatform;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["push_tokens"]["Insert"]>;
+        Relationships: [];
+      };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          type: NotificationType;
+          title: string;
+          preview: string | null;
+          target_id: string | null;
+          target_url: string | null;
+          created_at: string;
+          read_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          type: NotificationType;
+          title: string;
+          preview?: string | null;
+          target_id?: string | null;
+          target_url?: string | null;
+          created_at?: string;
+          read_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["notifications"]["Insert"]>;
+        Relationships: [];
+      };
+      notification_preferences: {
+        Row: {
+          user_id: string;
+          type: string;
+          channel: NotificationChannel;
+          enabled: boolean;
+        };
+        Insert: {
+          user_id: string;
+          type: string;
+          channel: NotificationChannel;
+          enabled?: boolean;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["notification_preferences"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      verse_images: {
+        Row: {
+          id: string;
+          user_id: string;
+          verse_ref: string;
+          verse_text: string;
+          theme: VerseImageTheme;
+          aspect_ratio: VerseImageAspect;
+          watermark: boolean;
+          url: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          verse_ref: string;
+          verse_text: string;
+          theme?: VerseImageTheme;
+          aspect_ratio?: VerseImageAspect;
+          watermark?: boolean;
+          url: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["verse_images"]["Insert"]>;
+        Relationships: [];
+      };
+      announcements: {
+        Row: {
+          id: string;
+          parish_id: string;
+          title: string;
+          body_md: string;
+          event_data: Json | null;
+          banner: AnnouncementBanner | null;
+          photos: string[];
+          status: ContentStatus;
+          publish_date: string | null;
+          posted_at: string | null;
+          posted_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          parish_id: string;
+          title: string;
+          body_md?: string;
+          event_data?: Json | null;
+          banner?: AnnouncementBanner | null;
+          photos?: string[];
+          status?: ContentStatus;
+          publish_date?: string | null;
+          posted_at?: string | null;
+          posted_by?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["announcements"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: {
       todays_word_of_day: {
@@ -453,6 +916,17 @@ export interface Database {
       };
       todays_devotional: {
         Row: Database["public"]["Tables"]["devotionals"]["Row"];
+        Relationships: [];
+      };
+      public_qa: {
+        Row: {
+          id: string;
+          parish_id: string;
+          category: string | null;
+          question: string;
+          answer: string | null;
+          answered_at: string | null;
+        };
         Relationships: [];
       };
     };
@@ -481,6 +955,18 @@ export interface Database {
           chapter: number;
           verse: number;
         }[];
+      };
+      record_check_in: {
+        Args: Record<string, never>;
+        Returns: Database["public"]["Tables"]["streaks"]["Row"];
+      };
+      create_dm: {
+        Args: { p_other: string };
+        Returns: string;
+      };
+      answer_question: {
+        Args: { p_id: string; p_response: string; p_public?: boolean };
+        Returns: Database["public"]["Tables"]["ask_questions"]["Row"];
       };
     };
     Enums: {
@@ -515,6 +1001,36 @@ export type Highlight = Database["public"]["Tables"]["highlights"]["Row"];
 export type Note = Database["public"]["Tables"]["notes"]["Row"];
 export type ReadingPosition =
   Database["public"]["Tables"]["reading_position"]["Row"];
+export type Streak = Database["public"]["Tables"]["streaks"]["Row"];
+export type EngagementEvent =
+  Database["public"]["Tables"]["engagement_events"]["Row"];
+export type Chat = Database["public"]["Tables"]["chats"]["Row"];
+export type ChatMember = Database["public"]["Tables"]["chat_members"]["Row"];
+export type Message = Database["public"]["Tables"]["messages"]["Row"];
+export type MessageReaction =
+  Database["public"]["Tables"]["message_reactions"]["Row"];
+export type PinnedMessage =
+  Database["public"]["Tables"]["pinned_messages"]["Row"];
+export type PrayerRequest =
+  Database["public"]["Tables"]["prayer_requests"]["Row"];
+export type PrayerPray = Database["public"]["Tables"]["prayer_pray"]["Row"];
+export type PrayerReaction =
+  Database["public"]["Tables"]["prayer_reactions"]["Row"];
+export type AskQuestion =
+  Database["public"]["Tables"]["ask_questions"]["Row"];
+export type PublicQa = Database["public"]["Views"]["public_qa"]["Row"];
+export type Block = Database["public"]["Tables"]["blocks"]["Row"];
+export type Report = Database["public"]["Tables"]["reports"]["Row"];
+export type ModerationLog =
+  Database["public"]["Tables"]["moderation_log"]["Row"];
+export type PushToken = Database["public"]["Tables"]["push_tokens"]["Row"];
+export type Notification =
+  Database["public"]["Tables"]["notifications"]["Row"];
+export type NotificationPreference =
+  Database["public"]["Tables"]["notification_preferences"]["Row"];
+export type VerseImage = Database["public"]["Tables"]["verse_images"]["Row"];
+export type Announcement =
+  Database["public"]["Tables"]["announcements"]["Row"];
 
 // Shape returned by the get_chapter() RPC (jsonb).
 export type ChapterVerse = { number: number; text: string };

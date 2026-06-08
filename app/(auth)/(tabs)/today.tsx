@@ -9,7 +9,7 @@ import {
   todayKey,
 } from "@/lib/queries/content";
 import { useProfile } from "@/lib/queries/profile";
-import { useStreak } from "@/lib/stores/streak";
+import { useStreak } from "@/lib/queries/engagement";
 import { greeting } from "@/utils/text";
 import { colors } from "@/theme/colors";
 
@@ -42,7 +42,7 @@ export default function Today() {
               {format(new Date(), "EEEE, d MMMM")}
             </Text>
           </View>
-          {/* On-device daily streak; climbs on consecutive days opened. */}
+          {/* Daily streak from record_check_in() (grace-day aware). */}
           <View className="mt-1 flex-row items-center gap-1.5 rounded-full bg-surface2 px-3 py-1.5">
             <Flame color={colors.copper} size={16} />
             <Text className="font-sans-semibold text-sm text-ink">{streak}</Text>
