@@ -1,0 +1,67 @@
+// Verse image studio: theme palettes and a type scale for the shareable card.
+// Pure data + helpers so the studio screen stays declarative.
+import { colors } from "@/theme/colors";
+
+export type VerseTheme = {
+  key: string;
+  name: string;
+  bg: string;
+  text: string;
+  accent: string;
+  rule: string;
+};
+
+// Brand-faithful palettes. The first is the default (parchment, like the app).
+export const verseThemes: VerseTheme[] = [
+  {
+    key: "parchment",
+    name: "Parchment",
+    bg: colors.parchment,
+    text: colors.ink,
+    accent: colors.copper,
+    rule: colors.border,
+  },
+  {
+    key: "ink",
+    name: "Ink",
+    bg: colors.ink,
+    text: colors.parchment,
+    accent: colors.copper,
+    rule: "#3A3631",
+  },
+  {
+    key: "copper",
+    name: "Copper",
+    bg: colors.copper,
+    text: "#F8F3EC",
+    accent: colors.ink,
+    rule: "#FFFFFF40",
+  },
+  {
+    key: "oxblood",
+    name: "Oxblood",
+    bg: colors.oxblood,
+    text: "#F5F1EB",
+    accent: "#C9A24A",
+    rule: "#FFFFFF33",
+  },
+];
+
+// Build a one-off theme from a house accent color so a member can render the
+// Word in their house's color. Parchment text reads well on all seven.
+export function houseTheme(name: string, color: string): VerseTheme {
+  return { key: `house-${color}`, name, bg: color, text: "#F5F1EB", accent: "#F5F1EB", rule: "#FFFFFF33" };
+}
+
+// Verse text is set in Source Serif 4; shrink it as the passage grows so a long
+// verse still fits the card without scrolling or clipping.
+export function verseTypeScale(length: number): {
+  fontSize: number;
+  lineHeight: number;
+} {
+  if (length <= 80) return { fontSize: 30, lineHeight: 42 };
+  if (length <= 140) return { fontSize: 26, lineHeight: 38 };
+  if (length <= 220) return { fontSize: 22, lineHeight: 33 };
+  if (length <= 320) return { fontSize: 19, lineHeight: 29 };
+  return { fontSize: 16, lineHeight: 25 };
+}

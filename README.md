@@ -18,11 +18,18 @@ Today tab.
 
 ## Status
 
-Phase 0 foundation: NativeWind v4 + brand tokens, Google Fonts (Fraunces, Inter,
-Source Serif 4), typed Supabase client with AsyncStorage, Zustand auth store with
-session listener, splash, onboarding welcome placeholder, and the 4-tab shell
-(Today, Bible, Community, You). Onboarding flow, daily loop, Bible reader, verse
-images, and chat arrive in later phases (see the build plan).
+Through Phase 4: NativeWind v4 + brand tokens, Google Fonts, typed Supabase
+client with AsyncStorage, and the 4-tab shell. The auth and onboarding flow
+(Phase 1), daily loop of Word and devotionals (Phase 2), KJV Bible reader with
+bookmarks and highlights (Phase 3), and now the verse image studio plus the You
+tab (profile editing, opt-in photo, on-device streak, library) are in place
+(Phase 4). The community layer (house chats, prayer wall, ask-pastor, DMs)
+arrives in later phases.
+
+The verse image studio renders a Word or Bible verse onto a branded card and
+saves or shares it as a PNG (`react-native-view-shot` + `expo-sharing` /
+`expo-media-library`). Profile photos upload to a Supabase Storage bucket named
+`avatars`; create that bucket (public read) before testing photo upload.
 
 ## Notes
 

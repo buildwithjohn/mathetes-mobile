@@ -21,11 +21,17 @@ export default function WordExpanded() {
     }
   })();
 
-  const onShareImage = () =>
-    Alert.alert(
-      "Share as image",
-      "The verse image studio arrives in a later phase. You will be able to share this Word as a beautiful image."
-    );
+  const onShareImage = () => {
+    if (!word) return;
+    router.push({
+      pathname: "/studio",
+      params: {
+        text: word.verse_text,
+        reference: word.verse_ref,
+        label: "Word of the Day",
+      },
+    });
+  };
   const onNote = () =>
     Alert.alert(
       "Add a note",

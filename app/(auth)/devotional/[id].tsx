@@ -17,8 +17,8 @@ export default function DevotionalScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: dev, isLoading, isError } = useDevotional(id ?? "");
 
-  // Bookmark persistence lands in Phase 4 with the bookmarks table; this is a
-  // local affordance until then.
+  // The bookmarks table is verse-scoped, so devotional bookmarks have no home
+  // in the schema yet; this stays a local affordance until one lands.
   const [bookmarked, setBookmarked] = useState(false);
 
   // Reading progress thread.

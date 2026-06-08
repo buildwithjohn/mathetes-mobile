@@ -27,7 +27,19 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-media-library",
+        {
+          "savePhotosPermission": "Allow Mathetes to save verse images to your photos."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Mathetes to set your profile photo from your library."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

@@ -9,6 +9,7 @@ import {
   todayKey,
 } from "@/lib/queries/content";
 import { useProfile } from "@/lib/queries/profile";
+import { useStreak } from "@/lib/stores/streak";
 import { greeting } from "@/utils/text";
 import { colors } from "@/theme/colors";
 
@@ -17,6 +18,7 @@ export default function Today() {
   const { data: profile } = useProfile();
   const word = useTodaysWordOfDay();
   const devotional = useTodaysDevotional();
+  const { count: streak } = useStreak();
 
   const firstName = profile?.name?.trim().split(/\s+/)[0] ?? null;
   const today = todayKey();
@@ -40,10 +42,10 @@ export default function Today() {
               {format(new Date(), "EEEE, d MMMM")}
             </Text>
           </View>
-          {/* Streak persistence lands in Phase 4; dormant chip until then. */}
+          {/* On-device daily streak; climbs on consecutive days opened. */}
           <View className="mt-1 flex-row items-center gap-1.5 rounded-full bg-surface2 px-3 py-1.5">
             <Flame color={colors.copper} size={16} />
-            <Text className="font-sans-semibold text-sm text-ink">0</Text>
+            <Text className="font-sans-semibold text-sm text-ink">{streak}</Text>
           </View>
         </View>
 

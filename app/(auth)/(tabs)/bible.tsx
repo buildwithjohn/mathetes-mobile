@@ -5,10 +5,9 @@ import {
   Pressable,
   ScrollView,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import {
   ChevronDown,
@@ -52,6 +51,7 @@ export default function Bible() {
   const { data: highlights } = useHighlights();
   const toggleBookmark = useToggleBookmark();
   const setHighlight = useSetHighlight();
+  const params = useLocalSearchParams<{ book?: string; chapter?: string }>();
 
   const [abbrev, setAbbrev] = useState<string | null>(null);
   const [chapter, setChapter] = useState<number>(1);
@@ -60,16 +60,27 @@ export default function Bible() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
 
-  // Initialize the location from the saved reading position, else John 1.
+  // Initialize the location from the saved reading position, else John 1. A
+  // location passed via params (from the library) takes over in its own effect.
   useEffect(() => {
-    if (abbrev || !books || books.length === 0) return;
+    if (abbrev || params.book || !books || books.length === 0) return;
     const fromPosition =
       position?.book_id != null
         ? books.find((b) => b.id === position.book_id)?.abbrev
         : undefined;
     setAbbrev(fromPosition ?? "John");
     setChapter(position?.chapter_number ?? 1);
-  }, [books, position, abbrev]);
+  }, [books, position, abbrev, params.book]);
+
+  // Jump to a book/chapter requested via params (e.g., a tapped library entry).
+  useEffect(() => {
+    if (!params.book || !books) return;
+    if (!books.some((b) => b.abbrev === params.book)) return;
+    setSelected(new Set());
+    setPickerOpen(false);
+    setAbbrev(params.book);
+    setChapter(params.chapter ? Number(params.chapter) : 1);
+  }, [params.book, params.chapter, books]);
 
   const book = useMemo(
     () => books?.find((b) => b.abbrev === abbrev) ?? null,
@@ -175,11 +186,19 @@ export default function Bible() {
     clearSelection();
   };
 
-  const onShareImage = () =>
-    Alert.alert(
-      "Share as image",
-      "The verse image studio arrives in a later phase."
-    );
+  const onShareImage = () => {
+    if (selectedVerses.length !== 1 || !book) return;
+    const v = selectedVerses[0];
+    router.push({
+      pathname: "/studio",
+      params: {
+        text: v.text,
+        reference: `${book.name} ${chapter}:${v.number}`,
+        label: DEFAULT_VERSION,
+      },
+    });
+    clearSelection();
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>

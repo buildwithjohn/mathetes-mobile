@@ -3,9 +3,14 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import * as FileSystem from "expo-file-system/legacy";
+import { decode } from "base64-arraybuffer";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/stores/auth";
 import type { House, UserProfile } from "@/lib/database.types";
+
+// Supabase Storage bucket for opt-in profile photos.
+const AVATAR_BUCKET = "avatars";
 
 // Query keys, centralized so mutations can invalidate precisely.
 export const profileKeys = {
@@ -79,6 +84,48 @@ export function useUpdateProfile() {
       const { data, error } = await supabase
         .from("user_profiles")
         .update(patch)
+        .eq("auth_id", authId)
+        .select("*")
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (profile) => {
+      queryClient.setQueryData(profileKeys.me, profile);
+    },
+  });
+}
+
+// Upload a picked image to the avatars bucket and point the profile at its
+// public URL. Photos are opt-in; visibility defaults to parish (schema default)
+// and is editable on the profile screen.
+export function useUploadProfilePhoto() {
+  const queryClient = useQueryClient();
+  const authId = useAuth((s) => s.session?.user.id ?? null);
+
+  return useMutation({
+    mutationFn: async (localUri: string): Promise<UserProfile> => {
+      if (!authId) throw new Error("Not signed in.");
+      const clean = localUri.split("?")[0];
+      const ext = (clean.split(".").pop() ?? "jpg").toLowerCase();
+      const contentType = ext === "png" ? "image/png" : "image/jpeg";
+
+      const base64 = await FileSystem.readAsStringAsync(localUri, {
+        encoding: "base64",
+      });
+      const path = `${authId}/avatar-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from(AVATAR_BUCKET)
+        .upload(path, decode(base64), { contentType, upsert: true });
+      if (uploadError) throw uploadError;
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(path);
+
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .update({ photo_url: publicUrl })
         .eq("auth_id", authId)
         .select("*")
         .single();
