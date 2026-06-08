@@ -9,6 +9,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { ChevronLeft, Bookmark, BookmarkCheck } from "lucide-react-native";
 import { useDevotional } from "@/lib/queries/content";
+import { AudioPlayer } from "@/components/AudioPlayer";
 import { paragraphs, sentences } from "@/utils/text";
 import { colors } from "@/theme/colors";
 
@@ -96,6 +97,9 @@ export default function DevotionalScreen() {
               ? `${dev.reading_time_minutes} min read`
               : "Devotional"}
           </Text>
+
+          {/* Narration, when the pastor has recorded one */}
+          {dev.audio_url ? <AudioPlayer url={dev.audio_url} /> : null}
 
           {/* Anchor passages: scripture block with oxblood left border */}
           {dev.scripture_refs.length > 0 ? (

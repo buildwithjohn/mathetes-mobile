@@ -2,7 +2,13 @@ import { View, Text, ScrollView, Pressable, ActivityIndicator } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { format } from "date-fns";
-import { ChevronRight, Flame, BookOpen } from "lucide-react-native";
+import {
+  ChevronRight,
+  Flame,
+  BookOpen,
+  Layers,
+  Sparkles,
+} from "lucide-react-native";
 import {
   useTodaysWordOfDay,
   useTodaysDevotional,
@@ -133,7 +139,32 @@ export default function Today() {
           <ChevronRight color={colors.ink} size={18} />
         </Pressable>
 
-        <Text className="mt-12 text-center font-scripture text-sm italic text-ink/50">
+        {/* Explore the parish library */}
+        <Text className="mb-2 mt-8 text-xs uppercase tracking-widest text-copper">
+          Explore
+        </Text>
+        <View className="flex-row gap-3">
+          <Pressable
+            onPress={() => router.push("/devotionals")}
+            className="flex-1 items-center gap-2 rounded-2xl border border-border bg-surface1 px-2 py-4 active:opacity-90"
+          >
+            <Layers color={colors.copper} size={22} />
+            <Text className="text-center text-xs font-sans-medium text-ink">
+              Devotionals
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => router.push("/words")}
+            className="flex-1 items-center gap-2 rounded-2xl border border-border bg-surface1 px-2 py-4 active:opacity-90"
+          >
+            <Sparkles color={colors.copper} size={22} />
+            <Text className="text-center text-xs font-sans-medium text-ink">
+              Past Words
+            </Text>
+          </Pressable>
+        </View>
+
+        <Text className="mt-10 text-center font-scripture text-sm italic text-ink/50">
           In all thy ways acknowledge him.
         </Text>
       </ScrollView>

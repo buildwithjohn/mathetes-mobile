@@ -46,6 +46,11 @@ registration with deep-link routing on notification tap. Remote push needs an
 EAS `projectId` (set `expo.extra.eas.projectId` in app.json) and a dev build;
 registration is a graceful no-op in Expo Go.
 
+Phase 7 adds the content library: browse devotional series and a recent-
+devotionals archive, a Word of the Day archive, and audio narration playback in
+the devotional reader (`expo-audio`, from `devotionals.audio_url`). Reached from
+the Today tab's Explore section.
+
 ## Notes
 
 - `assets/images/*.png` are solid-parchment placeholders. Replace with real
