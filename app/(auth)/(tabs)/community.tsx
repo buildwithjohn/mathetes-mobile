@@ -4,6 +4,7 @@ import {
   Pressable,
   ScrollView,
   ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -30,7 +31,7 @@ import { colors } from "@/theme/colors";
 export default function Community() {
   const router = useRouter();
   const { data: profile } = useProfile();
-  const { data: chats, isLoading } = useChats();
+  const { data: chats, isLoading, refetch, isRefetching } = useChats();
   const unread = useUnreadCount();
   useNotificationsRealtime();
 
@@ -58,6 +59,13 @@ export default function Community() {
         className="flex-1"
         contentContainerClassName="px-6 pb-16 pt-2"
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            tintColor={colors.copper}
+          />
+        }
       >
         {/* Quick links */}
         <View className="gap-3">

@@ -4,6 +4,7 @@ import {
   Pressable,
   FlatList,
   ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -37,7 +38,8 @@ const ICON: Record<NotificationType, typeof Bell> = {
 
 export default function Notifications() {
   const router = useRouter();
-  const { data: notifications, isLoading } = useNotifications();
+  const { data: notifications, isLoading, refetch, isRefetching } =
+    useNotifications();
   const markRead = useMarkNotificationRead();
   const markAll = useMarkAllNotificationsRead();
 
@@ -96,6 +98,13 @@ export default function Notifications() {
           data={notifications ?? []}
           keyExtractor={(n) => n.id}
           contentContainerStyle={{ paddingBottom: 40 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={refetch}
+              tintColor={colors.copper}
+            />
+          }
           renderItem={({ item }) => {
             const Icon = ICON[item.type] ?? Bell;
             const unread = item.read_at === null;

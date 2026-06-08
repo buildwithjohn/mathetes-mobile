@@ -9,6 +9,7 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -28,7 +29,8 @@ import { colors } from "@/theme/colors";
 export default function PrayerWall() {
   const router = useRouter();
   const { data: profile } = useProfile();
-  const { data: requests, isLoading } = usePrayerRequests();
+  const { data: requests, isLoading, refetch, isRefetching } =
+    usePrayerRequests();
   const togglePray = useTogglePray();
   const [composing, setComposing] = useState(false);
 
@@ -61,6 +63,13 @@ export default function PrayerWall() {
           data={requests ?? []}
           keyExtractor={(r) => r.id}
           contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 12 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={refetch}
+              tintColor={colors.copper}
+            />
+          }
           renderItem={({ item }) => (
             <PrayerCard
               entry={item}

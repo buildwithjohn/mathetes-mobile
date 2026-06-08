@@ -60,6 +60,14 @@ migration `0015_chat_media.sql` (mathetes-backend, branch
 `claude/chat-media-storage`) to be deployed, which also makes the `avatars`
 bucket public so profile photos resolve by URL.
 
+## Quality
+
+- `npm run typecheck` — strict TypeScript, no emit.
+- `npm test` — Jest unit tests (jest-expo preset) over the pure logic
+  (formatting, photo-visibility resolution, verse type scale).
+- GitHub Actions (`.github/workflows/ci.yml`) runs typecheck + tests on push
+  to `main` and on every pull request.
+
 ## Notes
 
 - `assets/images/*.png` are solid-parchment placeholders. Replace with real
