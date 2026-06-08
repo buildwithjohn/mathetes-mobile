@@ -5,6 +5,7 @@ import {
   Pressable,
   TextInput,
   FlatList,
+  Image,
   ActivityIndicator,
   Modal,
   Alert,
@@ -14,6 +15,14 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Clipboard from "expo-clipboard";
+import * as ImagePicker from "expo-image-picker";
+import {
+  useAudioRecorder,
+  useAudioRecorderState,
+  requestRecordingPermissionsAsync,
+  setAudioModeAsync,
+  RecordingPresets,
+} from "expo-audio";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   ChevronLeft,
@@ -26,11 +35,15 @@ import {
   BellOff,
   Bell,
   X,
+  ImagePlus,
+  Mic,
+  Trash2,
 } from "lucide-react-native";
 import {
   useChat,
   useChatMessages,
   useSendMessage,
+  useSendMediaMessage,
   useToggleReaction,
   useMarkChatRead,
   useToggleMute,
@@ -41,9 +54,17 @@ import { useBlocks, useToggleBlock, useReport } from "@/lib/queries/safety";
 import { useProfile } from "@/lib/queries/profile";
 import { supabase } from "@/lib/supabase";
 import { Avatar } from "@/components/Avatar";
+import { VoiceBubble } from "@/components/VoiceBubble";
 import { visiblePhotoUrl } from "@/utils/profile";
 import { colors } from "@/theme/colors";
 import type { ReactionEmoji } from "@/lib/database.types";
+
+function recClock(ms: number): string {
+  const total = Math.floor(ms / 1000);
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
 
 const REACTIONS: ReactionEmoji[] = ["🙏", "❤️", "amen", "🔥", "✋"];
 const reactionLabel = (e: ReactionEmoji) => (e === "amen" ? "Amen" : e);
@@ -61,13 +82,19 @@ export default function ChatScreen() {
   const { data: blocked } = useBlocks();
 
   const send = useSendMessage(chatId);
+  const sendMedia = useSendMediaMessage(chatId);
   const toggleReaction = useToggleReaction(chatId);
   const markRead = useMarkChatRead();
   const toggleMute = useToggleMute();
   const toggleBlock = useToggleBlock();
   const report = useReport();
 
+  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const recorderState = useAudioRecorderState(recorder, 300);
+
   const [draft, setDraft] = useState("");
+  const [recording, setRecording] = useState(false);
+  const [viewerUri, setViewerUri] = useState<string | null>(null);
   const [selected, setSelected] = useState<MessageRow | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -172,6 +199,77 @@ export default function ChatScreen() {
     if (!body) return;
     setDraft("");
     send.mutate(body);
+  };
+
+  const onPickImage = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert(
+        "Photo access needed",
+        "Allow access to your photos to share an image."
+      );
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      quality: 0.7,
+    });
+    if (result.canceled) return;
+    const uri = result.assets[0]?.uri;
+    if (!uri) return;
+    const ext = (uri.split("?")[0].split(".").pop() ?? "jpg").toLowerCase();
+    sendMedia.mutate(
+      {
+        localUri: uri,
+        kind: "image",
+        ext: ext === "png" ? "png" : "jpg",
+        contentType: ext === "png" ? "image/png" : "image/jpeg",
+      },
+      { onError: () => Alert.alert("Could not send", "The image upload failed.") }
+    );
+  };
+
+  const onStartRecording = async () => {
+    const perm = await requestRecordingPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert(
+        "Microphone needed",
+        "Allow microphone access to record a voice note."
+      );
+      return;
+    }
+    try {
+      await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
+      await recorder.prepareToRecordAsync();
+      recorder.record();
+      setRecording(true);
+    } catch {
+      Alert.alert("Could not record", "Recording is unavailable right now.");
+    }
+  };
+
+  const finishRecording = async (): Promise<string | null> => {
+    try {
+      await recorder.stop();
+    } catch {
+      // ignore
+    }
+    setRecording(false);
+    await setAudioModeAsync({ allowsRecording: false }).catch(() => {});
+    return recorder.uri ?? null;
+  };
+
+  const onStopAndSend = async () => {
+    const uri = await finishRecording();
+    if (!uri) return;
+    sendMedia.mutate(
+      { localUri: uri, kind: "voice", ext: "m4a", contentType: "audio/m4a" },
+      { onError: () => Alert.alert("Could not send", "The voice note upload failed.") }
+    );
+  };
+
+  const onCancelRecording = async () => {
+    await finishRecording();
   };
 
   const onReact = (emoji: ReactionEmoji) => {
@@ -279,6 +377,7 @@ export default function ChatScreen() {
               meId={me}
               viewerHouseId={profile?.house_id ?? null}
               onLongPress={() => setSelected(item)}
+              onOpenImage={(uri) => setViewerUri(uri)}
             />
           )}
           ListEmptyComponent={
@@ -297,23 +396,74 @@ export default function ChatScreen() {
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
         >
-          <View className="flex-row items-end gap-2 border-t border-border bg-parchment px-3 pb-6 pt-2">
-            <TextInput
-              value={draft}
-              onChangeText={setDraft}
-              placeholder="Message"
-              placeholderTextColor="#9C968A"
-              multiline
-              className="max-h-28 flex-1 rounded-2xl border border-border bg-surface1 px-4 py-2.5 text-base text-ink"
-            />
-            <Pressable
-              onPress={onSend}
-              disabled={!draft.trim() || send.isPending}
-              className="h-11 w-11 items-center justify-center rounded-full bg-copper active:opacity-90 disabled:opacity-40"
-            >
-              <Send color={colors.parchment} size={18} />
-            </Pressable>
-          </View>
+          {sendMedia.isPending ? (
+            <View className="flex-row items-center justify-center gap-2 bg-copper/10 py-1.5">
+              <ActivityIndicator color={colors.copper} size="small" />
+              <Text className="text-xs text-copper">Sending…</Text>
+            </View>
+          ) : null}
+          {recording ? (
+            <View className="flex-row items-center gap-3 border-t border-border bg-parchment px-4 pb-6 pt-2">
+              <Pressable
+                onPress={onCancelRecording}
+                className="h-11 w-11 items-center justify-center rounded-full active:opacity-70"
+                accessibilityLabel="Cancel recording"
+              >
+                <Trash2 color={colors.oxblood} size={20} />
+              </Pressable>
+              <View className="flex-1 flex-row items-center gap-2">
+                <View className="h-2.5 w-2.5 rounded-full bg-oxblood" />
+                <Text className="text-sm text-ink">
+                  Recording {recClock(recorderState.durationMillis)}
+                </Text>
+              </View>
+              <Pressable
+                onPress={onStopAndSend}
+                className="h-11 w-11 items-center justify-center rounded-full bg-copper active:opacity-90"
+                accessibilityLabel="Send voice note"
+              >
+                <Send color={colors.parchment} size={18} />
+              </Pressable>
+            </View>
+          ) : (
+            <View className="flex-row items-end gap-1.5 border-t border-border bg-parchment px-2 pb-6 pt-2">
+              <Pressable
+                onPress={onPickImage}
+                disabled={sendMedia.isPending}
+                className="h-11 w-10 items-center justify-center active:opacity-60 disabled:opacity-40"
+                accessibilityLabel="Send an image"
+              >
+                <ImagePlus color={colors.ink} size={22} />
+              </Pressable>
+              <TextInput
+                value={draft}
+                onChangeText={setDraft}
+                placeholder="Message"
+                placeholderTextColor="#9C968A"
+                multiline
+                className="max-h-28 flex-1 rounded-2xl border border-border bg-surface1 px-4 py-2.5 text-base text-ink"
+              />
+              {draft.trim() ? (
+                <Pressable
+                  onPress={onSend}
+                  disabled={send.isPending}
+                  className="h-11 w-11 items-center justify-center rounded-full bg-copper active:opacity-90 disabled:opacity-40"
+                  accessibilityLabel="Send message"
+                >
+                  <Send color={colors.parchment} size={18} />
+                </Pressable>
+              ) : (
+                <Pressable
+                  onPress={onStartRecording}
+                  disabled={sendMedia.isPending}
+                  className="h-11 w-11 items-center justify-center rounded-full bg-surface2 active:opacity-80 disabled:opacity-40"
+                  accessibilityLabel="Record a voice note"
+                >
+                  <Mic color={colors.ink} size={20} />
+                </Pressable>
+              )}
+            </View>
+          )}
         </KeyboardAvoidingView>
       ) : !isOversight ? (
         <View className="border-t border-border bg-parchment px-6 pb-8 pt-3">
@@ -408,6 +558,34 @@ export default function ChatScreen() {
           </View>
         </Pressable>
       </Modal>
+
+      {/* Full-screen image viewer */}
+      <Modal
+        visible={!!viewerUri}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setViewerUri(null)}
+      >
+        <Pressable
+          className="flex-1 items-center justify-center bg-ink/95"
+          onPress={() => setViewerUri(null)}
+        >
+          <Pressable
+            onPress={() => setViewerUri(null)}
+            className="absolute right-5 top-14 h-11 w-11 items-center justify-center"
+            accessibilityLabel="Close image"
+          >
+            <X color={colors.parchment} size={26} />
+          </Pressable>
+          {viewerUri ? (
+            <Image
+              source={{ uri: viewerUri }}
+              style={{ width: "92%", height: "70%" }}
+              resizeMode="contain"
+            />
+          ) : null}
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -419,6 +597,7 @@ function MessageBubble({
   meId,
   viewerHouseId,
   onLongPress,
+  onOpenImage,
 }: {
   message: MessageRow;
   mine: boolean;
@@ -426,6 +605,7 @@ function MessageBubble({
   meId: string | null;
   viewerHouseId: string | null;
   onLongPress: () => void;
+  onOpenImage: (uri: string) => void;
 }) {
   if (message.kind === "system") {
     return (
@@ -437,6 +617,9 @@ function MessageBubble({
 
   const author = message.user_profiles;
   const removed = message.deleted_at !== null;
+  const imageUrl = message.image_url;
+  const voiceUrl = message.voice_url;
+  const isImage = message.kind === "image" && !!imageUrl && !removed;
 
   // Group reactions by emoji with counts.
   const counts = new Map<string, number>();
@@ -456,11 +639,11 @@ function MessageBubble({
         <Pressable
           onLongPress={onLongPress}
           delayLongPress={250}
-          className={`rounded-2xl px-3.5 py-2.5 ${
-            mine ? "bg-copper" : "bg-surface1 border border-border"
-          }`}
+          className={`overflow-hidden rounded-2xl ${
+            isImage ? "p-1" : "px-3.5 py-2.5"
+          } ${mine ? "bg-copper" : "bg-surface1 border border-border"}`}
         >
-          {!mine && showAuthor && author ? (
+          {!mine && showAuthor && author && !isImage ? (
             <Text className="mb-0.5 text-xs font-sans-semibold text-copper">
               {author.name}
             </Text>
@@ -473,12 +656,16 @@ function MessageBubble({
             >
               Message removed
             </Text>
-          ) : message.kind === "image" ? (
-            <Text className={mine ? "text-parchment" : "text-ink"}>📷 Photo</Text>
-          ) : message.kind === "voice" ? (
-            <Text className={mine ? "text-parchment" : "text-ink"}>
-              🎤 Voice note
-            </Text>
+          ) : isImage && imageUrl ? (
+            <Pressable onPress={() => onOpenImage(imageUrl)}>
+              <Image
+                source={{ uri: imageUrl }}
+                style={{ width: 208, height: 208, borderRadius: 12 }}
+                resizeMode="cover"
+              />
+            </Pressable>
+          ) : message.kind === "voice" && voiceUrl ? (
+            <VoiceBubble url={voiceUrl} mine={mine} />
           ) : (
             <Text
               className={`text-base leading-6 ${

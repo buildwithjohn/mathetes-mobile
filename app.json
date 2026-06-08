@@ -45,6 +45,12 @@
         {
           "color": "#B87333"
         }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow Mathetes to record voice notes."
+        }
       ]
     ],
     "experiments": {

@@ -4,6 +4,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { uploadToBucket } from "@/lib/storage";
 import { useAuth } from "@/lib/stores/auth";
 import { useProfile } from "@/lib/queries/profile";
 import type {
@@ -220,6 +221,44 @@ export function useSendMessage(chatId: string) {
         author_id: profile.id,
         body: body.trim(),
         kind: "text",
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: communityKeys.messages(chatId) });
+      queryClient.invalidateQueries({ queryKey: communityKeys.chats });
+    },
+  });
+}
+
+// Send an image or voice note: upload to the chat-media bucket (under the
+// author's auth-UID folder, as the bucket policy requires) then insert the
+// message row referencing the public URL.
+export function useSendMediaMessage(chatId: string) {
+  const queryClient = useQueryClient();
+  const authId = useAuth((s) => s.session?.user.id ?? null);
+  const { data: profile } = useProfile();
+  return useMutation({
+    mutationFn: async (args: {
+      localUri: string;
+      kind: "image" | "voice";
+      ext: string;
+      contentType: string;
+    }): Promise<void> => {
+      if (!authId || !profile) throw new Error("Not ready.");
+      const path = `${authId}/${chatId}/${Date.now()}.${args.ext}`;
+      const url = await uploadToBucket({
+        bucket: "chat-media",
+        path,
+        localUri: args.localUri,
+        contentType: args.contentType,
+      });
+      const { error } = await supabase.from("messages").insert({
+        chat_id: chatId,
+        author_id: profile.id,
+        kind: args.kind,
+        image_url: args.kind === "image" ? url : null,
+        voice_url: args.kind === "voice" ? url : null,
       });
       if (error) throw error;
     },

@@ -51,6 +51,15 @@ devotionals archive, a Word of the Day archive, and audio narration playback in
 the devotional reader (`expo-audio`, from `devotionals.audio_url`). Reached from
 the Today tab's Explore section.
 
+Phase 8 adds chat media and launch polish: send images and voice notes in chat
+(`expo-image-picker` / `expo-audio` recorder, uploaded to a new public
+`chat-media` bucket), a full-screen image viewer, voice-note playback bubbles,
+onboarding that requests the notification permission, and an AuthGate that
+routes a member with no house back to the house step. Requires backend
+migration `0015_chat_media.sql` (mathetes-backend, branch
+`claude/chat-media-storage`) to be deployed, which also makes the `avatars`
+bucket public so profile photos resolve by URL.
+
 ## Notes
 
 - `assets/images/*.png` are solid-parchment placeholders. Replace with real

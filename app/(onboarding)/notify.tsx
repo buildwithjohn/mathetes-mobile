@@ -1,15 +1,24 @@
 import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as Notifications from "expo-notifications";
 import { Bell, Sun } from "lucide-react-native";
 import { colors } from "@/theme/colors";
 
-// Notification priming screen with a mock device notification preview. Actual
-// Expo push registration and permission prompts land in Phase 8; here we only
-// set expectations and let the user continue to the home screen either way.
+// Notification priming screen with a mock device notification preview. The
+// primary action requests the OS permission; PushManager then registers the
+// device token once inside the app. Either button continues to the home screen.
 export default function Notify() {
   const router = useRouter();
   const finish = () => router.replace("/(auth)/(tabs)/today");
+  const enableAndFinish = async () => {
+    try {
+      await Notifications.requestPermissionsAsync();
+    } catch {
+      // Permission flow is best-effort; continue regardless.
+    }
+    finish();
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-parchment">
@@ -53,7 +62,7 @@ export default function Notify() {
 
         <View className="w-full gap-3">
           <Pressable
-            onPress={finish}
+            onPress={enableAndFinish}
             className="h-14 items-center justify-center rounded-full bg-copper active:opacity-90"
           >
             <Text className="font-sans-semibold text-base text-parchment">
