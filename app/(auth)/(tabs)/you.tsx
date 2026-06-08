@@ -12,6 +12,7 @@ import {
   ChevronRight,
   PenLine,
   BookMarked,
+  Settings,
   type LucideIcon,
 } from "lucide-react-native";
 import { useAuth } from "@/lib/stores/auth";
@@ -108,6 +109,11 @@ export default function You() {
             icon={BookMarked}
             label="Your library"
             onPress={() => router.push("/library")}
+          />
+          <MenuRow
+            icon={Settings}
+            label="Settings"
+            onPress={() => router.push("/settings")}
           />
         </View>
       </ScrollView>

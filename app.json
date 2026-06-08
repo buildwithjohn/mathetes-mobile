@@ -39,6 +39,12 @@
         {
           "photosPermission": "Allow Mathetes to set your profile photo from your library."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#B87333"
+        }
       ]
     ],
     "experiments": {
