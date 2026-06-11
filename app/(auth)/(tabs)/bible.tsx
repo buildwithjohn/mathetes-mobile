@@ -255,7 +255,7 @@ export default function Bible() {
               <Pressable
                 key={v.id}
                 onPress={() => toggleVerse(v.number)}
-                className={`mb-1 flex-row rounded-lg px-2 py-1 ${
+                className={`mb-2.5 flex-row rounded-lg px-2 py-1.5 ${
                   isSelected ? "bg-surface2" : ""
                 }`}
                 style={
@@ -264,8 +264,14 @@ export default function Bible() {
                     : undefined
                 }
               >
-                <Text className="flex-1 font-scripture text-lg leading-[30px] text-ink">
-                  <Text className="text-xs font-sans-semibold text-copper">
+                <Text
+                  className="flex-1 font-scripture text-ink"
+                  style={{ fontSize: 18, lineHeight: 32 }}
+                >
+                  <Text
+                    className="font-sans-semibold text-copper"
+                    style={{ fontSize: 13, lineHeight: 32 }}
+                  >
                     {v.number}{" "}
                   </Text>
                   {v.text}
