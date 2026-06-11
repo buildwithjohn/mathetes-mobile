@@ -34,7 +34,8 @@ export type ChatKind =
   | "announcements"
   | "ask_pastor_thread"
   | "discipler"
-  | "dm";
+  | "dm"
+  | "parish_group";
 export type ChatMemberRole = "member" | "leader" | "pastor" | "discipler";
 export type MessageKind = "text" | "voice" | "image" | "system" | "daily_prompt";
 export type ReactionEmoji = "🙏" | "❤️" | "amen" | "🔥" | "✋";

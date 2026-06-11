@@ -62,6 +62,8 @@ function titleFor(
   switch (chat.kind) {
     case "announcements":
       return "Parish Announcements";
+    case "parish_group":
+      return "Parish Community";
     case "house_group":
       return chat.houses ? `${chat.houses.name} House` : "House group";
     case "discipler":

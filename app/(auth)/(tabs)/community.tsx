@@ -205,6 +205,13 @@ function ChatIcon({
       </View>
     );
   }
+  if (chat.kind === "parish_group") {
+    return (
+      <View className="h-12 w-12 items-center justify-center rounded-full bg-copper/15">
+        <Users color={colors.copper} size={22} />
+      </View>
+    );
+  }
   if (chat.kind === "house_group") {
     return (
       <View

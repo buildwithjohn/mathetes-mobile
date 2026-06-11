@@ -109,6 +109,8 @@ export default function ChatScreen() {
     switch (chat.kind) {
       case "announcements":
         return profile.role === "pastor" || profile.role === "admin";
+      case "parish_group":
+        return profile.parish_id === chat.parish_id;
       case "house_group":
         return profile.house_id === chat.house_id;
       default:
@@ -119,7 +121,9 @@ export default function ChatScreen() {
   const isOversight =
     !!chat && !canPost && (chat.kind === "dm" || chat.kind === "discipler");
   const isGroup =
-    chat?.kind === "house_group" || chat?.kind === "announcements";
+    chat?.kind === "house_group" ||
+    chat?.kind === "announcements" ||
+    chat?.kind === "parish_group";
   const isDm = chat?.kind === "dm";
 
   const title = useMemo(() => {
@@ -127,6 +131,8 @@ export default function ChatScreen() {
     switch (chat.kind) {
       case "announcements":
         return "Parish Announcements";
+      case "parish_group":
+        return "Parish Community";
       case "house_group":
         return chat.houses ? `${chat.houses.name} House` : "House group";
       case "discipler":
@@ -144,6 +150,8 @@ export default function ChatScreen() {
     switch (chat.kind) {
       case "announcements":
         return "Parish channel";
+      case "parish_group":
+        return "Everyone in the parish";
       case "house_group":
         return `${members.length} members`;
       case "discipler":
