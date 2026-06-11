@@ -126,7 +126,9 @@ export default function HousePicker() {
       <View className="border-t border-border bg-parchment px-6 pb-8 pt-4">
         {updateProfile.isError ? (
           <Text className="mb-3 text-center text-sm text-oxblood">
-            Could not save your house. Please try again.
+            {updateProfile.error instanceof Error
+              ? updateProfile.error.message
+              : "Could not save your house. Please try again."}
           </Text>
         ) : null}
         <Pressable
