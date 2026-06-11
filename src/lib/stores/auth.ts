@@ -11,7 +11,7 @@ type AuthState = {
     name: string,
     email: string,
     password: string
-  ) => Promise<{ error: string | null }>;
+  ) => Promise<{ error: string | null; needsConfirmation: boolean }>;
   signOut: () => Promise<void>;
 };
 
@@ -26,12 +26,18 @@ export const useAuth = create<AuthState>((set) => ({
   },
 
   signUp: async (name, email, password) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { name } },
     });
-    return { error: error?.message ?? null };
+    // When email confirmation is required, Supabase returns a user but no
+    // session. Surface that so onboarding can show a "confirm your email"
+    // screen instead of a session-less (blank) house picker.
+    return {
+      error: error?.message ?? null,
+      needsConfirmation: !error && !data.session,
+    };
   },
 
   signOut: async () => {

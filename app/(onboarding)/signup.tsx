@@ -48,9 +48,15 @@ export default function SignUp() {
 
   const onSubmit = handleSubmit(async ({ name, email, password }) => {
     setSubmitError(null);
-    const { error } = await signUp(name, email, password);
+    const { error, needsConfirmation } = await signUp(name, email, password);
     if (error) {
       setSubmitError(error);
+      return;
+    }
+    // No session yet means email confirmation is required: send them to the
+    // "check your email" screen rather than a session-less onboarding.
+    if (needsConfirmation) {
+      router.replace("/(onboarding)/confirm");
       return;
     }
     // The backend trigger creates the profile + privacy rows. Continue to
