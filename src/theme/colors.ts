@@ -1,16 +1,18 @@
-// Mathetes color tokens. Canonical hex values; never deviate.
+// Mathetes color tokens. The `copper` token is the app accent (now YouVersion
+// red); the name is kept so existing `text-copper` / `bg-copper` usages cascade.
+// Surfaces are clean cool neutrals for a modern, YouVersion-style read.
 export const colors = {
-  ink: "#1C1B1A",
-  parchment: "#F5F1EB",
-  copper: "#B87333",
-  oxblood: "#722F37",
+  ink: "#1A1A1A",
+  parchment: "#F7F7F8",
+  copper: "#F33A49",
+  oxblood: "#9B2C36",
   surface1: "#FFFFFF",
-  surface2: "#EDE8E0",
-  border: "#D9D2C5",
+  surface2: "#EFEFF1",
+  border: "#E4E4E7",
   dark: {
-    surface1: "#26241F",
-    surface2: "#322F2A",
-    border: "#3A3631",
+    surface1: "#1C1C1F",
+    surface2: "#27272A",
+    border: "#3A3A3E",
   },
 } as const;
 

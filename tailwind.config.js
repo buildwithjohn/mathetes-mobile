@@ -6,13 +6,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        ink: "#1C1B1A",
-        parchment: "#F5F1EB",
-        copper: "#B87333",
-        oxblood: "#722F37",
+        ink: "#1A1A1A",
+        parchment: "#F7F7F8",
+        copper: "#F33A49",
+        oxblood: "#9B2C36",
         surface1: "#FFFFFF",
-        surface2: "#EDE8E0",
-        border: "#D9D2C5",
+        surface2: "#EFEFF1",
+        border: "#E4E4E7",
         house: {
           bethel: "#B87333",
           antioch: "#722F37",

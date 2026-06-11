@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#F5F1EB"
+      "backgroundColor": "#F7F7F8"
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
@@ -21,7 +21,7 @@
       "package": "app.mathetes.mobile",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#F5F1EB"
+        "backgroundColor": "#F7F7F8"
       }
     },
     "plugins": [
