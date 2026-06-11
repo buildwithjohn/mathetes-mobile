@@ -33,7 +33,7 @@ export default function HousePicker() {
     if (!selected) return;
     try {
       await updateProfile.mutateAsync({ house_id: selected });
-      router.replace("/(onboarding)/notify");
+      router.replace("/(onboarding)/profile");
     } catch {
       // Surface a gentle retry; mutation error is also exposed below.
     }
