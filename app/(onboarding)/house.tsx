@@ -43,7 +43,7 @@ export default function HousePicker() {
     <SafeAreaView className="flex-1 bg-parchment">
       <View className="px-6 pt-4">
         <Text className="text-xs uppercase tracking-[3px] text-copper">
-          Step 1 of 2
+          Step 2 of 3
         </Text>
         <Text className="mt-2 font-display text-4xl text-ink">
           Choose your house

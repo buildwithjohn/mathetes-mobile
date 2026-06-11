@@ -54,9 +54,8 @@ export default function SignUp() {
       return;
     }
     // The backend trigger creates the profile + privacy rows. Continue to
-    // house selection. If email confirmation is required there is no session
-    // yet; the house screen's gate will surface that.
-    router.replace("/(onboarding)/house");
+    // campus selection (which skips to house if no campuses are configured).
+    router.replace("/(onboarding)/campus");
   });
 
   return (

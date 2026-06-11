@@ -7,7 +7,7 @@ import * as FileSystem from "expo-file-system/legacy";
 import { decode } from "base64-arraybuffer";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/stores/auth";
-import type { House, UserProfile } from "@/lib/database.types";
+import type { Campus, House, UserProfile } from "@/lib/database.types";
 
 // Supabase Storage bucket for opt-in profile photos.
 const AVATAR_BUCKET = "avatars";
@@ -16,7 +16,29 @@ const AVATAR_BUCKET = "avatars";
 export const profileKeys = {
   me: ["profile", "me"] as const,
   houses: ["houses"] as const,
+  campuses: ["campuses"] as const,
 };
+
+// Campuses for the signed-in user's parish (e.g. FUOYE Oye + Ikole), primary
+// first. Returns [] if the campuses table is not deployed yet, so onboarding
+// can simply skip the campus step rather than break.
+export function useCampuses() {
+  const authId = useAuth((s) => s.session?.user.id ?? null);
+  return useQuery({
+    queryKey: profileKeys.campuses,
+    enabled: !!authId,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<Campus[]> => {
+      const { data, error } = await supabase
+        .from("campuses")
+        .select("*")
+        .order("is_primary", { ascending: false })
+        .order("name", { ascending: true });
+      if (error) return [];
+      return data ?? [];
+    },
+  });
+}
 
 // The current user's profile row (auto-created by the backend trigger on
 // sign-up). Returns null while signed out.
@@ -69,6 +91,7 @@ type ProfilePatch = Partial<
     | "photo_url"
     | "photo_visibility"
     | "pinned_verse_ref"
+    | "campus_id"
   >
 >;
 

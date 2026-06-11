@@ -148,6 +148,7 @@ export interface Database {
           pinned_verse_ref: string | null;
           joined_at: string;
           discipler_id: string | null;
+          campus_id: string | null;
         };
         Insert: {
           id?: string;
@@ -164,6 +165,7 @@ export interface Database {
           pinned_verse_ref?: string | null;
           joined_at?: string;
           discipler_id?: string | null;
+          campus_id?: string | null;
         };
         Update: {
           id?: string;
@@ -180,6 +182,7 @@ export interface Database {
           pinned_verse_ref?: string | null;
           joined_at?: string;
           discipler_id?: string | null;
+          campus_id?: string | null;
         };
         Relationships: [];
       };
@@ -478,6 +481,26 @@ export interface Database {
         Update: Partial<
           Database["public"]["Tables"]["reading_position"]["Insert"]
         >;
+        Relationships: [];
+      };
+      campuses: {
+        Row: {
+          id: string;
+          parish_id: string;
+          slug: string;
+          name: string;
+          is_primary: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          parish_id: string;
+          slug: string;
+          name: string;
+          is_primary?: boolean;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["campuses"]["Insert"]>;
         Relationships: [];
       };
       streaks: {
@@ -1031,6 +1054,7 @@ export type NotificationPreference =
 export type VerseImage = Database["public"]["Tables"]["verse_images"]["Row"];
 export type Announcement =
   Database["public"]["Tables"]["announcements"]["Row"];
+export type Campus = Database["public"]["Tables"]["campuses"]["Row"];
 
 // Shape returned by the get_chapter() RPC (jsonb).
 export type ChapterVerse = { number: number; text: string };
