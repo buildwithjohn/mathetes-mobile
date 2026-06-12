@@ -30,16 +30,38 @@ type Form = z.infer<typeof schema>;
 export default function SignIn() {
   const router = useRouter();
   const signIn = useAuth((s) => s.signIn);
+  const resetPassword = useAuth((s) => s.resetPassword);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
     control,
     handleSubmit,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<Form>({
     resolver: zodResolver(schema),
     defaultValues: { email: "", password: "" },
   });
+
+  const onForgotPassword = async () => {
+    const email = getValues("email").trim();
+    if (!z.string().email().safeParse(email).success) {
+      Alert.alert(
+        "Enter your email",
+        "Type your email in the field above first, then tap Forgot password."
+      );
+      return;
+    }
+    const { error } = await resetPassword(email);
+    if (error) {
+      Alert.alert("Could not send", error);
+    } else {
+      Alert.alert(
+        "Check your email",
+        "We sent a link to reset your password. Open it on this phone to continue."
+      );
+    }
+  };
 
   const onSubmit = handleSubmit(async ({ email, password }) => {
     setSubmitError(null);
@@ -99,15 +121,7 @@ export default function SignIn() {
             />
           </View>
 
-          <Pressable
-            onPress={() =>
-              Alert.alert(
-                "Reset password",
-                "Password reset by email is coming soon. Reach a house leader if you are locked out."
-              )
-            }
-            className="mt-3 self-end py-1"
-          >
+          <Pressable onPress={onForgotPassword} className="mt-3 self-end py-1">
             <Text className="text-sm font-sans-medium text-copper">
               Forgot password?
             </Text>

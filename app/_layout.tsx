@@ -14,6 +14,7 @@ import {
 import { SourceSerif4_400Regular } from "@expo-google-fonts/source-serif-4";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/stores/auth";
+import { AuthDeepLinks } from "@/components/AuthDeepLinks";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -52,6 +53,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
+          <AuthDeepLinks />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
             <Stack.Screen name="(onboarding)" />
