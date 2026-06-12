@@ -9,7 +9,7 @@ import {
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Check } from "lucide-react-native";
-import { useHouses, useUpdateProfile } from "@/lib/queries/profile";
+import { useHouses, useProfile, useUpdateProfile } from "@/lib/queries/profile";
 import { colors } from "@/theme/colors";
 
 // Short meaning shown beneath each house verse. Keyed by house slug.
@@ -25,7 +25,11 @@ const HOUSE_MEANING: Record<string, string> = {
 
 export default function HousePicker() {
   const router = useRouter();
-  const { data: houses, isLoading, isError, refetch } = useHouses();
+  const { data: profile } = useProfile();
+  // Houses are scoped to the member's chosen campus (Oye vs Ikole).
+  const { data: houses, isLoading, isError, refetch } = useHouses(
+    profile?.campus_id
+  );
   const updateProfile = useUpdateProfile();
   const [selected, setSelected] = useState<string | null>(null);
 
@@ -101,7 +105,9 @@ export default function HousePicker() {
                     ) : null}
                   </View>
                   <Text className="mt-0.5 text-sm font-sans-medium text-copper">
-                    {HOUSE_MEANING[house.slug] ?? house.verse_ref ?? ""}
+                    {HOUSE_MEANING[house.slug.split("-")[0]] ??
+                      house.verse_ref ??
+                      ""}
                   </Text>
                   {house.verse ? (
                     <Text

@@ -107,6 +107,7 @@ export interface Database {
           verse: string | null;
           verse_ref: string | null;
           leader_id: string | null;
+          campus_id: string | null;
           created_at: string;
         };
         Insert: {
@@ -118,6 +119,7 @@ export interface Database {
           verse?: string | null;
           verse_ref?: string | null;
           leader_id?: string | null;
+          campus_id?: string | null;
           created_at?: string;
         };
         Update: {
@@ -129,6 +131,7 @@ export interface Database {
           verse?: string | null;
           verse_ref?: string | null;
           leader_id?: string | null;
+          campus_id?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -150,6 +153,8 @@ export interface Database {
           joined_at: string;
           discipler_id: string | null;
           campus_id: string | null;
+          date_of_birth: string | null;
+          phone: string | null;
         };
         Insert: {
           id?: string;
@@ -167,6 +172,8 @@ export interface Database {
           joined_at?: string;
           discipler_id?: string | null;
           campus_id?: string | null;
+          date_of_birth?: string | null;
+          phone?: string | null;
         };
         Update: {
           id?: string;
@@ -184,6 +191,8 @@ export interface Database {
           joined_at?: string;
           discipler_id?: string | null;
           campus_id?: string | null;
+          date_of_birth?: string | null;
+          phone?: string | null;
         };
         Relationships: [];
       };

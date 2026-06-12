@@ -1,31 +1,59 @@
 import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MailCheck } from "lucide-react-native";
+import Animated, {
+  FadeIn,
+  FadeInDown,
+  FadeInUp,
+} from "react-native-reanimated";
+import { MailCheck, Sparkles } from "lucide-react-native";
 import { colors } from "@/theme/colors";
 
-// Shown after sign-up when the project requires email confirmation (Supabase
-// returns no session). Members land here instead of a session-less house
-// picker; once they confirm, they sign in and onboarding continues.
+// Celebratory post-sign-up screen (shown when email confirmation is required):
+// "you're almost in" energy, then off to confirm.
 export default function Confirm() {
   const router = useRouter();
 
   return (
     <SafeAreaView className="flex-1 bg-parchment">
       <View className="flex-1 items-center justify-center px-8">
-        <View className="h-16 w-16 items-center justify-center rounded-2xl bg-copper/15">
-          <MailCheck color={colors.copper} size={30} />
-        </View>
-        <Text className="mt-6 text-center font-display text-3xl text-ink">
-          Check your email
-        </Text>
-        <Text className="mt-3 max-w-xs text-center text-base leading-6 text-ink/70">
-          We sent a confirmation link to your inbox. Tap it to verify your
-          account, then sign in to choose your campus and house.
-        </Text>
+        <Animated.View
+          entering={FadeIn.duration(500)}
+          className="h-20 w-20 items-center justify-center rounded-3xl bg-copper/15"
+        >
+          <MailCheck color={colors.copper} size={36} />
+        </Animated.View>
+
+        <Animated.View
+          entering={FadeInUp.delay(150).duration(500)}
+          className="mt-3 flex-row items-center gap-1.5"
+        >
+          <Sparkles color={colors.copper} size={14} />
+          <Text className="text-xs uppercase tracking-[3px] text-copper">
+            Welcome to Mathetes
+          </Text>
+        </Animated.View>
+
+        <Animated.Text
+          entering={FadeInDown.delay(250).duration(500)}
+          className="mt-3 text-center font-display text-4xl leading-tight text-ink"
+        >
+          You're almost in.
+        </Animated.Text>
+        <Animated.Text
+          entering={FadeInDown.delay(380).duration(500)}
+          className="mt-3 max-w-xs text-center text-base leading-7 text-ink/70"
+        >
+          We sent a confirmation link to your email. Tap it to verify your
+          account, then sign in to set up your campus, house, and profile. Your
+          journey of daily discipleship starts here.
+        </Animated.Text>
       </View>
 
-      <View className="px-6 pb-10">
+      <Animated.View
+        entering={FadeInUp.delay(500).duration(500)}
+        className="px-6 pb-10"
+      >
         <Pressable
           onPress={() => router.replace("/(onboarding)/signin")}
           className="h-14 items-center justify-center rounded-full bg-copper active:opacity-90"
@@ -34,7 +62,7 @@ export default function Confirm() {
             I have confirmed, sign in
           </Text>
         </Pressable>
-      </View>
+      </Animated.View>
     </SafeAreaView>
   );
 }

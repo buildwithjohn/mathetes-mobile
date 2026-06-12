@@ -60,20 +60,19 @@ export function useProfile() {
   });
 }
 
-// Houses readable by the signed-in user. RLS scopes this to their parish, so a
-// plain select returns exactly the seven CCCFSP houses for the pilot.
-export function useHouses() {
+// Houses readable by the signed-in user. RLS scopes this to their parish; pass
+// a campusId to show only that campus's houses (Oye vs Ikole).
+export function useHouses(campusId?: string | null) {
   const authId = useAuth((s) => s.session?.user.id ?? null);
 
   return useQuery({
-    queryKey: profileKeys.houses,
+    queryKey: [...profileKeys.houses, campusId ?? "all"] as const,
     enabled: !!authId,
     staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<House[]> => {
-      const { data, error } = await supabase
-        .from("houses")
-        .select("*")
-        .order("name", { ascending: true });
+      let query = supabase.from("houses").select("*");
+      if (campusId) query = query.eq("campus_id", campusId);
+      const { data, error } = await query.order("name", { ascending: true });
       if (error) throw error;
       return data ?? [];
     },
@@ -92,6 +91,8 @@ type ProfilePatch = Partial<
     | "photo_visibility"
     | "pinned_verse_ref"
     | "campus_id"
+    | "date_of_birth"
+    | "phone"
   >
 >;
 
