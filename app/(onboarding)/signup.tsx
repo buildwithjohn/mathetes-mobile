@@ -115,7 +115,8 @@ export default function SignUp() {
               label="Password"
               placeholder="At least 8 characters"
               secureTextEntry
-              autoComplete="password-new"
+              autoComplete="new-password"
+              textContentType="newPassword"
               error={errors.password?.message}
             />
             <TextField
@@ -124,6 +125,8 @@ export default function SignUp() {
               label="Confirm password"
               placeholder="Re-enter your password"
               secureTextEntry
+              autoComplete="new-password"
+              textContentType="newPassword"
               error={errors.confirm?.message}
             />
           </View>

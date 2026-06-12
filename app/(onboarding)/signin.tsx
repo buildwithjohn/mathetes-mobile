@@ -92,7 +92,8 @@ export default function SignIn() {
               label="Password"
               placeholder="Your password"
               secureTextEntry
-              autoComplete="password"
+              autoComplete="current-password"
+              textContentType="password"
               error={errors.password?.message}
             />
           </View>
