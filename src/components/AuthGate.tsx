@@ -26,8 +26,11 @@ export function AuthGate({ children }: { children: ReactNode }) {
   if (initializing) return <Splash />;
   if (!session) return <Redirect href="/(onboarding)/welcome" />;
   if (isLoading) return <Splash />;
+  // Incomplete onboarding starts at the campus step (which flows campus ->
+  // house -> about you). The campus step auto-skips to house if a parish has no
+  // campuses configured.
   if (profile && !profile.house_id) {
-    return <Redirect href="/(onboarding)/house" />;
+    return <Redirect href="/(onboarding)/campus" />;
   }
 
   return <>{children}</>;

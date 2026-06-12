@@ -12,6 +12,7 @@ import {
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useUpdateProfile } from "@/lib/queries/profile";
+import { OnboardingProgress } from "@/components/OnboardingProgress";
 import { colors } from "@/theme/colors";
 import type { Gender } from "@/lib/database.types";
 
@@ -91,11 +92,11 @@ export default function OnboardingProfile() {
           contentContainerClassName="px-6 pt-4 pb-6"
           keyboardShouldPersistTaps="handled"
         >
-          <Text className="text-xs uppercase tracking-[3px] text-copper">
-            Step 3 of 3
+          <OnboardingProgress step={3} total={3} />
+          <Text className="mt-7 font-display text-4xl leading-tight text-ink">
+            About you
           </Text>
-          <Text className="mt-2 font-display text-4xl text-ink">About you</Text>
-          <Text className="mt-2 text-base leading-6 text-ink/70">
+          <Text className="mt-2 text-base leading-6 text-ink/60">
             A few details so your house and the parish directory know you. You
             can change these anytime.
           </Text>
