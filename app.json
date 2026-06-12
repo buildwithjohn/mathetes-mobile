@@ -58,6 +58,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "owner": "buildwithjohn",
+    "extra": {
+      "eas": {
+        "projectId": "79670644-a012-4858-bd02-e1c0214c1a9d"
+      }
     }
   }
 }
