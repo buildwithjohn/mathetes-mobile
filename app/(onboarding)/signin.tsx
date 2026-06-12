@@ -16,6 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { TextField } from "@/components/TextField";
+import { SocialAuth } from "@/components/SocialAuth";
 import { useAuth } from "@/lib/stores/auth";
 import { colors } from "@/theme/colors";
 
@@ -138,19 +139,9 @@ export default function SignIn() {
             <View className="h-px flex-1 bg-border" />
           </View>
 
-          <Pressable
-            onPress={() =>
-              Alert.alert(
-                "Google sign-in",
-                "Continue with Google is coming soon. Use your email for now."
-              )
-            }
-            className="mt-6 h-14 items-center justify-center rounded-full border border-border bg-surface1 active:opacity-70"
-          >
-            <Text className="font-sans-semibold text-base text-ink">
-              Continue with Google
-            </Text>
-          </Pressable>
+          <View className="mt-6">
+            <SocialAuth />
+          </View>
 
           <Pressable
             onPress={() => router.replace("/(onboarding)/signup")}

@@ -15,7 +15,8 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.mathetes.mobile"
+      "bundleIdentifier": "app.mathetes.mobile",
+      "usesAppleSignIn": true
     },
     "android": {
       "package": "app.mathetes.mobile",
@@ -28,6 +29,8 @@
       "expo-router",
       "expo-secure-store",
       "expo-font",
+      "expo-apple-authentication",
+      "expo-web-browser",
       [
         "expo-media-library",
         {

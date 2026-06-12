@@ -15,6 +15,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { TextField } from "@/components/TextField";
+import { SocialAuth } from "@/components/SocialAuth";
 import { useAuth } from "@/lib/stores/auth";
 import { colors } from "@/theme/colors";
 
@@ -148,6 +149,18 @@ export default function SignUp() {
               </Text>
             )}
           </Pressable>
+
+          <View className="mt-6 flex-row items-center gap-3">
+            <View className="h-px flex-1 bg-border" />
+            <Text className="text-xs uppercase tracking-widest text-ink/40">
+              or
+            </Text>
+            <View className="h-px flex-1 bg-border" />
+          </View>
+
+          <View className="mt-6">
+            <SocialAuth />
+          </View>
 
           <Pressable
             onPress={() => router.replace("/(onboarding)/signin")}
