@@ -9,6 +9,20 @@ export const colors = {
   surface1: "#FFFFFF",
   surface2: "#EFEFF1",
   border: "#E4E4E7",
+  // Semantic aliases used by the design system (v1 identity). The warm hexes in
+  // the design JSX are NOT used; these map to the current YouVersion palette.
+  copperDeep: "#9B2C36",
+  copperSoft: "#FF6B7A",
+  inkSoft: "#3D3935",
+  inkMute: "#75706A",
+  inkFaint: "#B0A99B",
+  rule: "#E8E7E5",
+  ruleSoft: "#F0EFEE",
+  paper: "#FFFFFF",
+  paperRaised: "#F0EFEE",
+  success: "#5A7C5A",
+  warning: "#C19D3F",
+  alert: "#A04141",
   dark: {
     surface1: "#1C1C1F",
     surface2: "#27272A",

@@ -1,0 +1,274 @@
+/* Mathetes — leather-bound journal that kept its soul.
+   Tokens for an indigo-ink + parchment + muted gold direction. */
+
+:root {
+  /* v2 tokens — parchment, warm-near-black, copper, oxblood */
+  --bg: #F5F1EB;            /* surface-0 / parchment */
+  --paper: #FFFFFF;          /* surface-1 / card */
+  --paper-raised: #EDE8E0;   /* surface-2 / elevated */
+  --ink: #1C1B1A;            /* primary text */
+  --ink-soft: #3D3935;
+  --ink-mute: #75706A;
+  --ink-faint: #B0A99B;
+  --rule: #D9D2C5;
+  --rule-soft: #E5DDCD;
+
+  --copper: #B87333;
+  --copper-soft: #D89856;
+  --copper-deep: #8E5826;
+
+  --oxblood: #722F37;
+  --oxblood-soft: #9A4651;
+
+  /* legacy aliases used in earlier files — map cleanly to v2 */
+  --gold: var(--copper);
+  --gold-soft: var(--copper-soft);
+  --gold-deep: var(--copper-deep);
+
+  --success: #5A7C5A;
+  --warning: #C19D3F;
+  --alert: #A04141;
+  --leaf: var(--success);
+  --signal: var(--alert);
+
+  --shadow-card: 0 1px 0 rgba(28,27,26,0.04), 0 12px 28px -16px rgba(28,27,26,0.16);
+  --shadow-soft: 0 1px 0 rgba(28,27,26,0.03), 0 6px 16px -10px rgba(28,27,26,0.10);
+
+  --display: "Fraunces", "Cormorant Garamond", Georgia, serif;
+  --body: "Inter", -apple-system, "SF Pro Text", system-ui, sans-serif;
+  --read: "Source Serif 4", "Lora", "Newsreader", Georgia, serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --reading-size: 18px;
+  --reading-leading: 1.67; /* 30/18 from v2 */
+}
+
+[data-theme="dark"] {
+  --bg: #1C1B1A;
+  --paper: #26241F;
+  --paper-raised: #322F2A;
+  --ink: #F5F1EB;
+  --ink-soft: #D6CFBF;
+  --ink-mute: #8E867A;
+  --ink-faint: #5A554E;
+  --rule: #3A3631;
+  --rule-soft: #2D2A26;
+
+  --copper: #D89856;
+  --copper-soft: #EFB87F;
+  --copper-deep: #A6712F;
+
+  --oxblood: #9A4651;
+  --oxblood-soft: #B7626C;
+
+  --gold: var(--copper);
+  --gold-soft: var(--copper-soft);
+  --gold-deep: var(--copper-deep);
+
+  --shadow-card: 0 1px 0 rgba(0,0,0,0.4), 0 14px 28px -14px rgba(0,0,0,0.6);
+  --shadow-soft: 0 1px 0 rgba(0,0,0,0.3), 0 8px 16px -10px rgba(0,0,0,0.4);
+}
+
+[data-accent="oxblood"] {
+  --copper: #722F37; --copper-soft: #9A4651; --copper-deep: #4F1D24;
+  --gold: var(--copper); --gold-soft: var(--copper-soft); --gold-deep: var(--copper-deep);
+}
+[data-accent="forest"] {
+  --copper: #5A7C5A; --copper-soft: #7B9C7B; --copper-deep: #3F5A3F;
+  --gold: var(--copper); --gold-soft: var(--copper-soft); --gold-deep: var(--copper-deep);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--body);
+  color: var(--ink);
+  background: #2a2725;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* full-bleed phone surface */
+.surface {
+  position: absolute; inset: 0;
+  background: var(--bg);
+  color: var(--ink);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.scroll::-webkit-scrollbar { display: none; }
+
+/* type */
+.display { font-family: var(--display); font-weight: 500; letter-spacing: -0.01em; }
+.display-italic { font-family: var(--display); font-style: italic; font-weight: 400; }
+.eyebrow {
+  font-family: var(--body); font-weight: 500; font-size: 11px;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-mute);
+}
+.read { font-family: var(--read); font-weight: 400; }
+
+/* card */
+.card {
+  background: var(--paper);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+}
+
+.divider {
+  height: 1px; background: var(--rule); border: 0;
+}
+
+.gold-rule {
+  height: 1px; background: var(--gold); opacity: 0.6;
+}
+
+/* buttons */
+.btn {
+  font-family: var(--body); font-weight: 500;
+  border: none; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px; padding: 0 20px; height: 48px; border-radius: 999px;
+  font-size: 15px; letter-spacing: -0.01em;
+  transition: transform 120ms ease, opacity 120ms ease, background 200ms ease;
+}
+.btn:active { transform: scale(0.98); }
+.btn-ink { background: var(--ink); color: var(--paper); }
+.btn-gold { background: var(--gold); color: #fff; }
+[data-theme="dark"] .btn-ink { background: var(--gold); color: var(--bg); }
+.btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--rule); }
+.btn-ghost:hover { background: var(--rule-soft); }
+
+/* tab bar — engraved bottom navigation */
+.tabbar {
+  position: relative;
+  display: flex; justify-content: space-around; align-items: center;
+  padding: 8px 8px 26px;
+  background: var(--paper);
+  border-top: 1px solid var(--rule);
+}
+.tabbar::before {
+  content: ""; position: absolute; left: 16px; right: 16px; top: 0;
+  height: 1px; background: linear-gradient(90deg, transparent, var(--gold) 50%, transparent);
+  opacity: 0.35;
+}
+.tab {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 8px 0; cursor: pointer; color: var(--ink-mute);
+  font-family: var(--body); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.04em; transition: color 160ms ease;
+  border: none; background: transparent;
+}
+.tab[aria-selected="true"] { color: var(--ink); }
+.tab[aria-selected="true"] .tab-dot { background: var(--gold); }
+.tab-dot {
+  width: 4px; height: 4px; border-radius: 50%; background: transparent;
+  margin-top: 1px;
+}
+
+/* simple label/text helpers */
+.muted { color: var(--ink-mute); }
+.soft { color: var(--ink-soft); }
+
+/* reading view */
+.reading-body {
+  font-family: var(--read);
+  font-size: var(--reading-size);
+  line-height: var(--reading-leading);
+  color: var(--ink);
+  letter-spacing: 0.005em;
+}
+.reading-body p { margin: 0 0 1em; }
+
+/* verse drop-cap */
+.dropcap::first-letter {
+  font-family: var(--display);
+  float: left; font-size: 3.6em; line-height: 0.92;
+  padding: 0.05em 0.08em 0 0;
+  color: var(--gold);
+  font-weight: 500;
+}
+
+/* highlight */
+.hl { background: linear-gradient(180deg, transparent 0 60%, color-mix(in oklch, var(--gold) 35%, transparent) 60% 92%, transparent 92%); }
+.hl-strong { background: color-mix(in oklch, var(--gold) 25%, transparent); }
+.hl-leaf { background: color-mix(in oklch, var(--leaf) 25%, transparent); }
+
+/* progress ring background helper */
+.ring { position: relative; }
+
+/* page transition */
+.fade-page { animation: fadePage 380ms cubic-bezier(.2,.6,.2,1); }
+@keyframes fadePage { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.slide-up { animation: slideUp 320ms cubic-bezier(.2,.7,.2,1); }
+@keyframes slideUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+
+.modal-page { animation: modalIn 380ms cubic-bezier(.2,.7,.2,1); }
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(60px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* daily reveal — for word of the day card */
+.reveal-line {
+  display: inline-block; opacity: 0; transform: translateY(8px);
+  animation: revealLine 720ms cubic-bezier(.2,.7,.2,1) forwards;
+}
+@keyframes revealLine { to { opacity: 1; transform: none; } }
+
+/* gold underline link */
+.gold-link {
+  position: relative; color: var(--ink); font-weight: 500;
+  cursor: pointer; text-decoration: none;
+}
+.gold-link::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -2px;
+  height: 1px; background: var(--gold); opacity: 0.6;
+}
+
+/* avatar */
+.avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--rule); display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--display); font-size: 13px; color: var(--ink-soft);
+  flex-shrink: 0;
+}
+
+/* striped photo placeholder */
+.placeholder-img {
+  position: relative; overflow: hidden; border-radius: 12px;
+  background:
+    repeating-linear-gradient(135deg,
+      color-mix(in oklch, var(--ink) 6%, var(--paper)) 0 8px,
+      color-mix(in oklch, var(--ink) 9%, var(--paper)) 8px 16px);
+  color: var(--ink-mute);
+  font-family: var(--mono); font-size: 11px;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+}
+
+/* segmented control */
+.seg {
+  display: inline-flex; padding: 3px; border-radius: 999px;
+  background: var(--rule-soft); border: 1px solid var(--rule);
+}
+.seg button {
+  border: none; background: transparent; padding: 8px 14px;
+  font-family: var(--body); font-size: 13px; color: var(--ink-mute);
+  border-radius: 999px; cursor: pointer; font-weight: 500;
+  transition: all 200ms ease;
+}
+.seg button[aria-pressed="true"] {
+  background: var(--paper); color: var(--ink);
+  box-shadow: var(--shadow-soft);
+}
+
+/* tweak button to fit aesthetic */
+.tw-style-mono { font-family: var(--mono) !important; }

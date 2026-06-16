@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mathetes — Identity System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz@0,8..60;1,8..60&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --copper:#F33A49;
+    --copper-deep:#C32A38;
+    --parchment:#F7F7F8;
+    --ink:#1A1A1A;
+    --ink-true:#111110;
+    --oxblood:#9B2C36;
+    --stage:#E7E5E1;       /* page frame, warm neutral */
+    --ink-mute:#8A857E;
+    --rule:rgba(26,26,26,0.12);
+    --rule-dark:rgba(247,247,248,0.16);
+    --display:"Fraunces", Georgia, serif;
+    --body:"Inter", system-ui, sans-serif;
+    --read:"Source Serif 4", Georgia, serif;
+    --mono:"JetBrains Mono", ui-monospace, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--body);
+    background:var(--stage);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  .wrap{max-width:1120px;margin:0 auto;padding:0 56px;}
+  section{padding:92px 0;border-top:1px solid var(--rule);}
+  section.bleed{border-top:none;}
+
+  /* type */
+  .display{font-family:var(--display);font-weight:480;font-variation-settings:"opsz" 96,"SOFT" 0;letter-spacing:-0.015em;line-height:1.0;}
+  .kicker{font-family:var(--mono);font-size:11.5px;letter-spacing:0.34em;text-transform:uppercase;color:var(--ink-mute);}
+  .kicker .num{color:var(--copper);}
+  .lede{font-family:var(--read);font-size:19px;line-height:1.62;color:#46423d;max-width:54ch;}
+  .lede.dim{color:rgba(247,247,248,0.66);}
+  .cap{font-family:var(--mono);font-size:11px;letter-spacing:0.06em;color:var(--ink-mute);line-height:1.5;}
+  .cap b{color:var(--ink);font-weight:500;}
+  h2.title{font-family:var(--display);font-weight:420;font-variation-settings:"opsz" 110;font-size:46px;line-height:1.04;letter-spacing:-0.02em;margin:18px 0 0;max-width:18ch;}
+  .sec-head{margin-bottom:54px;}
+
+  /* flame color contexts */
+  .flame{display:block;}
+  .on-copper{color:var(--parchment);}
+  .ink-flame{color:var(--ink);}
+  .copper-flame{color:var(--copper);}
+
+  /* ---------- COVER ---------- */
+  .cover{
+    background:var(--ink-true);
+    color:var(--parchment);
+    min-height:660px;
+    display:flex;flex-direction:column;justify-content:space-between;
+    padding:48px 0 64px;
+  }
+  .cover .wrap{height:100%;display:flex;flex-direction:column;justify-content:space-between;flex:1;}
+  .cover-top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .cover-top .kicker{color:rgba(247,247,248,0.55);}
+  .cover-center{display:flex;align-items:center;gap:54px;margin:54px 0;}
+  .cover-center .markbox{width:188px;flex:none;}
+  .cover-center .markbox svg{width:100%;height:auto;filter:drop-shadow(0 18px 44px rgba(243,58,73,0.45));}
+  .wordmark{
+    font-family:var(--display);font-weight:440;font-variation-settings:"opsz" 144,"SOFT" 0;
+    letter-spacing:-0.02em;line-height:0.9;
+  }
+  .cover .wordmark{font-size:104px;}
+  .greek{font-family:var(--read);font-style:italic;font-size:21px;color:rgba(247,247,248,0.62);letter-spacing:0.01em;margin-top:14px;}
+  .cover-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:40px;}
+  .cover-foot .lede{color:rgba(247,247,248,0.74);max-width:46ch;font-size:18px;}
+
+  /* ---------- CONCEPTS ---------- */
+  .concept-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+  .concept{
+    background:var(--parchment);border:1px solid var(--rule);border-radius:16px;
+    padding:26px 24px 24px;position:relative;display:flex;flex-direction:column;min-height:300px;
+  }
+  .concept .art{height:150px;display:flex;align-items:center;justify-content:center;}
+  .concept .art svg{height:118px;width:auto;}
+  .concept .cname{font-family:var(--display);font-size:22px;font-weight:460;font-variation-settings:"opsz" 90;margin-top:10px;letter-spacing:-0.01em;}
+  .concept .cdir{font-family:var(--mono);font-size:10.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-mute);}
+  .concept .crat{font-family:var(--read);font-size:14px;line-height:1.5;color:#56524c;margin-top:9px;}
+  .concept.chosen{border-color:var(--copper);box-shadow:0 0 0 1px var(--copper);}
+  .chosen-tag{
+    position:absolute;top:16px;right:16px;font-family:var(--mono);font-size:9.5px;letter-spacing:0.18em;
+    text-transform:uppercase;color:var(--parchment);background:var(--copper);padding:4px 9px;border-radius:999px;
+  }
+  .stroke{fill:none;stroke:var(--copper);stroke-width:7;stroke-linecap:round;stroke-linejoin:round;}
+
+  /* ---------- specimen frames ---------- */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:28px;}
+  .three{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+  .specimen{
+    border-radius:18px;padding:46px;display:flex;align-items:center;justify-content:center;
+    position:relative;min-height:300px;
+  }
+  .specimen.light{background:var(--parchment);border:1px solid var(--rule);}
+  .specimen.dark{background:var(--ink-true);}
+  .specimen.copper{background:var(--copper);}
+  .specimen .flame{height:188px;width:auto;}
+  .spec-cap{display:flex;justify-content:space-between;align-items:baseline;margin-top:14px;gap:16px;}
+
+  /* app icon */
+  .iconfield{
+    width:228px;height:228px;border-radius:50px;overflow:hidden;position:relative;
+    box-shadow:0 18px 40px -20px rgba(26,26,26,0.42), 0 2px 0 rgba(255,255,255,0.5) inset;
+  }
+  .iconfield.parch{background:var(--parchment);}
+  .iconfield.copperbg{background:var(--copper);}
+  .iconfield .glow{position:absolute;inset:0;}
+  .iconfield.parch .glow{background:radial-gradient(120% 90% at 50% 118%, rgba(26,26,26,0.10), transparent 60%);}
+  .iconfield.copperbg .glow{background:radial-gradient(120% 90% at 50% 118%, rgba(0,0,0,0.16), transparent 62%);}
+  .iconfield .ic-flame{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);height:124px;width:auto;}
+  .iconrow{display:flex;align-items:flex-end;gap:40px;flex-wrap:wrap;}
+  .mini-set{display:flex;align-items:flex-end;gap:20px;}
+  .mini{border-radius:22%;overflow:hidden;position:relative;}
+  .mini.parch{background:var(--parchment);}
+  .mini.copperbg{background:var(--copper);}
+  .mini .ic-flame{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);height:54%;width:auto;}
+  .mini.s60{width:60px;height:60px;}
+  .mini.s40{width:40px;height:40px;}
+  .mini.s29{width:29px;height:29px;}
+
+  /* android adaptive */
+  .ada-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;align-items:center;}
+  .ada-tile{display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .ada-art{width:150px;height:150px;border-radius:18px;position:relative;overflow:hidden;}
+  .ada-art.fore{background:repeating-linear-gradient(45deg,#ececee,#ececee 8px,#f6f6f7 8px,#f6f6f7 16px);border:1px dashed var(--rule);}
+  .ada-art.back{background:var(--parchment);border:1px solid var(--rule);}
+  .ada-art .ic-flame{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);height:64%;width:auto;}
+  .ada-mask{width:150px;height:150px;background:var(--parchment);position:relative;}
+  .ada-mask.circle{border-radius:50%;}
+  .ada-mask.squircle{border-radius:34%;}
+  .ada-mask .ic-flame{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);height:60%;width:auto;}
+  .plus{font-family:var(--display);font-size:34px;color:var(--ink-mute);text-align:center;}
+
+  /* lockup */
+  .lockup{display:flex;align-items:center;gap:26px;}
+  .lockup .lk-flame{height:84px;width:auto;flex:none;}
+  .lockup .lk-word{font-family:var(--display);font-weight:450;font-variation-settings:"opsz" 144,"SOFT" 0;font-size:74px;letter-spacing:-0.022em;line-height:1;}
+  .lkrow{display:flex;flex-direction:column;gap:48px;}
+  .lkblock{border-radius:18px;padding:54px 46px;}
+
+  /* notification */
+  .notif-row{display:flex;align-items:center;gap:48px;flex-wrap:wrap;}
+  .notif-tile{display:flex;flex-direction:column;align-items:center;gap:14px;}
+  .notif-flame{color:var(--parchment);width:auto;}
+
+  /* splash */
+  .phone{
+    width:300px;height:620px;border-radius:46px;background:var(--parchment);
+    border:1px solid var(--rule);position:relative;overflow:hidden;margin:0 auto;
+    box-shadow:0 30px 70px -34px rgba(26,26,26,0.5);
+  }
+  .phone .notch{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:108px;height:26px;border-radius:14px;background:rgba(26,26,26,0.06);}
+  .phone .sp-flame{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);height:108px;width:auto;color:var(--copper);}
+  .phone .sp-word{position:absolute;left:0;right:0;bottom:64px;text-align:center;font-family:var(--display);font-size:23px;font-weight:460;font-variation-settings:"opsz" 100;letter-spacing:0.01em;color:var(--ink);}
+
+  /* sizing strip */
+  .size-strip{display:flex;align-items:flex-end;gap:34px;flex-wrap:wrap;background:var(--parchment);border:1px solid var(--rule);border-radius:18px;padding:40px 44px;}
+  .size-item{display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .size-item .copper-flame{display:block;width:auto;}
+  .sq{border:1px solid var(--rule);border-radius:5px;display:flex;align-items:center;justify-content:center;background:#fff;}
+
+  /* system */
+  .sys-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:48px;}
+  .swatches{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  .sw{border-radius:13px;border:1px solid var(--rule);overflow:hidden;}
+  .sw .chip{height:88px;}
+  .sw .meta{padding:11px 14px;display:flex;justify-content:space-between;align-items:baseline;}
+  .sw .nm{font-family:var(--body);font-weight:500;font-size:13px;}
+  .sw .hx{font-family:var(--mono);font-size:11px;color:var(--ink-mute);}
+  .type-spec{display:flex;flex-direction:column;gap:26px;}
+  .ts-row{border-bottom:1px solid var(--rule);padding-bottom:22px;}
+  .ts-name{font-family:var(--mono);font-size:10.5px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:8px;}
+
+  footer{background:var(--ink-true);color:rgba(247,247,248,0.7);padding:64px 0;}
+  footer .wrap{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;flex-wrap:wrap;}
+  footer .ft-word{font-family:var(--display);font-size:30px;color:var(--parchment);font-variation-settings:"opsz" 100;}
+
+  @media (max-width:900px){
+    .wrap{padding:0 28px;}
+    .two,.three,.sys-grid{grid-template-columns:1fr;}
+    .concept-grid{grid-template-columns:repeat(2,1fr);}
+    .ada-grid{grid-template-columns:1fr;}
+    .cover-center{flex-direction:column;align-items:flex-start;gap:28px;}
+    .cover .wordmark{font-size:64px;}
+    .lockup .lk-word{font-size:48px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ flame symbol (single source of truth) ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="flame" viewBox="0 0 100 132">
+    <path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/>
+  </symbol>
+</svg>
+
+<!-- ============ COVER ============ -->
+<section class="cover bleed" data-screen-label="Cover">
+  <div class="wrap">
+    <div class="cover-top">
+      <div class="kicker">Identity System</div>
+      <div class="kicker">Pilot &middot; CCCFSP&nbsp;FUOYE</div>
+    </div>
+    <div class="cover-center">
+      <div class="markbox"><svg class="flame copper-flame" viewBox="0 0 100 132" style="color:var(--copper)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg></div>
+      <div>
+        <div class="wordmark">Mathetes</div>
+        <div class="greek">μαθητής &mdash; <span style="font-style:normal">the disciple, the learner</span></div>
+      </div>
+    </div>
+    <div class="cover-foot">
+      <p class="lede">A daily formation app for African campus fellowships. Scripture, devotional, prayer, and house community — held in one quiet, considered space.</p>
+      <div class="kicker">Flame mark &middot; v1</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section data-screen-label="Concept directions">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker"><span class="num">01</span> &nbsp;/&nbsp; Concept exploration</div>
+      <h2 class="title">Four directions. One carried the conviction.</h2>
+    </div>
+    <div class="concept-grid">
+
+      <div class="concept chosen">
+        <div class="chosen-tag">Chosen</div>
+        <div class="art"><svg viewBox="0 0 100 132" style="color:var(--copper)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg></div>
+        <div class="cdir">Direction A</div>
+        <div class="cname">The Flame</div>
+        <div class="crat">Tongues of fire at Pentecost; “fervent in spirit” (Rom 12:11). The Spirit’s work in the disciple.</div>
+      </div>
+
+      <div class="concept">
+        <div class="art">
+          <svg viewBox="0 0 96 132"><path class="stroke" d="M22 120 L22 60 A26 26 0 0 1 74 60 L74 120"/></svg>
+        </div>
+        <div class="cdir">Direction B</div>
+        <div class="cname">The Way</div>
+        <div class="crat">The earliest name for followers — “people of the Way.” A threshold, an opening to walk through.</div>
+      </div>
+
+      <div class="concept">
+        <div class="art">
+          <svg viewBox="0 0 96 132">
+            <ellipse cx="48" cy="98" rx="22" ry="15" fill="var(--copper)"/>
+            <path class="stroke" d="M48 84 C48 58 48 46 48 28"/>
+            <path d="M48 56 C36 50 26 56 26 68 C40 70 48 64 48 56Z" fill="var(--copper)"/>
+          </svg>
+        </div>
+        <div class="cdir">Direction C</div>
+        <div class="cname">The Seed</div>
+        <div class="crat">The parable of the sower. Formation as growth — a seed split open by a single emerging shoot.</div>
+      </div>
+
+      <div class="concept">
+        <div class="art">
+          <div style="font-family:var(--display);font-size:112px;color:var(--copper);font-variation-settings:'opsz' 144;line-height:1;">μ</div>
+        </div>
+        <div class="cdir">Direction D</div>
+        <div class="cname">The Letter</div>
+        <div class="crat">The Greek μ of μαθητής — letterform as mark. Literary, quiet, unmistakably rooted in the name.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE MARK ============ -->
+<section data-screen-label="The mark">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker"><span class="num">02</span> &nbsp;/&nbsp; The mark</div>
+      <h2 class="title">A single flame — sculpted, leaning, alive.</h2>
+      <p class="lede" style="margin-top:22px;">One continuous shape, never a composition. The tip leans right the way a real flame curls; the inner notch keeps it from reading as a teardrop. Optically centered — sat a touch low so it feels anchored, not floating.</p>
+    </div>
+    <div class="three">
+      <div class="specimen light"><svg class="flame copper-flame" viewBox="0 0 100 132" style="color:var(--copper)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg></div>
+      <div class="specimen light"><svg class="flame ink-flame" viewBox="0 0 100 132" style="color:var(--ink)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg></div>
+      <div class="specimen copper"><svg class="flame on-copper" viewBox="0 0 100 132" style="color:var(--parchment)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg></div>
+    </div>
+    <div class="three">
+      <div class="spec-cap"><span class="cap"><b>Copper on parchment</b></span><span class="cap">#F33A49</span></div>
+      <div class="spec-cap"><span class="cap"><b>Ink monochrome</b></span><span class="cap">#1A1A1A</span></div>
+      <div class="spec-cap"><span class="cap"><b>Reversed</b></span><span class="cap">parchment / copper</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ APP ICON ============ -->
+<section data-screen-label="App icon">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker"><span class="num">03</span> &nbsp;/&nbsp; App icon &middot; 1024×1024</div>
+      <h2 class="title">Two treatments for the home screen.</h2>
+    </div>
+    <div class="iconrow">
+      <div>
+        <div class="iconfield parch"><div class="glow"></div><svg class="ic-flame" viewBox="0 0 100 132" style="color:var(--copper)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg></div>
+        <div class="spec-cap" style="width:228px;"><span class="cap"><b>Light</b> &middot; flame on parchment</span></div>
+      </div>
+      <div>
+        <div class="iconfield copperbg"><div class="glow"></div><svg class="ic-flame" viewBox="0 0 100 132" style="color:var(--parchment)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg></div>
+        <div class="spec-cap" style="width:228px;"><span class="cap"><b>Bold</b> &middot; reversed on copper</span></div>
+      </div>
+      <div style="margin-left:8px;">
+        <div class="mini-set">
+          <div class="mini s60 parch"><svg class="ic-flame" viewBox="0 0 100 132" style="color:var(--copper)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg></div>
+          <div class="mini s40 copperbg"><svg class="ic-flame" viewBox="0 0 100 132" style="color:var(--parchment)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg></div>
+          <div class="mini s29 parch"><svg class="ic-flame" viewBox="0 0 100 132" style="color:var(--copper)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg></div>
+        </div>
+        <div class="spec-cap" style="width:150px;"><span class="cap">Home screen &middot; settings &middot; spotlight</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ANDROID ADAPTIVE ============ -->
+<section data-screen-label="Android adaptive">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker"><span class="num">04</span> &nbsp;/&nbsp; Android adaptive icon</div>
+      <h2 class="title">Two layers — clears every launcher mask.</h2>
+      <p class="lede" style="margin-top:22px;">Foreground flame at 64% of frame keeps the mark inside the safe zone, so circular, squircle, and rounded-square launchers all crop cleanly.</p>
+    </div>
+    <div class="ada-grid">
+      <div class="ada-tile">
+        <div class="ada-art fore"><svg class="ic-flame" viewBox="0 0 100 132" style="color:var(--copper)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg></div>
+        <span class="cap"><b>Foreground</b> &middot; transparent</span>
+      </div>
+      <div class="ada-tile">
+        <div class="ada-art back"></div>
+        <span class="cap"><b>Background</b> &middot; parchment</span>
+      </div>
+      <div class="ada-tile">
+        <div class="ada-mask circle"><svg class="ic-flame" viewBox="0 0 100 132" style="color:var(--copper)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg></div>
+        <span class="cap">Circle mask</span>
+      </div>
+      <div class="ada-tile">
+        <div class="ada-mask squircle"><svg class="ic-flame" viewBox="0 0 100 132" style="color:var(--copper)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg></div>
+        <span class="cap">Squircle mask</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ NOTIFICATION ============ -->
+<section class="bleed" style="background:var(--ink-true);color:var(--parchment);" data-screen-label="Notification icon">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker" style="color:rgba(247,247,248,0.5);"><span style="color:var(--copper)">05</span> &nbsp;/&nbsp; Notification icon</div>
+      <h2 class="title" style="color:var(--parchment);">Stripped to a white silhouette.</h2>
+      <p class="lede dim" style="margin-top:22px;">Monochrome white on transparent, the Android status-bar requirement. The flame survives the reduction — its silhouette alone still reads.</p>
+    </div>
+    <div class="notif-row">
+      <div class="notif-tile"><svg class="notif-flame" viewBox="0 0 100 132" style="height:96px;color:var(--parchment)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg><span class="cap" style="color:rgba(247,247,248,0.6)">96 px</span></div>
+      <div class="notif-tile"><svg class="notif-flame" viewBox="0 0 100 132" style="height:48px;color:var(--parchment)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg><span class="cap" style="color:rgba(247,247,248,0.6)">48 px</span></div>
+      <div class="notif-tile"><svg class="notif-flame" viewBox="0 0 100 132" style="height:24px;color:var(--parchment)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg><span class="cap" style="color:rgba(247,247,248,0.6)">24 px</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LOCKUP ============ -->
+<section data-screen-label="Logo lockup">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker"><span class="num">06</span> &nbsp;/&nbsp; Primary lockup</div>
+      <h2 class="title">Mark and wordmark, set in Fraunces.</h2>
+      <p class="lede" style="margin-top:22px;">Flame to the left, wordmark in Fraunces with optical sizing. Clear space equals the height of the flame on every side.</p>
+    </div>
+    <div class="lkrow">
+      <div class="lkblock" style="background:var(--parchment);border:1px solid var(--rule);">
+        <div class="lockup">
+          <svg class="lk-flame" viewBox="0 0 100 132" style="color:var(--copper)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg>
+          <span class="lk-word" style="color:var(--ink)">Mathetes</span>
+        </div>
+      </div>
+      <div class="lkblock" style="background:var(--ink-true);">
+        <div class="lockup">
+          <svg class="lk-flame" viewBox="0 0 100 132" style="color:var(--copper)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg>
+          <span class="lk-word" style="color:var(--parchment)">Mathetes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARK + WORDMARK ONLY ============ -->
+<section data-screen-label="Mark and wordmark">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker"><span class="num">07</span> &nbsp;/&nbsp; Standalone elements</div>
+    </div>
+    <div class="two">
+      <div class="specimen light" style="min-height:240px;flex-direction:column;gap:22px;">
+        <svg class="flame" viewBox="0 0 100 132" style="height:120px;color:var(--copper)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg>
+        <span class="cap"><b>Mark only</b> &middot; favicon, avatar, app glyph</span>
+      </div>
+      <div class="specimen light" style="min-height:240px;flex-direction:column;gap:22px;">
+        <span class="wordmark" style="font-size:64px;color:var(--ink)">Mathetes</span>
+        <span class="cap"><b>Wordmark only</b> &middot; headers, footers, print</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SPLASH + SIZING ============ -->
+<section data-screen-label="Splash and sizing">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker"><span class="num">08</span> &nbsp;/&nbsp; iOS splash &amp; size tests</div>
+      <h2 class="title">It holds from launch screen to favicon.</h2>
+    </div>
+    <div class="two" style="align-items:center;">
+      <div class="phone">
+        <div class="notch"></div>
+        <svg class="sp-flame" viewBox="0 0 100 132"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg>
+        <div class="sp-word">Mathetes</div>
+      </div>
+      <div>
+        <div class="size-strip">
+          <div class="size-item"><div class="sq" style="width:16px;height:16px;"><svg viewBox="0 0 100 132" style="height:11px;color:var(--copper)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg></div><span class="cap">16</span></div>
+          <div class="size-item"><div class="sq" style="width:32px;height:32px;"><svg viewBox="0 0 100 132" style="height:22px;color:var(--copper)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg></div><span class="cap">32</span></div>
+          <div class="size-item"><div class="sq" style="width:48px;height:48px;"><svg viewBox="0 0 100 132" style="height:33px;color:var(--copper)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg></div><span class="cap">48</span></div>
+          <div class="size-item"><svg viewBox="0 0 100 132" style="height:64px;color:var(--ink)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg><span class="cap">silhouette</span></div>
+          <div class="size-item"><div class="sq" style="width:64px;height:64px;background:var(--ink-true);border:none;"><svg viewBox="0 0 100 132" style="height:44px;color:var(--parchment)"><path fill="currentColor" d="M55 8C54 30 78 44 78 78C78 105 64 124 48 124C30 124 16 107 18 86C20 70 30 64 33 50C36 60 36 70 44 70C50 56 42 32 55 8Z"/></svg></div><span class="cap">inverted</span></div>
+        </div>
+        <p class="lede" style="margin-top:26px;font-size:17px;">At 16 px the inner notch closes but the leaning silhouette survives — the favicon test passes. Inverts cleanly for dark surfaces.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SYSTEM ============ -->
+<section data-screen-label="Color and type">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker"><span class="num">09</span> &nbsp;/&nbsp; Color &amp; type</div>
+    </div>
+    <div class="sys-grid">
+      <div>
+        <div class="ts-name" style="margin-bottom:18px;">Palette</div>
+        <div class="swatches">
+          <div class="sw"><div class="chip" style="background:var(--copper);"></div><div class="meta"><span class="nm">Copper</span><span class="hx">#F33A49</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--parchment);"></div><div class="meta"><span class="nm">Parchment</span><span class="hx">#F7F7F8</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--ink);"></div><div class="meta"><span class="nm">Ink</span><span class="hx">#1A1A1A</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--oxblood);"></div><div class="meta"><span class="nm">Oxblood</span><span class="hx">#9B2C36</span></div></div>
+        </div>
+      </div>
+      <div class="type-spec">
+        <div class="ts-row">
+          <div class="ts-name">Display — Fraunces</div>
+          <div style="font-family:var(--display);font-size:40px;font-variation-settings:'opsz' 110;color:var(--ink);letter-spacing:-0.01em;">Be fervent in spirit</div>
+        </div>
+        <div class="ts-row">
+          <div class="ts-name">Body — Inter</div>
+          <div style="font-family:var(--body);font-size:18px;color:#46423d;line-height:1.5;">Daily formation for a specific kind of disciple, in a specific kind of community.</div>
+        </div>
+        <div class="ts-row" style="border-bottom:none;">
+          <div class="ts-name">Scripture — Source Serif 4</div>
+          <div style="font-family:var(--read);font-size:19px;color:#46423d;line-height:1.55;">“Never be lacking in zeal, but keep your spiritual fervour, serving the Lord.”</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <div class="ft-word">Mathetes</div>
+      <div class="cap" style="color:rgba(247,247,248,0.5);margin-top:8px;">Identity system v1 &middot; the flame mark</div>
+    </div>
+    <div class="cap" style="color:rgba(247,247,248,0.5);text-align:right;">μαθητής &middot; disciple, learner<br>CCCFSP FUOYE pilot</div>
+  </div>
+</footer>
+
+</body>
+</html>
