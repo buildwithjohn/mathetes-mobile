@@ -252,6 +252,7 @@ export interface Database {
           scripture_refs: string[];
           reading_time_minutes: number | null;
           audio_url: string | null;
+          video_url: string | null;
           author_id: string | null;
           publish_date: string | null;
           status: ContentStatus;
@@ -268,6 +269,7 @@ export interface Database {
           scripture_refs?: string[];
           reading_time_minutes?: number | null;
           audio_url?: string | null;
+          video_url?: string | null;
           author_id?: string | null;
           publish_date?: string | null;
           status?: ContentStatus;

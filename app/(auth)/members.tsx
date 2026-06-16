@@ -45,15 +45,42 @@ export default function Members() {
     return (members ?? []).filter((m) => m.name.toLowerCase().includes(q));
   }, [members, query]);
 
+  // Translate create_dm() guardrail exceptions into warm, non-technical copy.
+  // We never crash and never navigate on a blocked DM.
+  const onDmError = (member: DirectoryMember, e: unknown) => {
+    const msg = e instanceof Error ? e.message : "";
+    if (/cross-gender DM requires recipient approval/i.test(msg)) {
+      // TODO(backend): there is no dm_requests table yet, so no request is
+      // actually sent. When the backend adds a request path, insert a row here
+      // (and reword if it can't be delivered). Copy is per product spec.
+      Alert.alert(
+        "Approval needed",
+        `Direct messages with ${member.name} need their approval first. We have sent a request. You will be notified when they accept.`
+      );
+      return;
+    }
+    if (/cross-house DM/i.test(msg)) {
+      Alert.alert(
+        "House-mates only",
+        `Direct messages are limited to your house. To talk to ${member.name}, meet at fellowship, share in the parish chat, or ask your house leader for an introduction.`
+      );
+      return;
+    }
+    if (/must be in your parish/i.test(msg)) {
+      Alert.alert(
+        "Not available",
+        `${member.name} isn't in your parish, so you can't message them here.`
+      );
+      return;
+    }
+    Alert.alert("Could not open chat", msg || "Please try again.");
+  };
+
   const onMessage = (member: DirectoryMember) => {
     setSelected(null);
     createDm.mutate(member.id, {
       onSuccess: (chatId) => router.push(`/chat/${chatId}`),
-      onError: (e) =>
-        Alert.alert(
-          "Could not open chat",
-          e instanceof Error ? e.message : "Please try again."
-        ),
+      onError: (e) => onDmError(member, e),
     });
   };
 
