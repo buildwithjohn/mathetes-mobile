@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { View, Text, Pressable, ActivityIndicator } from "react-native";
+import { Fragment, useState } from "react";
+import { View, Text, Pressable, ActivityIndicator, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, {
@@ -7,7 +7,13 @@ import Animated, {
   useAnimatedScrollHandler,
   useAnimatedStyle,
 } from "react-native-reanimated";
-import { ChevronLeft, Bookmark, BookmarkCheck } from "lucide-react-native";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Bookmark,
+  BookmarkCheck,
+  NotebookPen,
+} from "lucide-react-native";
 import { useDevotional } from "@/lib/queries/content";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { paragraphs, sentences } from "@/utils/text";
@@ -33,15 +39,22 @@ export default function DevotionalScreen() {
   }));
 
   const paras = dev ? paragraphs(dev.body_md) : [];
-  const lead = paras[0] ?? "";
+  // Derived pull-quote (no dedicated field in schema): first sentence of an
+  // early paragraph, surfaced after the second paragraph as the design does.
   const pullQuote =
-    paras.length > 1 ? sentences(paras[paras.length - 1])[0] ?? null : null;
+    paras.length > 1 ? sentences(paras[1] ?? paras[0])[0] ?? null : null;
+
+  const onWriteReflection = () =>
+    Alert.alert(
+      "Write your reflection",
+      "Personal notes arrive with your library in a later phase."
+    );
 
   return (
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
       {/* Header + progress thread */}
       <View>
-        <View className="flex-row items-center justify-between px-4 py-2">
+        <View className="flex-row items-center justify-between px-3 py-2">
           <Pressable
             onPress={() => router.back()}
             className="h-11 w-11 items-center justify-center"
@@ -57,12 +70,12 @@ export default function DevotionalScreen() {
             {bookmarked ? (
               <BookmarkCheck color={colors.copper} size={22} />
             ) : (
-              <Bookmark color={colors.ink} size={22} />
+              <Bookmark color={colors.inkSoft} size={22} strokeWidth={1.6} />
             )}
           </Pressable>
         </View>
-        <View className="h-1 w-full bg-surface2">
-          <Animated.View className="h-1 bg-copper" style={barStyle} />
+        <View className="h-[1.5px] w-full bg-rule-soft">
+          <Animated.View className="h-[1.5px] bg-copper" style={barStyle} />
         </View>
       </View>
 
@@ -72,27 +85,33 @@ export default function DevotionalScreen() {
         </View>
       ) : isError || !dev ? (
         <View className="flex-1 items-center justify-center px-6">
-          <Text className="text-center text-ink/60">
+          <Text className="text-center text-ink-mute">
             We could not load this devotional.
           </Text>
         </View>
       ) : (
         <Animated.ScrollView
           className="flex-1"
-          contentContainerClassName="px-6 pb-16 pt-6"
+          contentContainerClassName="px-7 pb-16 pt-2"
           showsVerticalScrollIndicator={false}
           onScroll={onScroll}
           scrollEventThrottle={16}
         >
+          {/* TODO(backend): series_id is stored but not the series name; show
+              the day index until a joined series title is available. */}
           {dev.day_in_series ? (
-            <Text className="text-xs uppercase tracking-[3px] text-copper">
+            <Text
+              className="font-sans-medium text-[11px] uppercase text-ink-mute"
+              style={{ letterSpacing: 1.76 }}
+            >
               Day {dev.day_in_series}
             </Text>
           ) : null}
-          <Text className="mt-2 font-display text-3xl leading-10 text-ink">
+          <Text className="mb-3.5 mt-3 font-display text-[34px] leading-[37px] text-ink">
             {dev.title}
           </Text>
-          <Text className="mt-2 text-sm text-ink/50">
+          {/* TODO(backend): author_id only (no joined name); show reading time. */}
+          <Text className="text-[12.5px] text-ink-soft">
             {dev.reading_time_minutes
               ? `${dev.reading_time_minutes} min read`
               : "Devotional"}
@@ -101,58 +120,85 @@ export default function DevotionalScreen() {
           {/* Narration, when the pastor has recorded one */}
           {dev.audio_url ? <AudioPlayer url={dev.audio_url} /> : null}
 
-          {/* Anchor passages: scripture block with oxblood left border */}
+          {/* Anchor passages: scripture block with oxblood left border.
+              TODO(backend): only refs are stored, not the verse text the
+              design block shows; render the references. */}
           {dev.scripture_refs.length > 0 ? (
-            <View className="mt-6 rounded-r-xl border-l-4 border-l-oxblood bg-surface1 px-4 py-3">
-              <Text className="text-xs uppercase tracking-widest text-oxblood">
+            <View className="mt-7 rounded-[14px] border-l-2 border-l-oxblood bg-paper px-5 py-5">
+              <Text
+                className="mb-2.5 font-sans-semibold text-[11px] uppercase text-oxblood"
+                style={{ letterSpacing: 1.98 }}
+              >
                 Scripture
               </Text>
-              <Text className="mt-1 font-scripture text-base text-ink">
+              <Text className="font-display text-[17px] italic leading-[26px] text-ink-soft">
                 {dev.scripture_refs.join("  ·  ")}
               </Text>
             </View>
           ) : null}
 
-          {/* Lead paragraph with drop cap */}
-          {lead ? (
-            <Text className="mt-6 font-scripture text-lg leading-8 text-ink">
-              <Text className="font-display text-5xl leading-[48px] text-copper">
-                {lead.charAt(0)}
-              </Text>
-              {lead.slice(1)}
-            </Text>
-          ) : null}
+          {/* Body. First paragraph gets a drop cap; the pull quote follows the
+              second paragraph (matches the design composition). */}
+          <View className="mt-7">
+            {paras.map((p, i) => (
+              <Fragment key={i}>
+                {i === 0 ? (
+                  <Text className="mb-4 font-scripture text-[18px] leading-[30px] text-ink">
+                    <Text className="font-display text-[52px] leading-[48px] text-copper">
+                      {p.charAt(0)}
+                    </Text>
+                    {p.slice(1)}
+                  </Text>
+                ) : (
+                  <Text className="mb-4 font-scripture text-[18px] leading-[30px] text-ink">
+                    {p}
+                  </Text>
+                )}
+                {i === 1 && pullQuote ? (
+                  <Text className="my-6 border-l-2 border-l-copper pl-[18px] font-display text-[22px] italic leading-[29px] text-ink">
+                    {pullQuote}
+                  </Text>
+                ) : null}
+              </Fragment>
+            ))}
+          </View>
 
-          {/* Pull quote with copper left border */}
-          {pullQuote ? (
-            <View className="my-7 border-l-4 border-l-copper pl-4">
-              <Text className="font-display text-xl leading-8 text-ink/90">
-                {pullQuote}
-              </Text>
-            </View>
-          ) : null}
-
-          {/* Remaining paragraphs */}
-          {paras.slice(1).map((p, i) => (
+          {/* Reflection prompt */}
+          <View className="mt-9 rounded-2xl bg-paper-raised px-[22px] py-5">
             <Text
-              key={i}
-              className="mt-5 font-scripture text-lg leading-8 text-ink"
+              className="mb-2.5 font-sans-medium text-[11px] uppercase text-copper-deep"
+              style={{ letterSpacing: 1.76 }}
             >
-              {p}
+              Sit with this
             </Text>
-          ))}
-
-          {/* Reflection prompt card */}
-          <View className="mt-10 rounded-2xl bg-surface2 p-5">
-            <Text className="text-xs uppercase tracking-widest text-copper">
-              Carry this with you
-            </Text>
-            <Text className="mt-2 text-base leading-7 text-ink/85">
+            <Text className="font-display text-[19px] italic leading-[27px] text-ink">
               {dev.scripture_refs.length > 0
                 ? `Sit with ${dev.scripture_refs[0]} today. Where is the Lord asking you to take the first step?`
                 : "Where is the Lord asking you to take the first step today?"}
             </Text>
+            <Pressable
+              onPress={onWriteReflection}
+              className="mt-4 flex-row items-center gap-2 self-start rounded-full border border-rule px-4 py-2.5 active:opacity-70"
+            >
+              <NotebookPen color={colors.ink} size={14} strokeWidth={1.6} />
+              <Text className="text-[13px] text-ink">Write your reflection</Text>
+            </Pressable>
           </View>
+
+          {/* Continue the series. TODO(backend): the design shows tomorrow's
+              title, which needs a next-in-series query; link to the series
+              browser until that lands. */}
+          {dev.series_id ? (
+            <Pressable
+              onPress={() => router.push("/devotionals")}
+              className="mt-10 flex-row items-center gap-3.5 border-t border-rule pt-6 active:opacity-70"
+            >
+              <Text className="flex-1 font-display text-sm italic text-ink-mute">
+                More in this series
+              </Text>
+              <ChevronRight color={colors.inkMute} size={16} strokeWidth={1.5} />
+            </Pressable>
+          ) : null}
         </Animated.ScrollView>
       )}
     </SafeAreaView>
