@@ -3,7 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 import { format, parseISO } from "date-fns";
-import { ChevronLeft, NotebookPen, ImageDown } from "lucide-react-native";
+import { X, CalendarDays, Bookmark, NotebookPen, ImageDown } from "lucide-react-native";
 import { useWordOfDay } from "@/lib/queries/content";
 import { sentences, paragraphs } from "@/utils/text";
 import { colors } from "@/theme/colors";
@@ -37,18 +37,40 @@ export default function WordExpanded() {
       "Add a note",
       "Personal notes arrive with your library in a later phase."
     );
+  // TODO(backend): no word_of_day bookmark table exists; saving a Word is not
+  // yet supported. Surface a gentle placeholder rather than a half-wired save.
+  const onSave = () =>
+    Alert.alert("Save", "Saving the Word for later is coming soon.");
+
+  const verseLines = word ? sentences(word.verse_text) : [];
 
   return (
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
-      <View className="flex-row items-center px-4 py-2">
+      {/* Top bar: close left, archive + save right */}
+      <View className="flex-row items-center justify-between px-3 py-2">
         <Pressable
           onPress={() => router.back()}
           className="h-11 w-11 items-center justify-center"
-          accessibilityLabel="Go back"
+          accessibilityLabel="Close"
         >
-          <ChevronLeft color={colors.ink} size={26} />
+          <X color={colors.ink} size={24} />
         </Pressable>
-        <Text className="text-sm text-ink/50">{prettyDate}</Text>
+        <View className="flex-row">
+          <Pressable
+            onPress={() => router.push("/words")}
+            className="h-11 w-11 items-center justify-center"
+            accessibilityLabel="Word archive"
+          >
+            <CalendarDays color={colors.inkSoft} size={22} strokeWidth={1.6} />
+          </Pressable>
+          <Pressable
+            onPress={onSave}
+            className="h-11 w-11 items-center justify-center"
+            accessibilityLabel="Save"
+          >
+            <Bookmark color={colors.inkSoft} size={22} strokeWidth={1.6} />
+          </Pressable>
+        </View>
       </View>
 
       {isLoading ? (
@@ -57,7 +79,7 @@ export default function WordExpanded() {
         </View>
       ) : isError || !word ? (
         <View className="flex-1 items-center justify-center px-6">
-          <Text className="text-center text-ink/60">
+          <Text className="text-center text-ink-mute">
             We could not find a Word for this day.
           </Text>
         </View>
@@ -65,49 +87,61 @@ export default function WordExpanded() {
         <>
           <ScrollView
             className="flex-1"
-            contentContainerClassName="px-6 pb-10 pt-6"
+            contentContainerClassName="px-7 pb-8 pt-2"
             showsVerticalScrollIndicator={false}
           >
-            <Text className="text-xs uppercase tracking-[3px] text-copper">
-              Word of the Day
+            <Text
+              className="mb-[18px] font-sans-medium text-[11px] uppercase text-copper-deep"
+              style={{ letterSpacing: 1.76 }}
+            >
+              Word of the day · {prettyDate}
             </Text>
 
-            {/* Staggered sentence reveal */}
-            <View className="mt-5">
-              {sentences(word.verse_text).map((s, i) => (
+            {/* Staggered sentence reveal, in the display face */}
+            <Text className="font-display text-[30px] leading-[37px] text-ink">
+              {verseLines.map((s, i) => (
                 <Animated.Text
                   key={i}
-                  entering={FadeInDown.delay(i * 180).duration(600)}
-                  className="font-scripture text-2xl leading-9 text-ink"
+                  entering={FadeInDown.delay(100 + i * 180).duration(620)}
                 >
-                  {s}{" "}
+                  {i === 0 ? "“" : ""}
+                  {s}
+                  {i < verseLines.length - 1 ? " " : "”"}
                 </Animated.Text>
               ))}
-            </View>
+            </Text>
 
-            <Animated.Text
-              entering={FadeIn.delay(
-                sentences(word.verse_text).length * 180 + 100
-              )}
-              className="mt-5 font-sans-semibold text-base text-oxblood"
+            {/* Reference, small caps with a short copper rule */}
+            <Animated.View
+              entering={FadeIn.delay(verseLines.length * 180 + 160)}
+              className="mt-7 flex-row items-center gap-2.5"
             >
-              {word.verse_ref}
-            </Animated.Text>
+              <View className="h-px w-7 bg-copper opacity-70" />
+              <Text
+                className="font-sans-semibold text-[12px] uppercase text-copper-deep"
+                style={{ letterSpacing: 2.16 }}
+              >
+                {word.verse_ref} · KJV
+              </Text>
+            </Animated.View>
 
             {word.reflection_md ? (
               <Animated.View
-                entering={FadeIn.delay(
-                  sentences(word.verse_text).length * 180 + 250
-                )}
-                className="mt-8 border-t border-border pt-6"
+                entering={FadeIn.delay(verseLines.length * 180 + 250)}
+                className="mt-10"
               >
-                <Text className="text-xs uppercase tracking-widest text-copper">
+                {/* TODO(backend): only author_id is stored (no joined name), so
+                    the design's "Reflection · {author}" omits the author here. */}
+                <Text
+                  className="mb-2.5 font-sans-medium text-[11px] uppercase text-ink-mute"
+                  style={{ letterSpacing: 1.76 }}
+                >
                   Reflection
                 </Text>
                 {paragraphs(word.reflection_md).map((p, i) => (
                   <Text
                     key={i}
-                    className="mt-3 text-base leading-7 text-ink/85"
+                    className="mb-4 font-scripture text-[18px] leading-[30px] text-ink"
                   >
                     {p}
                   </Text>
@@ -116,11 +150,8 @@ export default function WordExpanded() {
             ) : null}
 
             {word.prompt ? (
-              <View className="mt-6 rounded-2xl border-l-4 border-l-copper bg-surface1 p-5">
-                <Text className="text-xs uppercase tracking-widest text-copper">
-                  Consider
-                </Text>
-                <Text className="mt-2 font-scripture text-lg leading-7 text-ink">
+              <View className="mt-[18px] rounded-r-[10px] border-l-2 border-l-copper bg-paper-raised px-4 py-3.5">
+                <Text className="font-display text-[16px] italic leading-6 text-ink-soft">
                   {word.prompt}
                 </Text>
               </View>
@@ -128,19 +159,19 @@ export default function WordExpanded() {
           </ScrollView>
 
           {/* Sticky share footer */}
-          <View className="flex-row gap-3 border-t border-border bg-parchment px-6 pb-8 pt-4">
+          <View className="flex-row gap-2.5 border-t border-rule-soft bg-parchment px-6 pb-8 pt-2.5">
             <Pressable
               onPress={onNote}
-              className="h-12 flex-1 flex-row items-center justify-center gap-2 rounded-full border border-border active:opacity-70"
+              className="h-[50px] flex-1 flex-row items-center justify-center gap-2 rounded-full border border-rule active:opacity-70"
             >
-              <NotebookPen color={colors.ink} size={18} />
+              <NotebookPen color={colors.ink} size={16} strokeWidth={1.6} />
               <Text className="font-sans-medium text-ink">Note</Text>
             </Pressable>
             <Pressable
               onPress={onShareImage}
-              className="h-12 flex-1 flex-row items-center justify-center gap-2 rounded-full bg-copper active:opacity-90"
+              className="h-[50px] flex-[2] flex-row items-center justify-center gap-2 rounded-full bg-copper active:opacity-90"
             >
-              <ImageDown color={colors.parchment} size={18} />
+              <ImageDown color={colors.parchment} size={16} strokeWidth={1.8} />
               <Text className="font-sans-semibold text-parchment">
                 Share as image
               </Text>
