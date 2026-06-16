@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { X, ChevronLeft } from "lucide-react-native";
+import { X, ChevronLeft, ChevronRight } from "lucide-react-native";
 import { useBookChapters } from "@/lib/queries/bible";
 import type { BibleBook, Testament } from "@/lib/database.types";
 import { colors } from "@/theme/colors";
@@ -90,19 +90,22 @@ export function BibleNavigator({ visible, onClose, books, onSelect }: Props) {
           )
         ) : (
           <>
-            {/* Testament tabs */}
-            <View className="mx-4 mb-2 mt-1 flex-row rounded-full bg-surface2 p-1">
+            {/* Testament tabs (underline style).
+                TODO(backend): the design's "Recently read" chips need a
+                reading-history table; only a single reading_position is
+                persisted today, so the row is omitted. */}
+            <View className="mx-5 mb-2.5 mt-1 flex-row border-b border-rule">
               {(["OT", "NT"] as const).map((t) => (
                 <Pressable
                   key={t}
                   onPress={() => setTestament(t)}
-                  className={`flex-1 items-center rounded-full py-2 ${
-                    testament === t ? "bg-surface1" : ""
+                  className={`px-4 py-2.5 ${
+                    testament === t ? "-mb-px border-b-2 border-b-copper" : ""
                   }`}
                 >
                   <Text
-                    className={`font-sans-medium text-sm ${
-                      testament === t ? "text-ink" : "text-ink/50"
+                    className={`font-sans-medium text-[13px] ${
+                      testament === t ? "text-ink" : "text-ink-mute"
                     }`}
                   >
                     {t === "OT" ? "Old Testament" : "New Testament"}
@@ -111,15 +114,17 @@ export function BibleNavigator({ visible, onClose, books, onSelect }: Props) {
               ))}
             </View>
 
-            <ScrollView contentContainerClassName="px-4 pb-6">
-              {filtered.map((b) => (
+            <ScrollView contentContainerClassName="px-5 pb-6">
+              {filtered.map((b, i) => (
                 <Pressable
                   key={b.id}
                   onPress={() => setBook(b)}
-                  className="flex-row items-center justify-between border-b border-border/60 py-3.5 active:opacity-60"
+                  className={`flex-row items-center justify-between py-3.5 active:opacity-60 ${
+                    i < filtered.length - 1 ? "border-b border-rule-soft" : ""
+                  }`}
                 >
-                  <Text className="text-base text-ink">{b.name}</Text>
-                  <Text className="text-xs text-ink/40">{b.abbrev}</Text>
+                  <Text className="text-[15px] text-ink">{b.name}</Text>
+                  <ChevronRight color={colors.inkFaint} size={14} strokeWidth={1.5} />
                 </Pressable>
               ))}
             </ScrollView>

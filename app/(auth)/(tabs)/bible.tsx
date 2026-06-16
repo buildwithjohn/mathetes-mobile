@@ -29,7 +29,6 @@ import {
   DEFAULT_VERSION,
 } from "@/lib/queries/bible";
 import {
-  useBookmarks,
   useHighlights,
   useToggleBookmark,
   useSetHighlight,
@@ -47,7 +46,6 @@ export default function Bible() {
   const { data: books } = useBibleBooks();
   const { data: position } = useReadingPosition();
   const updatePosition = useUpdateReadingPosition();
-  const { data: bookmarks } = useBookmarks();
   const { data: highlights } = useHighlights();
   const toggleBookmark = useToggleBookmark();
   const setHighlight = useSetHighlight();
@@ -105,11 +103,7 @@ export default function Bible() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id, book?.id, chapter]);
 
-  // Maps for quick verse lookups.
-  const bookmarkSet = useMemo(
-    () => new Set((bookmarks ?? []).map((b) => b.verse_id)),
-    [bookmarks]
-  );
+  // Map verse id -> highlight color for quick lookups while rendering.
   const highlightMap = useMemo(() => {
     const m = new Map<string, HighlightColor>();
     (highlights ?? []).forEach((h) => m.set(h.verse_id, h.color));
@@ -202,21 +196,28 @@ export default function Bible() {
 
   return (
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
-      {/* Top bar */}
-      <View className="flex-row items-center justify-between border-b border-border px-4 py-2">
+      {/* Slim top bar: book pill + translation pill + search */}
+      <View className="flex-row items-center justify-between px-4 pb-2.5 pt-3.5">
         <Pressable
           onPress={() => books && setNavOpen(true)}
-          className="flex-row items-center gap-1.5 rounded-full bg-surface2 px-4 py-2 active:opacity-70"
+          className="flex-row items-center gap-1.5 rounded-full border border-rule px-3.5 py-2 active:opacity-70"
         >
-          <Text className="font-display text-lg text-ink">
+          <Text className="font-display text-base text-ink">
             {reference || "Bible"}
           </Text>
-          <ChevronDown color={colors.ink} size={18} />
+          <ChevronDown color={colors.inkMute} size={14} strokeWidth={2} />
         </Pressable>
         <View className="flex-row items-center gap-1">
-          <Text className="mr-1 text-xs font-sans-medium uppercase tracking-widest text-copper">
-            {DEFAULT_VERSION}
-          </Text>
+          {/* TODO(backend): only the public-domain KJV is loaded; a translation
+              switcher sheet lands when more versions are available. */}
+          <View className="rounded-full border border-rule px-3 py-2">
+            <Text
+              className="font-sans-medium text-xs text-ink-soft"
+              style={{ letterSpacing: 0.72 }}
+            >
+              {DEFAULT_VERSION}
+            </Text>
+          </View>
           <Pressable
             onPress={() => router.push("/bible/search")}
             className="h-10 w-10 items-center justify-center"
@@ -241,67 +242,68 @@ export default function Bible() {
       ) : (
         <ScrollView
           className="flex-1"
-          contentContainerClassName="px-5 pb-40 pt-5"
+          contentContainerClassName="px-7 pb-40 pt-3"
           showsVerticalScrollIndicator={false}
         >
-          <Text className="mb-4 font-display text-2xl text-ink">
-            {reference}
+          {/* Centered chapter header */}
+          <Text
+            className="mt-3 text-center font-sans-medium text-[11px] uppercase text-ink-mute"
+            style={{ letterSpacing: 1.76 }}
+          >
+            {book.name}
           </Text>
-          {verses.map((v) => {
-            const isSelected = selected.has(v.number);
-            const hColor = highlightMap.get(v.id);
-            const isBookmarked = bookmarkSet.has(v.id);
-            return (
-              <Pressable
-                key={v.id}
-                onPress={() => toggleVerse(v.number)}
-                className={`mb-2.5 flex-row rounded-lg px-2 py-1.5 ${
-                  isSelected ? "bg-surface2" : ""
-                }`}
-                style={
-                  !isSelected && hColor
-                    ? { backgroundColor: `${highlightColors[hColor]}26` }
-                    : undefined
-                }
-              >
+          <Text className="mb-1.5 mt-1 text-center font-display text-[38px] text-ink">
+            {chapter}
+          </Text>
+          <View className="mx-auto mb-6 h-px w-[60px] bg-copper opacity-50" />
+
+          {/* Flowing reader: verses inline, tap to select. Highlight and
+              selection tint the verse's text background. */}
+          <Text className="font-scripture text-ink" style={{ fontSize: 18, lineHeight: 30 }}>
+            {verses.map((v) => {
+              const isSelected = selected.has(v.number);
+              const hColor = highlightMap.get(v.id);
+              const bg = isSelected
+                ? `${colors.copper}2E`
+                : hColor
+                  ? `${highlightColors[hColor]}26`
+                  : undefined;
+              return (
                 <Text
-                  className="flex-1 font-scripture text-ink"
-                  style={{ fontSize: 18, lineHeight: 32 }}
+                  key={v.id}
+                  onPress={() => toggleVerse(v.number)}
+                  style={bg ? { backgroundColor: bg } : undefined}
                 >
                   <Text
-                    className="font-sans-semibold text-copper"
-                    style={{ fontSize: 13, lineHeight: 32 }}
+                    className="font-sans-semibold"
+                    style={{
+                      fontSize: 12,
+                      color: isSelected ? colors.oxblood : colors.copperDeep,
+                    }}
                   >
                     {v.number}{" "}
                   </Text>
-                  {v.text}
+                  {v.text}{" "}
                 </Text>
-                {isBookmarked ? (
-                  <Bookmark
-                    color={colors.copper}
-                    size={13}
-                    fill={colors.copper}
-                  />
-                ) : null}
-              </Pressable>
-            );
-          })}
+              );
+            })}
+          </Text>
 
           {/* Chapter pager */}
-          <View className="mt-8 flex-row items-center justify-between">
+          <View className="mt-9 flex-row items-center justify-between">
             <Pressable
               onPress={() => goChapter(false)}
-              className="flex-row items-center gap-1 rounded-full border border-border px-4 py-2 active:opacity-60"
+              className="flex-row items-center gap-1 rounded-full border border-rule px-4 py-2 active:opacity-60"
             >
-              <ChevronLeft color={colors.ink} size={18} />
+              <ChevronLeft color={colors.inkSoft} size={18} />
               <Text className="font-sans-medium text-ink">Previous</Text>
             </Pressable>
             <Pressable
               onPress={() => goChapter(true)}
-              className="flex-row items-center gap-1 rounded-full border border-border px-4 py-2 active:opacity-60"
+              className="flex-row items-center gap-1 rounded-full border border-rule px-4 py-2 active:opacity-60"
             >
               <Text className="font-sans-medium text-ink">Next</Text>
-              <ChevronRight color={colors.ink} size={18} />
+              <ChevronRight color={colors.inkSoft} size={18} />
             </Pressable>
           </View>
         </ScrollView>
@@ -316,17 +318,26 @@ export default function Bible() {
         </View>
       ) : null}
 
-      {/* Floating action bar */}
+      {/* Floating action card */}
       {selected.size > 0 ? (
-        <View className="absolute inset-x-4 bottom-6 overflow-hidden rounded-2xl border border-border bg-surface1 shadow-lg">
+        <View className="absolute inset-x-3 bottom-4 overflow-hidden rounded-[18px] border border-rule bg-paper shadow-lg">
+          {/* Selected reference label */}
+          {selected.size === 1 && book ? (
+            <View className="border-b border-rule-soft px-4 py-2.5">
+              <Text className="font-sans-medium text-xs text-ink-soft">
+                {book.name} {chapter}:
+                <Text className="text-ink">{[...selected][0]}</Text>
+              </Text>
+            </View>
+          ) : null}
           {pickerOpen ? (
-            <View className="flex-row items-center justify-between border-b border-border px-4 py-3">
+            <View className="flex-row items-center justify-between border-b border-rule-soft px-4 py-3">
               <View className="flex-row gap-3">
                 {HIGHLIGHT_KEYS.map((c) => (
                   <Pressable
                     key={c}
                     onPress={() => applyHighlight(c)}
-                    className="h-8 w-8 rounded-full border border-border"
+                    className="h-8 w-8 rounded-full border border-rule"
                     style={{ backgroundColor: highlightColors[c] }}
                     accessibilityLabel={`Highlight ${c}`}
                   />
@@ -334,7 +345,7 @@ export default function Bible() {
               </View>
               <Pressable
                 onPress={() => applyHighlight(null)}
-                className="rounded-full border border-border px-3 py-1.5"
+                className="rounded-full border border-rule px-3 py-1.5"
               >
                 <Text className="text-sm text-ink">Clear</Text>
               </Pressable>
@@ -407,8 +418,8 @@ function ActionButton({
         disabled ? "opacity-30" : "active:opacity-60"
       }`}
     >
-      <Icon color={colors.ink} size={20} />
-      <Text className="text-xs text-ink">{label}</Text>
+      <Icon color={colors.inkSoft} size={20} strokeWidth={1.7} />
+      <Text className="text-[11.5px] text-ink-soft">{label}</Text>
     </Pressable>
   );
 }
