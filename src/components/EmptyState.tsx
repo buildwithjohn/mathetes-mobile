@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { View, Text } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 import Animated, {
   Easing,
@@ -20,10 +20,12 @@ export function EmptyState({
   icon: Icon,
   title,
   body,
+  action,
 }: {
   icon: LucideIcon;
   title: string;
   body: string;
+  action?: { label: string; onPress: () => void };
 }) {
   const y = useSharedValue(0);
 
@@ -57,12 +59,22 @@ export function EmptyState({
           <Icon color={colors.copper} size={34} />
         </View>
       </Animated.View>
-      <Text className="mt-5 text-center font-display text-xl text-ink">
+      <Text className="mt-6 text-center font-display text-[26px] leading-[31px] text-ink">
         {title}
       </Text>
-      <Text className="mt-2 text-center text-sm leading-6 text-ink/60">
+      <Text className="mt-3 max-w-[280px] text-center text-[15px] leading-[23px] text-ink-soft">
         {body}
       </Text>
+      {action ? (
+        <Pressable
+          onPress={action.onPress}
+          className="mt-6 h-[50px] items-center justify-center rounded-full bg-copper px-7 active:opacity-90"
+        >
+          <Text className="font-sans-semibold text-base text-white">
+            {action.label}
+          </Text>
+        </Pressable>
+      ) : null}
     </Animated.View>
   );
 }
