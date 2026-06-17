@@ -34,6 +34,7 @@ export default function HousePicker() {
   );
   const updateProfile = useUpdateProfile();
   const [selected, setSelected] = useState<string | null>(null);
+  const selectedHouse = (houses ?? []).find((h) => h.id === selected) ?? null;
 
   const onContinue = async () => {
     if (!selected) return;
@@ -49,12 +50,19 @@ export default function HousePicker() {
     <SafeAreaView className="flex-1 bg-parchment">
       <View className="px-6 pt-3">
         <OnboardingProgress step={2} total={3} />
-        <Text className="mt-7 font-display text-4xl leading-tight text-ink">
-          Choose your house
+        <Text
+          className="mt-7 font-sans-medium text-[11px] uppercase text-ink-mute"
+          style={{ letterSpacing: 1.76 }}
+        >
+          Your house
         </Text>
-        <Text className="mt-2 text-base leading-6 text-ink/60">
-          Your house is your closest circle: its chat, its prayer wall, its
-          leaders.
+        <Text className="mt-2 font-display text-[28px] leading-[33px] text-ink">
+          Choose your{" "}
+          <Text className="font-display italic text-copper-deep">house</Text>{" "}
+          fellowship.
+        </Text>
+        <Text className="mt-1.5 text-sm leading-5 text-ink-mute">
+          This is the group you will grow with.
         </Text>
       </View>
 
@@ -84,7 +92,6 @@ export default function HousePicker() {
             const isSelected = selected === house.id;
             const meaning =
               HOUSE_MEANING[house.slug.split("-")[0]] ?? house.verse_ref ?? "";
-            const initial = house.name.charAt(0).toUpperCase();
             return (
               <Animated.View
                 key={house.id}
@@ -92,39 +99,47 @@ export default function HousePicker() {
               >
                 <Pressable
                   onPress={() => setSelected(house.id)}
-                  className={`flex-row items-center gap-3 rounded-3xl border-2 bg-surface1 p-4 ${
-                    isSelected ? "border-copper" : "border-border"
-                  }`}
+                  className="relative overflow-hidden rounded-2xl border bg-paper py-4 pl-[22px] pr-4"
+                  style={{
+                    borderColor: isSelected ? house.color : colors.rule,
+                  }}
                 >
+                  {/* House accent stripe */}
                   <View
-                    className="h-12 w-12 items-center justify-center rounded-2xl"
-                    style={{ backgroundColor: `${house.color}22` }}
-                  >
-                    <Text
-                      className="font-display text-xl"
-                      style={{ color: house.color }}
-                    >
-                      {initial}
-                    </Text>
-                  </View>
-                  <View className="flex-1">
-                    <Text className="font-display text-xl text-ink">
+                    className="absolute bottom-0 left-0 top-0 w-1"
+                    style={{ backgroundColor: house.color }}
+                  />
+                  <View className="flex-row items-baseline justify-between gap-2.5">
+                    <Text className="font-display text-[23px] leading-[25px] text-ink">
                       {house.name}
                     </Text>
-                    <Text
-                      className="mt-0.5 text-sm font-sans-medium text-copper"
-                      numberOfLines={1}
-                    >
-                      {meaning}
-                    </Text>
+                    {isSelected ? (
+                      <View
+                        className="h-5 w-5 items-center justify-center rounded-full"
+                        style={{ backgroundColor: house.color }}
+                      >
+                        <Check color="#fff" size={13} strokeWidth={2.4} />
+                      </View>
+                    ) : (
+                      <View className="h-5 w-5 rounded-full border-[1.5px] border-rule" />
+                    )}
                   </View>
-                  {isSelected ? (
-                    <View className="h-7 w-7 items-center justify-center rounded-full bg-copper">
-                      <Check color={colors.parchment} size={16} />
-                    </View>
-                  ) : (
-                    <View className="h-7 w-7 rounded-full border-2 border-border" />
-                  )}
+                  <Text className="mt-0.5 text-xs text-ink-mute" numberOfLines={1}>
+                    {meaning}
+                  </Text>
+                  {house.verse ? (
+                    <Text className="mt-2.5 font-display text-[14.5px] italic leading-5 text-ink-soft">
+                      “{house.verse}”
+                    </Text>
+                  ) : null}
+                  {house.verse_ref ? (
+                    <Text
+                      className="mt-1.5 font-sans-semibold text-[10.5px] uppercase"
+                      style={{ color: house.color, letterSpacing: 1.47 }}
+                    >
+                      {house.verse_ref}
+                    </Text>
+                  ) : null}
                 </Pressable>
               </Animated.View>
             );
@@ -132,7 +147,7 @@ export default function HousePicker() {
         </ScrollView>
       )}
 
-      <View className="border-t border-border bg-parchment px-6 pb-8 pt-4">
+      <View className="border-t border-rule-soft bg-parchment px-6 pb-8 pt-4">
         {updateProfile.isError ? (
           <Text className="mb-3 text-center text-sm text-oxblood">
             {updateProfile.error instanceof Error
@@ -143,13 +158,13 @@ export default function HousePicker() {
         <Pressable
           onPress={onContinue}
           disabled={!selected || updateProfile.isPending}
-          className="h-14 items-center justify-center rounded-full bg-copper active:opacity-90 disabled:opacity-40"
+          className="h-[52px] items-center justify-center rounded-full bg-ink active:opacity-90 disabled:opacity-40"
         >
           {updateProfile.isPending ? (
             <ActivityIndicator color={colors.parchment} />
           ) : (
             <Text className="font-sans-semibold text-base text-parchment">
-              Continue
+              {selectedHouse ? `Join ${selectedHouse.name}` : "Continue"}
             </Text>
           )}
         </Pressable>

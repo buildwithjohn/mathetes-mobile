@@ -83,11 +83,18 @@ export default function SignUp() {
             <ChevronLeft color={colors.ink} size={26} />
           </Pressable>
 
-          <Text className="mt-2 font-display text-4xl text-ink">
-            Create your account
+          <Text
+            className="mt-2 font-sans-medium text-[11px] uppercase text-ink-mute"
+            style={{ letterSpacing: 1.76 }}
+          >
+            Create account
           </Text>
-          <Text className="mt-2 text-base text-ink/70">
-            Begin the walk. It takes a moment.
+          <Text className="mt-1.5 font-display text-[32px] leading-9 text-ink">
+            Begin the{" "}
+            <Text className="font-display italic text-copper-deep">walk</Text>.
+          </Text>
+          <Text className="mt-2 text-sm leading-5 text-ink-mute">
+            It takes a moment. Your place is kept from the first morning.
           </Text>
 
           <View className="mt-8 gap-4">
@@ -139,7 +146,7 @@ export default function SignUp() {
           <Pressable
             onPress={onSubmit}
             disabled={isSubmitting}
-            className="mt-8 h-14 items-center justify-center rounded-full bg-copper active:opacity-90 disabled:opacity-60"
+            className="mt-8 h-[52px] items-center justify-center rounded-full bg-ink active:opacity-90 disabled:opacity-60"
           >
             {isSubmitting ? (
               <ActivityIndicator color={colors.parchment} />
@@ -151,11 +158,14 @@ export default function SignUp() {
           </Pressable>
 
           <View className="mt-6 flex-row items-center gap-3">
-            <View className="h-px flex-1 bg-border" />
-            <Text className="text-xs uppercase tracking-widest text-ink/40">
+            <View className="h-px flex-1 bg-rule" />
+            <Text
+              className="text-xs uppercase text-ink-mute"
+              style={{ letterSpacing: 1.92 }}
+            >
               or
             </Text>
-            <View className="h-px flex-1 bg-border" />
+            <View className="h-px flex-1 bg-rule" />
           </View>
 
           <View className="mt-6">
@@ -166,9 +176,9 @@ export default function SignUp() {
             onPress={() => router.replace("/(onboarding)/signin")}
             className="mt-6 py-2"
           >
-            <Text className="text-center text-sm text-ink/60">
+            <Text className="text-center text-sm text-ink-mute">
               Already have an account?{" "}
-              <Text className="font-sans-medium text-copper">Sign in</Text>
+              <Text className="font-sans-medium text-copper-deep">Sign in</Text>
             </Text>
           </Pressable>
         </ScrollView>

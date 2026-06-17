@@ -91,11 +91,19 @@ export default function SignIn() {
             <ChevronLeft color={colors.ink} size={26} />
           </Pressable>
 
-          <Text className="mt-2 font-display text-4xl text-ink">
-            Welcome back
+          <Text
+            className="mt-2 font-sans-medium text-[11px] uppercase text-ink-mute"
+            style={{ letterSpacing: 1.76 }}
+          >
+            Sign in
           </Text>
-          <Text className="mt-2 text-base text-ink/70">
-            Pick up where you left off.
+          <Text className="mt-1.5 font-display text-[32px] leading-9 text-ink">
+            Welcome{" "}
+            <Text className="font-display italic text-copper-deep">back</Text>.
+          </Text>
+          <Text className="mt-2 text-sm leading-5 text-ink-mute">
+            Your notes, highlights and streak, kept quietly. Sign in once, return
+            any morning.
           </Text>
 
           <View className="mt-8 gap-4">
@@ -122,7 +130,7 @@ export default function SignIn() {
           </View>
 
           <Pressable onPress={onForgotPassword} className="mt-3 self-end py-1">
-            <Text className="text-sm font-sans-medium text-copper">
+            <Text className="text-sm font-sans-medium text-copper-deep">
               Forgot password?
             </Text>
           </Pressable>
@@ -134,7 +142,7 @@ export default function SignIn() {
           <Pressable
             onPress={onSubmit}
             disabled={isSubmitting}
-            className="mt-6 h-14 items-center justify-center rounded-full bg-copper active:opacity-90 disabled:opacity-60"
+            className="mt-6 h-[52px] items-center justify-center rounded-full bg-ink active:opacity-90 disabled:opacity-60"
           >
             {isSubmitting ? (
               <ActivityIndicator color={colors.parchment} />
@@ -146,24 +154,41 @@ export default function SignIn() {
           </Pressable>
 
           <View className="mt-6 flex-row items-center gap-3">
-            <View className="h-px flex-1 bg-border" />
-            <Text className="text-xs uppercase tracking-widest text-ink/40">
+            <View className="h-px flex-1 bg-rule" />
+            <Text
+              className="text-xs uppercase text-ink-mute"
+              style={{ letterSpacing: 1.92 }}
+            >
               or
             </Text>
-            <View className="h-px flex-1 bg-border" />
+            <View className="h-px flex-1 bg-rule" />
           </View>
 
           <View className="mt-6">
             <SocialAuth />
           </View>
 
+          {/* Quiet privacy note */}
+          <View className="mt-9 rounded-[14px] border border-rule bg-paper px-4 py-3.5">
+            <Text
+              className="mb-1.5 font-sans-medium text-[11px] uppercase text-copper-deep"
+              style={{ letterSpacing: 1.76 }}
+            >
+              A note
+            </Text>
+            <Text className="text-[13px] leading-5 text-ink-soft">
+              Mathetes never sells your reading. Your notes are private to you,
+              and to your group leader only if you choose.
+            </Text>
+          </View>
+
           <Pressable
             onPress={() => router.replace("/(onboarding)/signup")}
             className="mt-6 py-2"
           >
-            <Text className="text-center text-sm text-ink/60">
+            <Text className="text-center text-sm text-ink-mute">
               New here?{" "}
-              <Text className="font-sans-medium text-copper">
+              <Text className="font-sans-medium text-copper-deep">
                 Create an account
               </Text>
             </Text>

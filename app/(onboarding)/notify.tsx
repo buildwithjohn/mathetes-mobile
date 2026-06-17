@@ -37,7 +37,7 @@ export default function Notify() {
           </Text>
 
           {/* Mock device notification preview */}
-          <View className="mt-10 w-full max-w-sm rounded-2xl border border-border bg-surface1 p-4 shadow-sm">
+          <View className="mt-10 w-full max-w-sm rounded-2xl border border-rule bg-paper p-4 shadow-sm">
             <View className="flex-row items-center gap-3">
               <View className="h-10 w-10 items-center justify-center rounded-xl bg-copper">
                 <Sun color={colors.parchment} size={20} />
@@ -60,10 +60,10 @@ export default function Notify() {
           </View>
         </View>
 
-        <View className="w-full gap-3">
+        <View className="w-full gap-2.5">
           <Pressable
             onPress={enableAndFinish}
-            className="h-14 items-center justify-center rounded-full bg-copper active:opacity-90"
+            className="h-[52px] items-center justify-center rounded-full bg-ink active:opacity-90"
           >
             <Text className="font-sans-semibold text-base text-parchment">
               Turn on notifications
@@ -73,7 +73,7 @@ export default function Notify() {
             onPress={finish}
             className="h-12 items-center justify-center active:opacity-60"
           >
-            <Text className="font-sans-medium text-base text-ink/60">
+            <Text className="font-sans-medium text-base text-ink-mute">
               Maybe later
             </Text>
           </Pressable>

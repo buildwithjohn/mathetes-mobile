@@ -42,10 +42,17 @@ export default function CampusPicker() {
     <SafeAreaView className="flex-1 bg-parchment">
       <View className="px-6 pt-3">
         <OnboardingProgress step={1} total={3} />
-        <Text className="mt-7 font-display text-4xl leading-tight text-ink">
-          Where do you fellowship?
+        <Text
+          className="mt-7 font-sans-medium text-[11px] uppercase text-ink-mute"
+          style={{ letterSpacing: 1.76 }}
+        >
+          Your campus
         </Text>
-        <Text className="mt-2 text-base leading-6 text-ink/60">
+        <Text className="mt-2 font-display text-[28px] leading-[33px] text-ink">
+          Where do you{" "}
+          <Text className="font-display italic text-copper-deep">fellowship</Text>?
+        </Text>
+        <Text className="mt-1.5 text-sm leading-5 text-ink-mute">
           Pick your campus so your house and community feel close to home.
         </Text>
       </View>
@@ -69,11 +76,15 @@ export default function CampusPicker() {
               >
                 <Pressable
                   onPress={() => setSelected(campus.id)}
-                  className={`flex-row items-center gap-3 rounded-3xl border-2 bg-surface1 p-5 ${
-                    isSelected ? "border-copper" : "border-border"
-                  }`}
+                  className="flex-row items-center gap-3 rounded-2xl border bg-paper p-5"
+                  style={{
+                    borderColor: isSelected ? colors.copper : colors.rule,
+                  }}
                 >
-                  <View className="h-12 w-12 items-center justify-center rounded-2xl bg-copper/12">
+                  <View
+                    className="h-12 w-12 items-center justify-center rounded-2xl"
+                    style={{ backgroundColor: `${colors.copper}1F` }}
+                  >
                     <MapPin color={colors.copper} size={22} />
                   </View>
                   <View className="flex-1">
@@ -81,17 +92,20 @@ export default function CampusPicker() {
                       {campus.name}
                     </Text>
                     {campus.is_primary ? (
-                      <Text className="mt-0.5 text-xs font-sans-medium uppercase tracking-widest text-copper">
+                      <Text
+                        className="mt-0.5 font-sans-medium text-[11px] uppercase text-copper-deep"
+                        style={{ letterSpacing: 1.6 }}
+                      >
                         Main campus
                       </Text>
                     ) : null}
                   </View>
                   {isSelected ? (
-                    <View className="h-7 w-7 items-center justify-center rounded-full bg-copper">
-                      <Check color={colors.parchment} size={16} />
+                    <View className="h-6 w-6 items-center justify-center rounded-full bg-copper">
+                      <Check color="#fff" size={14} strokeWidth={2.4} />
                     </View>
                   ) : (
-                    <View className="h-7 w-7 rounded-full border-2 border-border" />
+                    <View className="h-6 w-6 rounded-full border-[1.5px] border-rule" />
                   )}
                 </Pressable>
               </Animated.View>
@@ -100,7 +114,7 @@ export default function CampusPicker() {
         </ScrollView>
       )}
 
-      <View className="border-t border-border bg-parchment px-6 pb-8 pt-4">
+      <View className="border-t border-rule-soft bg-parchment px-6 pb-8 pt-4">
         {updateProfile.isError ? (
           <Text className="mb-3 text-center text-sm text-oxblood">
             {updateProfile.error instanceof Error
@@ -111,7 +125,7 @@ export default function CampusPicker() {
         <Pressable
           onPress={onContinue}
           disabled={!selected || updateProfile.isPending}
-          className="h-14 items-center justify-center rounded-full bg-copper active:opacity-90 disabled:opacity-40"
+          className="h-[52px] items-center justify-center rounded-full bg-ink active:opacity-90 disabled:opacity-40"
         >
           {updateProfile.isPending ? (
             <ActivityIndicator color={colors.parchment} />

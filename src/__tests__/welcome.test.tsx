@@ -17,6 +17,25 @@ jest.mock("react-native-safe-area-context", () => {
   };
 });
 
+// Reanimated entering builders are no-ops here; render the plain RN primitives.
+jest.mock("react-native-reanimated", () => {
+  const { Text, View } = require("react-native");
+  const chain = () => {
+    const o: Record<string, unknown> = {};
+    o.delay = () => o;
+    o.duration = () => o;
+    o.springify = () => o;
+    return o;
+  };
+  return {
+    __esModule: true,
+    default: { Text, View, createAnimatedComponent: (c: unknown) => c },
+    FadeIn: chain(),
+    FadeInDown: chain(),
+    FadeInUp: chain(),
+  };
+});
+
 import Welcome from "../../app/(onboarding)/welcome";
 
 describe("Welcome screen", () => {
@@ -24,13 +43,13 @@ describe("Welcome screen", () => {
 
   it("renders the brand and value proposition", () => {
     const { getByText } = render(<Welcome />);
-    expect(getByText("Mathetes")).toBeTruthy();
-    expect(getByText("Follow daily.")).toBeTruthy();
+    expect(getByText("mathetes")).toBeTruthy();
+    expect(getByText("Follow daily")).toBeTruthy();
   });
 
   it("routes to sign up and sign in", () => {
     const { getByText } = render(<Welcome />);
-    fireEvent.press(getByText("Create account"));
+    fireEvent.press(getByText("Begin"));
     expect(mockPush).toHaveBeenCalledWith("/(onboarding)/signup");
     fireEvent.press(getByText("I already have an account"));
     expect(mockPush).toHaveBeenCalledWith("/(onboarding)/signin");

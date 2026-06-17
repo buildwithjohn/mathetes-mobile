@@ -93,10 +93,17 @@ export default function OnboardingProfile() {
           keyboardShouldPersistTaps="handled"
         >
           <OnboardingProgress step={3} total={3} />
-          <Text className="mt-7 font-display text-4xl leading-tight text-ink">
-            About you
+          <Text
+            className="mt-7 font-sans-medium text-[11px] uppercase text-ink-mute"
+            style={{ letterSpacing: 1.76 }}
+          >
+            A little about you
           </Text>
-          <Text className="mt-2 text-base leading-6 text-ink/60">
+          <Text className="mt-2 font-display text-[28px] leading-[33px] text-ink">
+            About{" "}
+            <Text className="font-display italic text-copper-deep">you</Text>.
+          </Text>
+          <Text className="mt-1.5 text-sm leading-5 text-ink-mute">
             A few details so your house and the parish directory know you. You
             can change these anytime.
           </Text>
@@ -121,7 +128,7 @@ export default function OnboardingProfile() {
                 placeholderTextColor="#9C968A"
                 keyboardType="number-pad"
                 maxLength={10}
-                className="rounded-xl border border-border bg-surface1 px-4 py-3.5 text-base text-ink"
+                className="rounded-xl border border-rule bg-paper px-4 py-3.5 text-base text-ink"
               />
             </View>
             <View className="flex-1 gap-1.5">
@@ -132,7 +139,7 @@ export default function OnboardingProfile() {
                 placeholder="080..."
                 placeholderTextColor="#9C968A"
                 keyboardType="phone-pad"
-                className="rounded-xl border border-border bg-surface1 px-4 py-3.5 text-base text-ink"
+                className="rounded-xl border border-rule bg-paper px-4 py-3.5 text-base text-ink"
               />
             </View>
           </View>
@@ -145,7 +152,7 @@ export default function OnboardingProfile() {
                 onChangeText={setYear}
                 placeholder="e.g. 200 Level"
                 placeholderTextColor="#9C968A"
-                className="rounded-xl border border-border bg-surface1 px-4 py-3.5 text-base text-ink"
+                className="rounded-xl border border-rule bg-paper px-4 py-3.5 text-base text-ink"
               />
             </View>
             <View className="flex-1 gap-1.5">
@@ -158,13 +165,13 @@ export default function OnboardingProfile() {
                 placeholder="e.g. Nursing"
                 placeholderTextColor="#9C968A"
                 autoCapitalize="words"
-                className="rounded-xl border border-border bg-surface1 px-4 py-3.5 text-base text-ink"
+                className="rounded-xl border border-rule bg-paper px-4 py-3.5 text-base text-ink"
               />
             </View>
           </View>
         </ScrollView>
 
-        <View className="border-t border-border bg-parchment px-6 pb-8 pt-4">
+        <View className="border-t border-rule-soft bg-parchment px-6 pb-8 pt-4">
           {updateProfile.isError ? (
             <Text className="mb-3 text-center text-sm text-oxblood">
               {updateProfile.error instanceof Error
@@ -175,7 +182,7 @@ export default function OnboardingProfile() {
           <Pressable
             onPress={onContinue}
             disabled={!gender || !dobValid || updateProfile.isPending}
-            className="h-14 items-center justify-center rounded-full bg-copper active:opacity-90 disabled:opacity-40"
+            className="h-[52px] items-center justify-center rounded-full bg-ink active:opacity-90 disabled:opacity-40"
           >
             {updateProfile.isPending ? (
               <ActivityIndicator color={colors.parchment} />
@@ -209,12 +216,12 @@ function Segmented<T extends string>({
             key={o.key}
             onPress={() => onChange(o.key)}
             className={`flex-1 items-center rounded-full py-2.5 ${
-              active ? "bg-surface1" : ""
+              active ? "bg-paper" : ""
             }`}
           >
             <Text
               className={`font-sans-medium text-sm ${
-                active ? "text-ink" : "text-ink/50"
+                active ? "text-ink" : "text-ink-mute"
               }`}
             >
               {o.label}
