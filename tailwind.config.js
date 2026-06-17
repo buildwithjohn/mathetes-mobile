@@ -1,30 +1,35 @@
 /** @type {import('tailwindcss').Config} */
-// Mathetes brand tokens for NativeWind. Hex values are canonical.
+// Mathetes brand tokens for NativeWind. Semantic colors resolve from CSS
+// variables (see global.css) so they flip with the light/dark scheme. House
+// and highlight colors are identity colors and stay fixed in both themes.
+const v = (name) => `rgb(var(--color-${name}) / <alpha-value>)`;
+
 module.exports = {
   content: ["./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
   presets: [require("nativewind/preset")],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
-        ink: "#1A1A1A",
-        parchment: "#F7F7F8",
-        copper: "#F33A49",
-        oxblood: "#9B2C36",
-        surface1: "#FFFFFF",
-        surface2: "#EFEFF1",
-        border: "#E4E4E7",
-        "copper-deep": "#9B2C36",
-        "copper-soft": "#FF6B7A",
-        "ink-soft": "#3D3935",
-        "ink-mute": "#75706A",
-        "ink-faint": "#B0A99B",
-        rule: "#E8E7E5",
-        "rule-soft": "#F0EFEE",
-        paper: "#FFFFFF",
-        "paper-raised": "#F0EFEE",
-        success: "#5A7C5A",
-        warning: "#C19D3F",
-        alert: "#A04141",
+        ink: v("ink"),
+        parchment: v("parchment"),
+        copper: v("copper"),
+        oxblood: v("oxblood"),
+        surface1: v("surface1"),
+        surface2: v("surface2"),
+        border: v("border"),
+        "copper-deep": v("copper-deep"),
+        "copper-soft": v("copper-soft"),
+        "ink-soft": v("ink-soft"),
+        "ink-mute": v("ink-mute"),
+        "ink-faint": v("ink-faint"),
+        rule: v("rule"),
+        "rule-soft": v("rule-soft"),
+        paper: v("paper"),
+        "paper-raised": v("paper-raised"),
+        success: v("success"),
+        warning: v("warning"),
+        alert: v("alert"),
         house: {
           bethel: "#B87333",
           antioch: "#722F37",

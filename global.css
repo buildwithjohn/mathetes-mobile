@@ -1,3 +1,52 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Theme tokens as CSS variables so every `bg-*`/`text-*`/`border-*` class
+   flips with the color scheme. Light values are identical to the previous
+   static palette (so light mode is unchanged); dark is the override applied
+   when the `dark` class is active (driven by the theme store / system). */
+@layer base {
+  :root {
+    --color-ink: 26 26 26;
+    --color-parchment: 247 247 248;
+    --color-copper: 243 58 73;
+    --color-oxblood: 155 44 54;
+    --color-surface1: 255 255 255;
+    --color-surface2: 239 239 241;
+    --color-border: 228 228 231;
+    --color-copper-deep: 155 44 54;
+    --color-copper-soft: 255 107 122;
+    --color-ink-soft: 61 57 53;
+    --color-ink-mute: 117 112 106;
+    --color-ink-faint: 176 169 155;
+    --color-rule: 232 231 229;
+    --color-rule-soft: 240 239 238;
+    --color-paper: 255 255 255;
+    --color-paper-raised: 240 239 238;
+    --color-success: 90 124 90;
+    --color-warning: 193 157 63;
+    --color-alert: 160 65 65;
+  }
+  .dark:root {
+    --color-ink: 242 242 243;
+    --color-parchment: 15 15 17;
+    --color-copper: 255 90 102;
+    --color-oxblood: 197 107 115;
+    --color-surface1: 28 28 31;
+    --color-surface2: 39 39 42;
+    --color-border: 58 58 62;
+    --color-copper-deep: 255 138 147;
+    --color-copper-soft: 255 107 122;
+    --color-ink-soft: 212 210 206;
+    --color-ink-mute: 154 149 142;
+    --color-ink-faint: 107 103 95;
+    --color-rule: 46 46 50;
+    --color-rule-soft: 35 35 39;
+    --color-paper: 28 28 31;
+    --color-paper-raised: 39 39 42;
+    --color-success: 127 166 127;
+    --color-warning: 216 180 90;
+    --color-alert: 208 138 138;
+  }
+}

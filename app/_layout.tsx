@@ -1,6 +1,8 @@
 import "../global.css";
 import { useEffect } from "react";
 import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useColorScheme } from "nativewind";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -18,6 +20,7 @@ import {
 import { SourceSerif4_400Regular } from "@expo-google-fonts/source-serif-4";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/stores/auth";
+import { useTheme } from "@/lib/stores/theme";
 import { AuthDeepLinks } from "@/components/AuthDeepLinks";
 
 SplashScreen.preventAutoHideAsync();
@@ -37,6 +40,11 @@ export default function RootLayout() {
     Inter_600SemiBold,
     SourceSerif4_400Regular,
   });
+
+  // Load the saved theme (System/Light/Dark) and apply it before first paint.
+  useEffect(() => {
+    useTheme.getState().init();
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -80,6 +88,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
+          <ThemedStatusBar />
           <AuthDeepLinks />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
@@ -90,4 +99,11 @@ export default function RootLayout() {
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
+}
+
+// Status-bar content (clock/icons) follows the active scheme so it stays
+// legible on the dark background.
+function ThemedStatusBar() {
+  const { colorScheme } = useColorScheme();
+  return <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />;
 }

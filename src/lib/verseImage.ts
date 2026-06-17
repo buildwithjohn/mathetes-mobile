@@ -1,6 +1,8 @@
 // Verse image studio: theme palettes and a type scale for the shareable card.
 // Pure data + helpers so the studio screen stays declarative.
-import { colors } from "@/theme/colors";
+// Verse cards are brand artifacts shared outside the app, so they always use
+// the light brand palette regardless of the viewer's app theme.
+import { lightColors as colors } from "@/theme/colors";
 
 export type VerseTheme = {
   key: string;
