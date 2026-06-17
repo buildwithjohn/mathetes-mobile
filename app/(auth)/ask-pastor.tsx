@@ -44,7 +44,7 @@ export default function AskPastor() {
 
   return (
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
-      <View className="flex-row items-center px-2 py-2">
+      <View className="flex-row items-center gap-1 border-b border-rule-soft px-1 py-2">
         <Pressable
           onPress={() => router.back()}
           className="h-11 w-11 items-center justify-center"
@@ -52,29 +52,31 @@ export default function AskPastor() {
         >
           <ChevronLeft color={colors.ink} size={26} />
         </Pressable>
-        <Text className="flex-1 font-display text-xl text-ink">Ask Pastor</Text>
+        <Text className="flex-1 text-center font-display text-[18px] text-ink">
+          Ask Pastor
+        </Text>
         <Pressable
           onPress={() => setComposing(true)}
-          className="h-10 w-10 items-center justify-center rounded-full bg-copper active:opacity-90"
+          className="h-[34px] w-[34px] items-center justify-center rounded-full bg-copper active:opacity-90"
           accessibilityLabel="Ask a question"
         >
-          <Plus color={colors.parchment} size={22} />
+          <Plus color="#fff" size={18} strokeWidth={2} />
         </Pressable>
       </View>
 
-      {/* Tabs */}
-      <View className="mx-4 mb-1 mt-1 flex-row rounded-full bg-surface2 p-1">
+      {/* Tabs (underline) */}
+      <View className="flex-row gap-6 border-b border-rule-soft px-6">
         {(["mine", "public"] as const).map((t) => (
           <Pressable
             key={t}
             onPress={() => setTab(t)}
-            className={`flex-1 items-center rounded-full py-2 ${
-              tab === t ? "bg-surface1" : ""
-            }`}
+            className={`py-2.5 ${tab === t ? "-mb-px border-b-2 border-b-copper" : ""}`}
           >
             <Text
-              className={`font-sans-medium text-sm ${
-                tab === t ? "text-ink" : "text-ink/50"
+              className={`text-[13.5px] ${
+                tab === t
+                  ? "font-sans-semibold text-ink"
+                  : "font-sans-medium text-ink-mute"
               }`}
             >
               {t === "mine" ? "My questions" : "Public Q&A"}
@@ -85,9 +87,23 @@ export default function AskPastor() {
 
       <ScrollView
         className="flex-1"
-        contentContainerClassName="px-4 pb-16 pt-2 gap-3"
+        contentContainerClassName="px-4 pb-16 pt-3 gap-3"
         showsVerticalScrollIndicator={false}
       >
+        {/* Hero */}
+        <View className="rounded-2xl border border-rule-soft bg-paper p-5">
+          <View className="h-[52px] w-[52px] items-center justify-center rounded-full" style={{ backgroundColor: `${colors.copper}1F` }}>
+            <MessageCircleQuestion color={colors.copper} size={26} strokeWidth={1.7} />
+          </View>
+          <Text className="mt-3.5 font-display text-[22px] text-ink">
+            Bring your questions
+          </Text>
+          <Text className="mt-1.5 text-[13.5px] leading-5 text-ink-soft">
+            The pastor responds within 48 hours. Your question may also help your
+            house-mates if you choose to share the answer anonymously.
+          </Text>
+        </View>
+
         {tab === "mine" ? (
           mine.isLoading ? (
             <ActivityIndicator className="mt-10" color={colors.copper} />
@@ -122,59 +138,58 @@ function MyQuestionCard({ q }: { q: AskQuestion }) {
   const withdraw = useWithdrawQuestion();
   const answered = q.status === "answered";
   return (
-    <View className="rounded-2xl border border-border bg-surface1 p-4">
-      <View className="flex-row items-center justify-between">
-        <View
-          className={`flex-row items-center gap-1.5 rounded-full px-2.5 py-1 ${
-            answered ? "bg-copper/15" : "bg-surface2"
-          }`}
+    <View className="rounded-2xl border border-rule bg-paper p-4">
+      <View className="mb-2 flex-row items-center gap-1.5">
+        {answered ? (
+          <Check color={colors.success} size={15} strokeWidth={2.2} />
+        ) : (
+          <Clock color={colors.inkMute} size={14} strokeWidth={1.7} />
+        )}
+        <Text
+          className="text-[11.5px] font-sans-medium"
+          style={{ color: answered ? colors.success : colors.inkMute }}
         >
-          {answered ? (
-            <Check color={colors.copper} size={13} />
-          ) : (
-            <Clock color={colors.ink} size={13} />
-          )}
-          <Text
-            className={`text-xs font-sans-medium ${
-              answered ? "text-copper" : "text-ink/70"
-            }`}
-          >
-            {answered ? "Answered" : "Awaiting"}
-          </Text>
-        </View>
-        <Text className="text-xs text-ink/40">
-          {q.privacy === "public" ? "Public" : "Private"}
+          {answered ? "Answered" : "Awaiting response"}
         </Text>
       </View>
 
-      <Text className="mt-2 text-base leading-6 text-ink">{q.body}</Text>
+      <Text className="text-[14.5px] font-sans-medium leading-5 text-ink">
+        {q.body}
+      </Text>
 
       {answered && q.response_body ? (
-        <View className="mt-3 rounded-xl border-l-4 border-l-copper bg-parchment p-3">
-          <Text className="text-xs uppercase tracking-widest text-copper">
-            Pastor
-          </Text>
-          <Text className="mt-1 text-base leading-6 text-ink/90">
-            {q.response_body}
-          </Text>
-        </View>
-      ) : (
-        <Pressable
-          onPress={() => withdraw.mutate(q.id)}
-          className="mt-3 self-start active:opacity-60"
-        >
-          <Text className="text-sm font-sans-medium text-oxblood">Withdraw</Text>
-        </Pressable>
-      )}
+        <Text className="mt-2 font-display text-[13.5px] italic leading-5 text-ink-soft">
+          {q.response_body}
+        </Text>
+      ) : null}
+
+      <View className="mt-3 flex-row items-center">
+        <Text className="text-[11px] text-ink-mute">
+          {q.privacy === "public" ? "Public" : "Private"}
+        </Text>
+        {!answered ? (
+          <Pressable
+            onPress={() => withdraw.mutate(q.id)}
+            className="ml-auto active:opacity-60"
+          >
+            <Text className="text-[12px] font-sans-medium text-oxblood">
+              Withdraw
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
     </View>
   );
 }
 
 function PublicQaCard({ q }: { q: PublicQa }) {
   return (
-    <View className="rounded-2xl border border-border bg-surface1 p-4">
+    <View className="rounded-2xl border border-rule bg-paper p-4">
       {q.category ? (
-        <Text className="text-xs uppercase tracking-widest text-copper">
+        <Text
+          className="font-sans-medium text-[11px] uppercase text-copper-deep"
+          style={{ letterSpacing: 1.6 }}
+        >
           {q.category}
         </Text>
       ) : null}
@@ -182,10 +197,12 @@ function PublicQaCard({ q }: { q: PublicQa }) {
         {q.question}
       </Text>
       {q.answer ? (
-        <Text className="mt-2 text-base leading-6 text-ink/85">{q.answer}</Text>
+        <Text className="mt-2 font-display text-[14px] italic leading-[21px] text-ink-soft">
+          {q.answer}
+        </Text>
       ) : null}
       {q.answered_at ? (
-        <Text className="mt-3 text-xs text-ink/40">
+        <Text className="mt-3 text-[11px] text-ink-faint">
           {format(new Date(q.answered_at), "d MMM yyyy")}
         </Text>
       ) : null}
@@ -250,7 +267,7 @@ function ComposeModal({
             placeholder="Ask anything on your heart."
             placeholderTextColor="#9C968A"
             multiline
-            className="min-h-28 rounded-2xl border border-border bg-parchment px-4 py-3 text-base text-ink"
+            className="min-h-28 rounded-2xl border border-rule bg-parchment px-4 py-3 text-base text-ink"
             textAlignVertical="top"
           />
 
@@ -299,7 +316,7 @@ function ToggleRow({
       <Text className="text-base text-ink">{label}</Text>
       <View
         className={`h-6 w-6 items-center justify-center rounded-md border ${
-          value ? "border-copper bg-copper" : "border-border bg-surface1"
+          value ? "border-copper bg-copper" : "border-rule bg-surface1"
         }`}
       >
         {value ? <Check color={colors.parchment} size={15} /> : null}

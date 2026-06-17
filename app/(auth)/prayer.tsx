@@ -40,7 +40,7 @@ export default function PrayerWall() {
 
   return (
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
-      <View className="flex-row items-center px-2 py-2">
+      <View className="flex-row items-center gap-1 border-b border-rule-soft px-1 py-2">
         <Pressable
           onPress={() => router.back()}
           className="h-11 w-11 items-center justify-center"
@@ -48,13 +48,21 @@ export default function PrayerWall() {
         >
           <ChevronLeft color={colors.ink} size={26} />
         </Pressable>
-        <Text className="flex-1 font-display text-xl text-ink">Prayer Wall</Text>
+        <View className="flex-1 items-center">
+          <Text className="font-display text-[18px] text-ink">Prayer Wall</Text>
+          <Text
+            className="mt-0.5 font-sans-medium text-[10px] uppercase text-ink-mute"
+            style={{ letterSpacing: 1.2 }}
+          >
+            Carry one another
+          </Text>
+        </View>
         <Pressable
           onPress={() => setComposing(true)}
-          className="h-10 w-10 items-center justify-center rounded-full bg-copper active:opacity-90"
+          className="h-[34px] w-[34px] items-center justify-center rounded-full bg-copper active:opacity-90"
           accessibilityLabel="Share a request"
         >
-          <Plus color={colors.parchment} size={22} />
+          <Plus color="#fff" size={18} strokeWidth={2} />
         </Pressable>
       </View>
 
@@ -91,6 +99,13 @@ export default function PrayerWall() {
               body="Share the first request and let your house pray with you."
             />
           }
+          ListFooterComponent={
+            (requests ?? []).length > 0 ? (
+              <Text className="px-6 pt-2 text-center text-[11px] text-ink-faint">
+                Your house leader sees all requests for pastoral care.
+              </Text>
+            ) : null
+          }
         />
       )}
 
@@ -116,75 +131,96 @@ function PrayerCard({
   return (
     <Animated.View
       entering={FadeInDown.duration(320)}
-      className={`rounded-2xl border bg-surface1 p-4 ${
-        entry.urgent ? "border-oxblood/40" : "border-border"
-      }`}
+      className="rounded-2xl border border-rule p-4"
+      style={{ backgroundColor: entry.urgent ? `${colors.copper}14` : colors.paper }}
     >
-      <View className="flex-row items-center gap-2">
+      {entry.urgent || entry.praise ? (
+        <View className="mb-2.5 flex-row items-center gap-1.5">
+          {entry.urgent ? (
+            <HandHeart color={colors.copperDeep} size={15} strokeWidth={1.7} />
+          ) : null}
+          <Badge
+            label={entry.praise ? "Praise report" : "Urgent"}
+            tone={entry.praise ? "copper" : "copperDeep"}
+          />
+        </View>
+      ) : null}
+      <View className="flex-row items-center gap-2.5">
         {entry.anonymous || !entry.author ? (
-          <View className="h-9 w-9 items-center justify-center rounded-full bg-surface2">
-            <Text className="text-xs text-ink/50">??</Text>
+          <View className="h-[34px] w-[34px] items-center justify-center rounded-full bg-surface2">
+            <Text className="text-xs text-ink-mute">??</Text>
           </View>
         ) : (
           <Avatar
             name={entry.author.name}
             photoUrl={visiblePhotoUrl(entry.author, viewerHouseId)}
-            size={36}
+            size={34}
           />
         )}
-        <View className="flex-1">
-          <Text className="font-sans-semibold text-sm text-ink">
-            {entry.anonymous || !entry.author ? "Anonymous" : entry.author.name}
-          </Text>
-          <Text className="text-xs text-ink/45">
-            {formatDistanceToNowStrict(new Date(entry.createdAt), {
-              addSuffix: true,
-            })}
-            {entry.houseId ? " · House" : " · Parish"}
-          </Text>
-        </View>
-        {entry.praise ? <Badge label="Praise" tone="copper" /> : null}
-        {entry.urgent ? <Badge label="Urgent" tone="oxblood" /> : null}
+        <Text className="font-sans-semibold text-[13px] text-ink">
+          {entry.anonymous || !entry.author ? "Anonymous" : entry.author.name}
+        </Text>
+        <Text className="text-[11px] text-ink-faint">
+          ·{" "}
+          {formatDistanceToNowStrict(new Date(entry.createdAt), {
+            addSuffix: true,
+          })}
+        </Text>
       </View>
 
-      <Text className="mt-3 text-base leading-6 text-ink/90">{entry.body}</Text>
+      <Text className="mt-2.5 text-sm leading-[21px] text-ink-soft">
+        {entry.body}
+      </Text>
 
-      <Pressable
-        onPress={onPray}
-        className={`mt-3 flex-row items-center gap-2 self-start rounded-full border px-3.5 py-1.5 active:opacity-80 ${
-          entry.prayedByMe
-            ? "border-copper bg-copper/15"
-            : "border-border bg-surface2"
-        }`}
-      >
-        <HandHeart
-          color={entry.prayedByMe ? colors.copper : colors.ink}
-          size={16}
-        />
-        <Text
-          className={`text-sm font-sans-medium ${
-            entry.prayedByMe ? "text-copper" : "text-ink"
+      <View className="mt-3 flex-row items-center gap-3">
+        <Pressable
+          onPress={onPray}
+          className={`flex-row items-center gap-2 self-start rounded-full border px-3.5 py-1.5 active:opacity-80 ${
+            entry.prayedByMe
+              ? "border-copper bg-copper/15"
+              : "border-rule bg-paper"
           }`}
         >
-          {entry.prayedByMe ? "Prayed" : "I prayed"}
-          {entry.prayedCount > 0 ? ` · ${entry.prayedCount}` : ""}
-        </Text>
-      </Pressable>
+          <HandHeart
+            color={entry.prayedByMe ? colors.copper : colors.inkSoft}
+            size={16}
+          />
+          <Text
+            className={`text-sm font-sans-medium ${
+              entry.prayedByMe ? "text-copper" : "text-ink-soft"
+            }`}
+          >
+            {entry.prayedByMe ? "Prayed" : "I prayed"}
+            {entry.prayedCount > 0 ? ` · ${entry.prayedCount}` : ""}
+          </Text>
+        </Pressable>
+        {entry.prayedByMe ? (
+          <Text className="text-[11.5px] font-sans-medium text-success">
+            You prayed
+          </Text>
+        ) : null}
+      </View>
     </Animated.View>
   );
 }
 
-function Badge({ label, tone }: { label: string; tone: "copper" | "oxblood" }) {
+function Badge({
+  label,
+  tone,
+}: {
+  label: string;
+  tone: "copper" | "copperDeep";
+}) {
   return (
     <View
-      className={`rounded-full px-2 py-0.5 ${
-        tone === "oxblood" ? "bg-oxblood/15" : "bg-copper/15"
-      }`}
+      className="rounded-full px-2 py-0.5"
+      style={{
+        backgroundColor: tone === "copperDeep" ? colors.copperDeep : colors.copper,
+      }}
     >
       <Text
-        className={`text-xs font-sans-medium ${
-          tone === "oxblood" ? "text-oxblood" : "text-copper"
-        }`}
+        className="text-[10px] font-sans-semibold uppercase text-white"
+        style={{ letterSpacing: 1 }}
       >
         {label}
       </Text>
@@ -264,7 +300,7 @@ function ComposeModal({
             placeholder="What can we pray with you about?"
             placeholderTextColor="#9C968A"
             multiline
-            className="min-h-24 rounded-2xl border border-border bg-parchment px-4 py-3 text-base text-ink"
+            className="min-h-24 rounded-2xl border border-rule bg-parchment px-4 py-3 text-base text-ink"
             textAlignVertical="top"
           />
 
@@ -317,7 +353,7 @@ function Toggle({
       <Text className="text-base text-ink">{label}</Text>
       <View
         className={`h-6 w-6 items-center justify-center rounded-md border ${
-          value ? "border-copper bg-copper" : "border-border bg-surface1"
+          value ? "border-copper bg-copper" : "border-rule bg-surface1"
         }`}
       >
         {value ? <Check color={colors.parchment} size={15} /> : null}
