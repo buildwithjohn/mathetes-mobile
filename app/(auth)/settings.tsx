@@ -32,7 +32,7 @@ export default function Settings() {
 
   return (
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
-      <View className="flex-row items-center px-2 py-2">
+      <View className="flex-row items-center gap-1 border-b border-rule-soft px-1 py-2">
         <Pressable
           onPress={() => router.back()}
           className="h-11 w-11 items-center justify-center"
@@ -40,7 +40,10 @@ export default function Settings() {
         >
           <ChevronLeft color={colors.ink} size={26} />
         </Pressable>
-        <Text className="font-display text-xl text-ink">Settings</Text>
+        <Text className="flex-1 text-center font-display text-[18px] text-ink">
+          Settings
+        </Text>
+        <View className="w-11" />
       </View>
 
       <ScrollView
@@ -49,28 +52,31 @@ export default function Settings() {
         showsVerticalScrollIndicator={false}
       >
         {/* Notifications */}
-        <Text className="mb-1 mt-4 text-xs uppercase tracking-widest text-copper">
+        <Text
+          className="mb-1 mt-4 font-sans-medium text-[11px] uppercase text-ink-mute"
+          style={{ letterSpacing: 1.6 }}
+        >
           Notifications
         </Text>
-        <Text className="mb-3 text-xs leading-5 text-ink/50">
+        <Text className="mb-3 text-xs leading-5 text-ink-mute">
           In-app alerts show on the bell. Push delivery reaches your phone once
           the installed app is set up.
         </Text>
 
-        <View className="rounded-2xl border border-border bg-surface1 px-4 py-1">
-          <View className="flex-row items-center border-b border-border/60 py-2">
+        <View className="rounded-2xl border border-rule bg-paper px-4 py-1">
+          <View className="flex-row items-center border-b border-rule-soft py-2">
             <Text className="flex-1" />
-            <Text className="w-16 text-center text-xs font-sans-medium text-ink/50">
+            <Text className="w-16 text-center text-xs font-sans-medium text-ink-mute">
               Push
             </Text>
-            <Text className="w-16 text-center text-xs font-sans-medium text-ink/50">
+            <Text className="w-16 text-center text-xs font-sans-medium text-ink-mute">
               In-app
             </Text>
           </View>
           {NOTIFICATION_TYPES.map(({ type, label }) => (
             <View
               key={type}
-              className="flex-row items-center border-b border-border/40 py-2.5 last:border-0"
+              className="flex-row items-center border-b border-rule-soft py-2.5 last:border-0"
             >
               <Text className="flex-1 text-base text-ink">{label}</Text>
               <View className="w-16 items-center">
@@ -98,8 +104,11 @@ export default function Settings() {
         </View>
 
         {/* Privacy */}
-        <Text className="mb-2 mt-8 text-xs uppercase tracking-widest text-copper">
-          Privacy
+        <Text
+          className="mb-2 mt-8 font-sans-medium text-[11px] uppercase text-ink-mute"
+          style={{ letterSpacing: 1.6 }}
+        >
+          Privacy &amp; Safety
         </Text>
 
         {privacyLoading || !privacy ? (
@@ -109,7 +118,7 @@ export default function Settings() {
             <Text className="mb-2 text-sm font-sans-medium text-ink">
               Who can message you
             </Text>
-            <View className="overflow-hidden rounded-2xl border border-border bg-surface1">
+            <View className="overflow-hidden rounded-2xl border border-rule bg-paper">
               {DM_WHO_OPTIONS.map((opt, i) => {
                 const active = privacy.dm_who === opt.key;
                 return (
@@ -119,16 +128,16 @@ export default function Settings() {
                       updatePrivacy.mutate({ dm_who: opt.key as DmWho })
                     }
                     className={`flex-row items-center justify-between px-4 py-3.5 active:bg-surface2 ${
-                      i > 0 ? "border-t border-border/60" : ""
+                      i > 0 ? "border-t border-rule-soft" : ""
                     }`}
                   >
                     <Text className="text-base text-ink">{opt.label}</Text>
                     {active ? (
                       <View className="h-6 w-6 items-center justify-center rounded-full bg-copper">
-                        <Check color={colors.parchment} size={15} />
+                        <Check color="#fff" size={15} strokeWidth={2.4} />
                       </View>
                     ) : (
-                      <View className="h-6 w-6 rounded-full border border-border" />
+                      <View className="h-6 w-6 rounded-full border-[1.5px] border-rule" />
                     )}
                   </Pressable>
                 );
@@ -150,9 +159,22 @@ export default function Settings() {
               />
             </View>
 
-            <Text className="mt-3 text-xs leading-5 text-ink/45">
-              Mathetes keeps conservative defaults. Leaders see messaging
-              activity for pastoral care, never to intrude.
+            {/* Pastoral oversight note */}
+            <View
+              className="mt-4 rounded-[14px] p-4"
+              style={{ backgroundColor: `${colors.copper}14` }}
+            >
+              <Text className="text-[12.5px] leading-5 text-ink-soft">
+                Your house leader has pastoral visibility into your house chat
+                activity and DMs. This is for pastoral care, not surveillance:
+                they can see that conversations are happening, and only read
+                content when a concern is raised.
+              </Text>
+            </View>
+
+            <Text className="mt-6 px-4 text-center font-display text-[12.5px] italic leading-5 text-ink-mute">
+              Mathetes keeps conservative defaults. These settings protect you
+              while preserving the integrity of community.
             </Text>
           </>
         )}
@@ -171,7 +193,7 @@ function SwitchRow({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <View className="flex-row items-center justify-between rounded-2xl border border-border bg-surface1 px-4 py-3">
+    <View className="flex-row items-center justify-between rounded-2xl border border-rule bg-paper px-4 py-3">
       <Text className="flex-1 pr-3 text-base text-ink">{label}</Text>
       <Switch
         value={value}
