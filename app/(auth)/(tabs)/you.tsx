@@ -17,6 +17,7 @@ import {
   User as UserIcon,
   Users,
   HeartHandshake,
+  BookOpen,
   type LucideIcon,
 } from "lucide-react-native";
 import { useAuth } from "@/lib/stores/auth";
@@ -167,9 +168,15 @@ export default function You() {
         <SectionEyebrow>Account &amp; community</SectionEyebrow>
         <View className="overflow-hidden rounded-2xl border border-rule bg-paper">
           <MenuRow
+            icon={BookOpen}
+            label="Reading plans"
+            onPress={() => router.push("/plans")}
+          />
+          <MenuRow
             icon={UserIcon}
             label="Edit profile"
             onPress={() => router.push("/profile/edit")}
+            divider
           />
           <MenuRow
             icon={Users}

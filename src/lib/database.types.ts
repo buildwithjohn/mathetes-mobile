@@ -26,6 +26,7 @@ export type DmWho = "all_parish" | "house" | "discipler" | "none";
 export type ContentStatus = "draft" | "scheduled" | "published";
 export type AssetKind = "image" | "audio";
 export type Testament = "OT" | "NT";
+export type PlanDifficulty = "starter" | "intermediate" | "deep";
 export type HighlightColor = "copper" | "gold" | "sage" | "oxblood" | "blue";
 
 // Community (chat, prayer, ask-pastor, safety, notifications) enums.
@@ -943,6 +944,130 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["announcements"]["Insert"]>;
         Relationships: [];
       };
+      reading_plans: {
+        Row: {
+          id: string;
+          parish_id: string;
+          slug: string;
+          title: string;
+          description: string;
+          cover_image_url: string | null;
+          length_days: number;
+          difficulty: PlanDifficulty | null;
+          author_id: string | null;
+          sequence_locked: boolean;
+          published: boolean;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          parish_id: string;
+          slug: string;
+          title: string;
+          description: string;
+          cover_image_url?: string | null;
+          length_days: number;
+          difficulty?: PlanDifficulty | null;
+          author_id?: string | null;
+          sequence_locked?: boolean;
+          published?: boolean;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["reading_plans"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      reading_plan_days: {
+        Row: {
+          id: string;
+          plan_id: string;
+          day_number: number;
+          title: string;
+          scripture_reference: string;
+          scripture_text: string | null;
+          reflection_body: string;
+          reflection_prompt: string;
+          audio_url: string | null;
+          devotional_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          plan_id: string;
+          day_number: number;
+          title: string;
+          scripture_reference: string;
+          scripture_text?: string | null;
+          reflection_body: string;
+          reflection_prompt: string;
+          audio_url?: string | null;
+          devotional_id?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["reading_plan_days"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      reading_plan_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          plan_id: string;
+          started_at: string;
+          current_day: number;
+          last_activity_at: string;
+          completed_at: string | null;
+          paused: boolean;
+          streak_enabled: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          plan_id: string;
+          started_at?: string;
+          current_day?: number;
+          last_activity_at?: string;
+          completed_at?: string | null;
+          paused?: boolean;
+          streak_enabled?: boolean;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["reading_plan_subscriptions"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      reading_plan_progress: {
+        Row: {
+          id: string;
+          subscription_id: string;
+          day_id: string;
+          completed_at: string;
+          reflection_response: string | null;
+          share_with_discipler: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          subscription_id: string;
+          day_id: string;
+          completed_at?: string;
+          reflection_response?: string | null;
+          share_with_discipler?: boolean;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["reading_plan_progress"]["Insert"]
+        >;
+        Relationships: [];
+      };
     };
     Views: {
       todays_word_of_day: {
@@ -1003,6 +1128,22 @@ export interface Database {
         Args: { p_id: string; p_response: string; p_public?: boolean };
         Returns: Database["public"]["Tables"]["ask_questions"]["Row"];
       };
+      subscribe_to_plan: {
+        Args: { p_plan_id: string };
+        Returns: string;
+      };
+      complete_plan_day: {
+        Args: {
+          p_day_id: string;
+          p_reflection_response?: string;
+          p_share_with_discipler?: boolean;
+        };
+        Returns: string;
+      };
+      toggle_plan_pause: {
+        Args: { p_subscription_id: string };
+        Returns: boolean;
+      };
     };
     Enums: {
       photo_visibility: PhotoVisibility;
@@ -1017,6 +1158,13 @@ export interface Database {
 // Convenience row aliases.
 export type Parish = Database["public"]["Tables"]["parishes"]["Row"];
 export type House = Database["public"]["Tables"]["houses"]["Row"];
+export type ReadingPlan = Database["public"]["Tables"]["reading_plans"]["Row"];
+export type ReadingPlanDay =
+  Database["public"]["Tables"]["reading_plan_days"]["Row"];
+export type ReadingPlanSubscription =
+  Database["public"]["Tables"]["reading_plan_subscriptions"]["Row"];
+export type ReadingPlanProgress =
+  Database["public"]["Tables"]["reading_plan_progress"]["Row"];
 export type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 export type UserPrivacy = Database["public"]["Tables"]["user_privacy"]["Row"];
 export type DevotionalSeries =
