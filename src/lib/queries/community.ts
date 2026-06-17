@@ -226,7 +226,47 @@ export function useSendMessage(chatId: string) {
       });
       if (error) throw error;
     },
-    onSuccess: () => {
+    // Show the message instantly (so it never feels like "nothing happened"),
+    // then reconcile with the server on settle. Rolls back on failure.
+    onMutate: async (body: string) => {
+      if (!profile) return { previous: undefined };
+      await queryClient.cancelQueries({
+        queryKey: communityKeys.messages(chatId),
+      });
+      const key = communityKeys.messages(chatId);
+      const previous = queryClient.getQueryData<MessageRow[]>(key);
+      const optimistic = {
+        id: `optimistic-${Date.now()}`,
+        chat_id: chatId,
+        author_id: profile.id,
+        body: body.trim(),
+        kind: "text",
+        image_url: null,
+        voice_url: null,
+        deleted_at: null,
+        created_at: new Date().toISOString(),
+        user_profiles: {
+          id: profile.id,
+          name: profile.name,
+          photo_url: profile.photo_url,
+          photo_visibility: profile.photo_visibility,
+          house_id: profile.house_id,
+          role: profile.role,
+        },
+        message_reactions: [],
+      } as unknown as MessageRow;
+      queryClient.setQueryData<MessageRow[]>(key, (old = []) => [
+        optimistic,
+        ...old,
+      ]);
+      return { previous };
+    },
+    onError: (_e, _body, ctx) => {
+      if (ctx?.previous) {
+        queryClient.setQueryData(communityKeys.messages(chatId), ctx.previous);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: communityKeys.messages(chatId) });
       queryClient.invalidateQueries({ queryKey: communityKeys.chats });
     },
