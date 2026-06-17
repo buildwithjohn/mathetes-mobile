@@ -99,7 +99,7 @@ export default function SignIn() {
           </Text>
           <Text className="mt-1.5 font-display text-[32px] leading-9 text-ink">
             Welcome{" "}
-            <Text className="font-display italic text-copper-deep">back</Text>.
+            <Text className="font-display-italic text-copper-deep">back</Text>.
           </Text>
           <Text className="mt-2 text-sm leading-5 text-ink-mute">
             Your notes, highlights and streak, kept quietly. Sign in once, return

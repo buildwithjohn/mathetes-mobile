@@ -50,7 +50,7 @@ export default function CampusPicker() {
         </Text>
         <Text className="mt-2 font-display text-[28px] leading-[33px] text-ink">
           Where do you{" "}
-          <Text className="font-display italic text-copper-deep">fellowship</Text>?
+          <Text className="font-display-italic text-copper-deep">fellowship</Text>?
         </Text>
         <Text className="mt-1.5 text-sm leading-5 text-ink-mute">
           Pick your campus so your house and community feel close to home.

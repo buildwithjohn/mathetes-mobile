@@ -58,7 +58,7 @@ export default function HousePicker() {
         </Text>
         <Text className="mt-2 font-display text-[28px] leading-[33px] text-ink">
           Choose your{" "}
-          <Text className="font-display italic text-copper-deep">house</Text>{" "}
+          <Text className="font-display-italic text-copper-deep">house</Text>{" "}
           fellowship.
         </Text>
         <Text className="mt-1.5 text-sm leading-5 text-ink-mute">
@@ -128,7 +128,7 @@ export default function HousePicker() {
                     {meaning}
                   </Text>
                   {house.verse ? (
-                    <Text className="mt-2.5 font-display text-[14.5px] italic leading-5 text-ink-soft">
+                    <Text className="mt-2.5 font-display-italic text-[14.5px] leading-5 text-ink-soft">
                       “{house.verse}”
                     </Text>
                   ) : null}

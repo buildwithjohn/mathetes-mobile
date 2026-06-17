@@ -131,7 +131,7 @@ export default function DevotionalScreen() {
               >
                 Scripture
               </Text>
-              <Text className="font-display text-[17px] italic leading-[26px] text-ink-soft">
+              <Text className="font-display-italic text-[17px] leading-[26px] text-ink-soft">
                 {dev.scripture_refs.join("  ·  ")}
               </Text>
             </View>
@@ -155,7 +155,7 @@ export default function DevotionalScreen() {
                   </Text>
                 )}
                 {i === 1 && pullQuote ? (
-                  <Text className="my-6 border-l-2 border-l-copper pl-[18px] font-display text-[22px] italic leading-[29px] text-ink">
+                  <Text className="my-6 border-l-2 border-l-copper pl-[18px] font-display-italic text-[22px] leading-[29px] text-ink">
                     {pullQuote}
                   </Text>
                 ) : null}
@@ -171,7 +171,7 @@ export default function DevotionalScreen() {
             >
               Sit with this
             </Text>
-            <Text className="font-display text-[19px] italic leading-[27px] text-ink">
+            <Text className="font-display-italic text-[19px] leading-[27px] text-ink">
               {dev.scripture_refs.length > 0
                 ? `Sit with ${dev.scripture_refs[0]} today. Where is the Lord asking you to take the first step?`
                 : "Where is the Lord asking you to take the first step today?"}
@@ -193,7 +193,7 @@ export default function DevotionalScreen() {
               onPress={() => router.push("/devotionals")}
               className="mt-10 flex-row items-center gap-3.5 border-t border-rule pt-6 active:opacity-70"
             >
-              <Text className="flex-1 font-display text-sm italic text-ink-mute">
+              <Text className="flex-1 font-display-italic text-sm text-ink-mute">
                 More in this series
               </Text>
               <ChevronRight color={colors.inkMute} size={16} strokeWidth={1.5} />

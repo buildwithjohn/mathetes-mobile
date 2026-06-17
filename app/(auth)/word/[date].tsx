@@ -151,7 +151,7 @@ export default function WordExpanded() {
 
             {word.prompt ? (
               <View className="mt-[18px] rounded-r-[10px] border-l-2 border-l-copper bg-paper-raised px-4 py-3.5">
-                <Text className="font-display text-[16px] italic leading-6 text-ink-soft">
+                <Text className="font-display-italic text-[16px] leading-6 text-ink-soft">
                   {word.prompt}
                 </Text>
               </View>

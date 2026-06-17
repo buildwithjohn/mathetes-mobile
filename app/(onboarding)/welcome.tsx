@@ -33,7 +33,7 @@ export default function Welcome() {
             className="font-display text-[44px] leading-[46px] text-ink"
           >
             A discipleship{" "}
-            <Text className="font-display italic text-copper-deep">companion</Text>
+            <Text className="font-display-italic text-copper-deep">companion</Text>
             , not a content stream.
           </Animated.Text>
           <Animated.Text

@@ -91,7 +91,7 @@ export default function SignUp() {
           </Text>
           <Text className="mt-1.5 font-display text-[32px] leading-9 text-ink">
             Begin the{" "}
-            <Text className="font-display italic text-copper-deep">walk</Text>.
+            <Text className="font-display-italic text-copper-deep">walk</Text>.
           </Text>
           <Text className="mt-2 text-sm leading-5 text-ink-mute">
             It takes a moment. Your place is kept from the first morning.

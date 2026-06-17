@@ -729,7 +729,9 @@ function MessageBubble({
             </View>
           ) : null}
           {removed ? (
-            <Text className="text-sm italic text-ink/40">Message removed</Text>
+            <Text className="font-display-italic text-sm text-ink/40">
+              Message removed
+            </Text>
           ) : isImage && imageUrl ? (
             <Pressable onPress={() => onOpenImage(imageUrl)}>
               <Image

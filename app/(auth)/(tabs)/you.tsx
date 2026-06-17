@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import {
   ChevronRight,
@@ -65,7 +66,8 @@ export default function You() {
         </View>
       </View>
 
-      <ScrollView
+      <Animated.ScrollView
+        entering={FadeInDown.duration(380)}
         className="flex-1"
         contentContainerClassName="px-6 pb-8 pt-1"
         showsVerticalScrollIndicator={false}
@@ -195,7 +197,7 @@ export default function You() {
         >
           <Text className="font-sans-medium text-ink">Sign out</Text>
         </Pressable>
-      </ScrollView>
+      </Animated.ScrollView>
     </SafeAreaView>
   );
 }

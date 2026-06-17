@@ -172,7 +172,7 @@ export default function Settings() {
               </Text>
             </View>
 
-            <Text className="mt-6 px-4 text-center font-display text-[12.5px] italic leading-5 text-ink-mute">
+            <Text className="mt-6 px-4 text-center font-display-italic text-[12.5px] leading-5 text-ink-mute">
               Mathetes keeps conservative defaults. These settings protect you
               while preserving the integrity of community.
             </Text>

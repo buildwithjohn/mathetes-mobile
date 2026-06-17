@@ -101,7 +101,7 @@ export default function OnboardingProfile() {
           </Text>
           <Text className="mt-2 font-display text-[28px] leading-[33px] text-ink">
             About{" "}
-            <Text className="font-display italic text-copper-deep">you</Text>.
+            <Text className="font-display-italic text-copper-deep">you</Text>.
           </Text>
           <Text className="mt-1.5 text-sm leading-5 text-ink-mute">
             A few details so your house and the parish directory know you. You

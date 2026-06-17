@@ -37,6 +37,7 @@ module.exports = {
       },
       fontFamily: {
         display: ["Fraunces_500Medium"],
+        "display-italic": ["Fraunces_500Medium_Italic"],
         sans: ["Inter_400Regular"],
         "sans-medium": ["Inter_500Medium"],
         "sans-semibold": ["Inter_600SemiBold"],

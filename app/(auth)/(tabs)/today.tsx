@@ -72,9 +72,9 @@ export default function Today() {
               <Text className="font-display text-xl text-ink">
                 {greeting()},{" "}
                 {firstName ? (
-                  <Text className="font-display italic text-copper-deep">{firstName}</Text>
+                  <Text className="font-display-italic text-copper-deep">{firstName}</Text>
                 ) : (
-                  <Text className="font-display italic text-copper-deep">friend</Text>
+                  <Text className="font-display-italic text-copper-deep">friend</Text>
                 )}
               </Text>
             </View>
@@ -174,7 +174,7 @@ export default function Today() {
                       <Rect width={64} height={80} fill="url(#devo)" />
                     </Svg>
                     <View className="flex-1 items-center justify-center">
-                      <Text className="font-display text-[22px] italic text-white opacity-90">
+                      <Text className="font-display-italic text-[22px] text-white opacity-90">
                         {devotional.data.title.trim().slice(0, 1).toUpperCase() || "M"}
                       </Text>
                     </View>
@@ -258,7 +258,7 @@ export default function Today() {
           </View>
 
           {/* End-of-feed quiet line */}
-          <Text className="mt-9 px-9 text-center font-display text-sm italic leading-[22px] text-ink-mute">
+          <Text className="mt-9 px-9 text-center font-display-italic text-sm leading-[22px] text-ink-mute">
             "In all thy ways acknowledge him."
           </Text>
         </ScrollView>

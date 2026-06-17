@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import {
@@ -240,7 +241,9 @@ export default function Bible() {
           </Text>
         </View>
       ) : (
-        <ScrollView
+        <Animated.ScrollView
+          key={`${abbrev}-${chapter}`}
+          entering={FadeInDown.duration(380)}
           className="flex-1"
           contentContainerClassName="px-7 pb-40 pt-3"
           showsVerticalScrollIndicator={false}
@@ -306,7 +309,7 @@ export default function Bible() {
               <ChevronRight color={colors.inkSoft} size={18} />
             </Pressable>
           </View>
-        </ScrollView>
+        </Animated.ScrollView>
       )}
 
       {/* Flash confirmation */}

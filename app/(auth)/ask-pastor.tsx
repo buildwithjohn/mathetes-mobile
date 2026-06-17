@@ -158,7 +158,7 @@ function MyQuestionCard({ q }: { q: AskQuestion }) {
       </Text>
 
       {answered && q.response_body ? (
-        <Text className="mt-2 font-display text-[13.5px] italic leading-5 text-ink-soft">
+        <Text className="mt-2 font-display-italic text-[13.5px] leading-5 text-ink-soft">
           {q.response_body}
         </Text>
       ) : null}
@@ -197,7 +197,7 @@ function PublicQaCard({ q }: { q: PublicQa }) {
         {q.question}
       </Text>
       {q.answer ? (
-        <Text className="mt-2 font-display text-[14px] italic leading-[21px] text-ink-soft">
+        <Text className="mt-2 font-display-italic text-[14px] leading-[21px] text-ink-soft">
           {q.answer}
         </Text>
       ) : null}

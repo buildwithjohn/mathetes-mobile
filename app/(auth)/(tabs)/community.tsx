@@ -8,6 +8,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import { formatDistanceToNowStrict } from "date-fns";
 import {
@@ -65,6 +66,10 @@ export default function Community() {
   const showExtras = filter === "All";
 
   return (
+    <Animated.View
+      entering={FadeInDown.duration(380)}
+      className="flex-1 bg-parchment"
+    >
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
       {/* Header */}
       <View className="flex-row items-center justify-between px-4 pb-2 pt-3">
@@ -192,12 +197,13 @@ export default function Community() {
         )}
 
         {showExtras ? (
-          <Text className="px-9 pt-5 text-center font-display text-[12.5px] italic text-ink-mute">
+          <Text className="px-9 pt-5 text-center font-display-italic text-[12.5px] text-ink-mute">
             Replies to Ask Pastor questions arrive within 48 hours.
           </Text>
         ) : null}
       </ScrollView>
     </SafeAreaView>
+    </Animated.View>
   );
 }
 
