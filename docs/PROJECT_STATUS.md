@@ -17,11 +17,13 @@ announcements) with pastoral oversight built in.
 ## 2. Repositories (GitHub owner: `buildwithjohn`)
 | Repo | Purpose | Active branch | Stack |
 |------|---------|---------------|-------|
-| `mathetes-mobile` | The student app | `claude/wonderful-curie-h3ahv` | Expo SDK 54 / Expo Router / TS |
+| `mathetes-mobile` | The student app | `dev` (default), `stage`, `main` | Expo SDK 54 / Expo Router / TS |
 | `mathetes-backend` | Supabase schema (SQL migrations) | `claude/chat-media-storage` | Postgres / Supabase |
 | `mathetes-admin` | Pastor/leader content dashboard | (its own branch) | Next.js 15 |
 
-> Work has **not been merged to `main`** on any repo yet — it lives on the
+> **Mobile branch model (3 branches):** `dev` (default, active development)
+> → promote to `stage` (QA) → `main` (prod). All three currently point at the
+> same commit. Other repos have **not been merged to `main`** yet — work lives on the
 > branches above. Merging to `main` + CI/deploy-from-main is a launch task.
 
 ## 3. Infrastructure & config
