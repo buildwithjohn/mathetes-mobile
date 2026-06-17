@@ -10,16 +10,16 @@ function clock(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-// Compact voice-note player for a chat bubble. Colors adapt to whether the
-// bubble is the sender's (copper) or a peer's (surface).
+// Compact voice-note player for a chat bubble. The sender's bubble is a soft
+// copper tint, so its controls use copper; a peer's bubble uses ink on rule.
 export function VoiceBubble({ url, mine }: { url: string; mine: boolean }) {
   const player = useAudioPlayer(url);
   const status = useAudioPlayerStatus(player);
 
   const duration = status.duration || 0;
   const progress = duration > 0 ? Math.min(status.currentTime / duration, 1) : 0;
-  const fg = mine ? colors.parchment : colors.ink;
-  const track = mine ? "#FFFFFF55" : colors.border;
+  const fg = mine ? colors.copperDeep : colors.ink;
+  const track = mine ? `${colors.copper}40` : colors.rule;
 
   const toggle = () => {
     if (status.playing) {

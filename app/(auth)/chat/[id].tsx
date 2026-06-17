@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { format } from "date-fns";
 import * as Clipboard from "expo-clipboard";
 import * as ImagePicker from "expo-image-picker";
 import {
@@ -125,6 +126,13 @@ export default function ChatScreen() {
     chat?.kind === "announcements" ||
     chat?.kind === "parish_group";
   const isDm = chat?.kind === "dm";
+  // The header shows the other participant's avatar for one-to-one threads.
+  const headerAvatar =
+    chat?.kind === "dm" ||
+    chat?.kind === "discipler" ||
+    chat?.kind === "ask_pastor_thread";
+  const houseAccent =
+    chat?.kind === "house_group" ? chat.houses?.color ?? null : null;
 
   const title = useMemo(() => {
     if (!chat) return "";
@@ -331,7 +339,7 @@ export default function ChatScreen() {
   return (
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
       {/* Header */}
-      <View className="flex-row items-center border-b border-border px-2 py-2">
+      <View className="flex-row items-center gap-1 border-b border-rule-soft px-1 py-2.5">
         <Pressable
           onPress={() => router.back()}
           className="h-11 w-11 items-center justify-center"
@@ -339,12 +347,33 @@ export default function ChatScreen() {
         >
           <ChevronLeft color={colors.ink} size={26} />
         </Pressable>
-        <View className="flex-1">
-          <Text className="font-display text-lg text-ink" numberOfLines={1}>
+        {headerAvatar ? (
+          <Avatar
+            name={other?.name ?? "Member"}
+            photoUrl={other ? visiblePhotoUrl(other, profile?.house_id ?? null) : null}
+            size={36}
+          />
+        ) : null}
+        <View className={`flex-1 ${headerAvatar ? "ml-2" : ""}`}>
+          <Text className="font-display text-[17px] text-ink" numberOfLines={1}>
             {title}
           </Text>
           {subtitle ? (
-            <Text className="text-xs text-ink/50">{subtitle}</Text>
+            <Text
+              className="mt-0.5 font-sans-semibold text-[10.5px] uppercase"
+              style={{
+                color: houseAccent ?? colors.inkMute,
+                letterSpacing: 1.26,
+              }}
+            >
+              {subtitle}
+            </Text>
+          ) : null}
+          {houseAccent ? (
+            <View
+              className="mt-1 h-0.5 w-[22px] rounded-full"
+              style={{ backgroundColor: houseAccent }}
+            />
           ) : null}
         </View>
         <Pressable
@@ -356,11 +385,14 @@ export default function ChatScreen() {
         </Pressable>
       </View>
 
-      {/* Oversight banner */}
+      {/* Oversight banner (read-only viewing for pastoral care) */}
       {isOversight ? (
-        <View className="flex-row items-center gap-2 bg-oxblood/10 px-4 py-2">
-          <Eye color={colors.oxblood} size={15} />
-          <Text className="text-xs text-oxblood">
+        <View
+          className="flex-row items-center gap-2 border-b border-rule-soft px-4 py-2.5"
+          style={{ backgroundColor: `${colors.copper}12` }}
+        >
+          <Eye color={colors.copperDeep} size={13} strokeWidth={1.6} />
+          <Text className="flex-1 text-[11px] text-ink-mute">
             You are viewing this for pastoral care. Read only.
           </Text>
         </View>
@@ -398,6 +430,18 @@ export default function ChatScreen() {
         />
       )}
 
+      {/* Pastoral visibility note (DM/discipler threads you can post in) */}
+      {canPost && (isDm || chat?.kind === "discipler") ? (
+        <View className="flex-row items-center justify-center gap-1.5 px-4 py-1.5">
+          <Eye color={colors.inkFaint} size={11} strokeWidth={1.6} />
+          <Text className="text-center text-[10.5px] text-ink-faint">
+            {chat?.kind === "discipler"
+              ? "Your discipler conversation is visible to your pastor for care."
+              : "Direct messages are visible to your house leader for pastoral care."}
+          </Text>
+        </View>
+      ) : null}
+
       {/* Composer */}
       {canPost ? (
         <KeyboardAvoidingView
@@ -434,40 +478,40 @@ export default function ChatScreen() {
               </Pressable>
             </View>
           ) : (
-            <View className="flex-row items-end gap-1.5 border-t border-border bg-parchment px-2 pb-6 pt-2">
+            <View className="flex-row items-end gap-2 border-t border-rule-soft bg-parchment px-3 pb-6 pt-2.5">
               <Pressable
                 onPress={onPickImage}
                 disabled={sendMedia.isPending}
-                className="h-11 w-10 items-center justify-center active:opacity-60 disabled:opacity-40"
+                className="h-[38px] w-[38px] items-center justify-center rounded-full bg-paper-raised active:opacity-70 disabled:opacity-40"
                 accessibilityLabel="Send an image"
               >
-                <ImagePlus color={colors.ink} size={22} />
+                <ImagePlus color={colors.inkSoft} size={18} strokeWidth={1.8} />
               </Pressable>
               <TextInput
                 value={draft}
                 onChangeText={setDraft}
                 placeholder="Message"
-                placeholderTextColor="#9C968A"
+                placeholderTextColor={colors.inkMute}
                 multiline
-                className="max-h-28 flex-1 rounded-2xl border border-border bg-surface1 px-4 py-2.5 text-base text-ink"
+                className="max-h-28 min-h-[40px] flex-1 rounded-[20px] border border-rule bg-paper px-4 py-2 text-[15px] text-ink"
               />
               {draft.trim() ? (
                 <Pressable
                   onPress={onSend}
                   disabled={send.isPending}
-                  className="h-11 w-11 items-center justify-center rounded-full bg-copper active:opacity-90 disabled:opacity-40"
+                  className="h-[38px] w-[38px] items-center justify-center rounded-full bg-copper active:opacity-90 disabled:opacity-40"
                   accessibilityLabel="Send message"
                 >
-                  <Send color={colors.parchment} size={18} />
+                  <Send color="#fff" size={17} strokeWidth={1.8} />
                 </Pressable>
               ) : (
                 <Pressable
                   onPress={onStartRecording}
                   disabled={sendMedia.isPending}
-                  className="h-11 w-11 items-center justify-center rounded-full bg-surface2 active:opacity-80 disabled:opacity-40"
+                  className="h-[38px] w-[38px] items-center justify-center rounded-full bg-paper-raised active:opacity-80 disabled:opacity-40"
                   accessibilityLabel="Record a voice note"
                 >
-                  <Mic color={colors.ink} size={20} />
+                  <Mic color={colors.inkMute} size={18} strokeWidth={1.8} />
                 </Pressable>
               )}
             </View>
@@ -628,6 +672,18 @@ function MessageBubble({
   const imageUrl = message.image_url;
   const voiceUrl = message.voice_url;
   const isImage = message.kind === "image" && !!imageUrl && !removed;
+  const isLeader =
+    !!author &&
+    (author.role === "house_leader" ||
+      author.role === "discipler" ||
+      author.role === "pastor");
+  const time = (() => {
+    try {
+      return format(new Date(message.created_at), "h:mm a");
+    } catch {
+      return "";
+    }
+  })();
 
   // Group reactions by emoji with counts.
   const counts = new Map<string, number>();
@@ -647,23 +703,33 @@ function MessageBubble({
         <Pressable
           onLongPress={onLongPress}
           delayLongPress={250}
-          className={`overflow-hidden rounded-2xl ${
-            isImage ? "p-1" : "px-3.5 py-2.5"
-          } ${mine ? "bg-copper" : "bg-surface1 border border-border"}`}
+          className={`overflow-hidden ${
+            isImage ? "rounded-[18px] p-1" : "rounded-[18px] px-3.5 py-2.5"
+          } ${
+            mine
+              ? "rounded-br-md"
+              : `rounded-tl-md border border-rule-soft bg-paper ${
+                  isLeader ? "border-l-2 border-l-copper" : ""
+                }`
+          }`}
+          style={mine ? { backgroundColor: `${colors.copper}29` } : undefined}
         >
           {!mine && showAuthor && author && !isImage ? (
-            <Text className="mb-0.5 text-xs font-sans-semibold text-copper">
-              {author.name}
-            </Text>
+            <View className="mb-0.5 flex-row items-center gap-2">
+              <Text className="text-[13px] font-sans-semibold text-ink">
+                {author.name}
+              </Text>
+              {isLeader ? (
+                <View className="rounded-full border border-copper px-1.5">
+                  <Text className="text-[9.5px] font-sans-semibold text-copper-deep">
+                    Leader
+                  </Text>
+                </View>
+              ) : null}
+            </View>
           ) : null}
           {removed ? (
-            <Text
-              className={`text-sm italic ${
-                mine ? "text-parchment/70" : "text-ink/40"
-              }`}
-            >
-              Message removed
-            </Text>
+            <Text className="text-sm italic text-ink/40">Message removed</Text>
           ) : isImage && imageUrl ? (
             <Pressable onPress={() => onOpenImage(imageUrl)}>
               <Image
@@ -675,16 +741,21 @@ function MessageBubble({
           ) : message.kind === "voice" && voiceUrl ? (
             <VoiceBubble url={voiceUrl} mine={mine} />
           ) : (
-            <Text
-              className={`text-base leading-6 ${
-                mine ? "text-parchment" : "text-ink"
-              }`}
-            >
+            <Text className="text-[14.5px] leading-[21px] text-ink">
               {message.body}
             </Text>
           )}
         </Pressable>
       </View>
+      {!removed && time ? (
+        <Text
+          className={`mt-0.5 text-[10.5px] text-ink-mute ${
+            mine ? "pr-1" : showAuthor ? "pl-9" : "pl-1"
+          }`}
+        >
+          {time}
+        </Text>
+      ) : null}
       {counts.size > 0 ? (
         <View
           className={`mt-0.5 flex-row gap-1 ${
@@ -701,14 +772,14 @@ function MessageBubble({
               <View
                 key={emoji}
                 className={`flex-row items-center gap-1 rounded-full border px-2 py-0.5 ${
-                  reacted ? "border-copper bg-copper/15" : "border-border bg-surface2"
+                  reacted ? "border-copper bg-copper/15" : "border-rule bg-paper"
                 }`}
               >
-                <Text className="text-xs text-ink">
+                <Text className="text-xs text-ink-soft">
                   {emoji === "amen" ? "Amen" : emoji}
                 </Text>
                 {n > 1 ? (
-                  <Text className="text-xs text-ink/60">{n}</Text>
+                  <Text className="text-xs text-ink-mute">{n}</Text>
                 ) : null}
               </View>
             );

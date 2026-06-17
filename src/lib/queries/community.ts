@@ -25,9 +25,9 @@ export const communityKeys = {
 // A profile as embedded in chat/message/member rows.
 export type MemberProfile = Pick<
   UserProfile,
-  "id" | "name" | "photo_url" | "photo_visibility" | "house_id"
+  "id" | "name" | "photo_url" | "photo_visibility" | "house_id" | "role"
 >;
-const PROFILE_COLS = "id, name, photo_url, photo_visibility, house_id";
+const PROFILE_COLS = "id, name, photo_url, photo_visibility, house_id, role";
 
 export type ChatMemberRow = {
   user_id: string;
