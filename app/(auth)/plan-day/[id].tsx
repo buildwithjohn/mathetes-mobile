@@ -15,7 +15,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react-native";
 import { usePlanDay, useCompletePlanDay } from "@/lib/queries/readingPlans";
 import { AudioPlayer } from "@/components/AudioPlayer";
-import { paragraphs } from "@/utils/text";
+import { Markdown } from "@/components/Markdown";
 import { colors } from "@/theme/colors";
 
 export default function PlanDayReader() {
@@ -115,16 +115,9 @@ export default function PlanDayReader() {
               ) : null}
             </View>
 
-            {/* Reflection body */}
+            {/* Reflection body — markdown (bold/headings/lists/quotes). */}
             <View className="mt-7">
-              {paragraphs(day.reflection_body).map((p, i) => (
-                <Text
-                  key={i}
-                  className="mb-4 font-scripture text-[18px] leading-[30px] text-ink"
-                >
-                  {p}
-                </Text>
-              ))}
+              <Markdown body={day.reflection_body} />
             </View>
 
             {/* Prompt */}

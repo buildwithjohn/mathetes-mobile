@@ -5,7 +5,8 @@ import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 import { format, parseISO } from "date-fns";
 import { X, CalendarDays, Bookmark, NotebookPen, ImageDown } from "lucide-react-native";
 import { useWordOfDay } from "@/lib/queries/content";
-import { sentences, paragraphs } from "@/utils/text";
+import { sentences } from "@/utils/text";
+import { Markdown } from "@/components/Markdown";
 import { colors } from "@/theme/colors";
 
 export default function WordExpanded() {
@@ -138,14 +139,7 @@ export default function WordExpanded() {
                 >
                   Reflection
                 </Text>
-                {paragraphs(word.reflection_md).map((p, i) => (
-                  <Text
-                    key={i}
-                    className="mb-4 font-scripture text-[18px] leading-[30px] text-ink"
-                  >
-                    {p}
-                  </Text>
-                ))}
+                <Markdown body={word.reflection_md} />
               </Animated.View>
             ) : null}
 
