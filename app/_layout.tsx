@@ -39,13 +39,35 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    let mounted = true;
+    // A stale/invalid refresh token in storage makes the auto-refresh throw
+    // ("Invalid Refresh Token"). Treat any session error as logged-out and
+    // clear the bad token, rather than surfacing a red error to the user.
+    supabase.auth
+      .getSession()
+      .then(async ({ data, error }) => {
+        if (!mounted) return;
+        if (error) {
+          await supabase.auth.signOut().catch(() => {});
+          setSession(null);
+        } else {
+          setSession(data.session);
+        }
+      })
+      .catch(async () => {
+        if (!mounted) return;
+        await supabase.auth.signOut().catch(() => {});
+        setSession(null);
+      });
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) =>
       setSession(session)
     );
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [setSession]);
 
   useEffect(() => {

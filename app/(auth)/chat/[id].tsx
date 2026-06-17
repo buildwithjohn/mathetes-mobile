@@ -142,7 +142,7 @@ export default function ChatScreen() {
       case "parish_group":
         return "Parish Community";
       case "house_group":
-        return chat.houses ? `${chat.houses.name} House` : "House group";
+        return chat.houses ? chat.houses.name : "House group";
       case "discipler":
         return other ? other.name : "Discipler";
       case "ask_pastor_thread":
