@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   RefreshControl,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -270,6 +271,11 @@ function ComposeModal({
           reset();
           onClose();
         },
+        onError: (e) =>
+          Alert.alert(
+            "Could not share",
+            e instanceof Error ? e.message : "Please try again."
+          ),
       }
     );
   };
