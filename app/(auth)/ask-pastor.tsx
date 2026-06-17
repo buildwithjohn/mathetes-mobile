@@ -237,6 +237,11 @@ function ComposeModal({
             "The pastor will respond within 48 hours."
           );
         },
+        onError: (e) =>
+          Alert.alert(
+            "Could not send",
+            e instanceof Error ? e.message : "Please try again."
+          ),
       }
     );
   };
