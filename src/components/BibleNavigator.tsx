@@ -78,10 +78,12 @@ export function BibleNavigator({ visible, onClose, books, onSelect }: Props) {
                 <Pressable
                   key={n}
                   onPress={() => {
+                    // Jump to the chapter and dismiss the navigator entirely,
+                    // rather than bouncing back to the book list.
                     onSelect(book.abbrev, n);
-                    setBook(null);
+                    close();
                   }}
-                  className="h-14 w-14 items-center justify-center rounded-xl border border-border bg-surface1 active:bg-surface2"
+                  className="h-14 w-14 items-center justify-center rounded-xl border border-rule bg-paper active:bg-surface2"
                 >
                   <Text className="font-sans-medium text-base text-ink">{n}</Text>
                 </Pressable>
