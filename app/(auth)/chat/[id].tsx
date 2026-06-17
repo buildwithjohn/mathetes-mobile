@@ -214,7 +214,17 @@ export default function ChatScreen() {
     const body = draft.trim();
     if (!body) return;
     setDraft("");
-    send.mutate(body);
+    send.mutate(body, {
+      onError: (e) => {
+        // Restore the draft so the message isn't lost, and surface the reason
+        // instead of failing silently (RLS or membership rejections show here).
+        setDraft(body);
+        Alert.alert(
+          "Message not sent",
+          e instanceof Error ? e.message : "Please try again."
+        );
+      },
+    });
   };
 
   const onPickImage = async () => {
