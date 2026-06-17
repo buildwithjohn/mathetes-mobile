@@ -27,6 +27,20 @@ export type ContentStatus = "draft" | "scheduled" | "published";
 export type AssetKind = "image" | "audio";
 export type Testament = "OT" | "NT";
 export type PlanDifficulty = "starter" | "intermediate" | "deep";
+export type GivingInterval = "weekly" | "monthly" | "quarterly" | "annually";
+export type GivingRecurringStatus =
+  | "pending"
+  | "active"
+  | "paused"
+  | "attention"
+  | "cancelled";
+export type DonationKind = "one_time" | "recurring";
+export type DonationStatus =
+  | "pending"
+  | "success"
+  | "failed"
+  | "abandoned"
+  | "reversed";
 export type HighlightColor = "copper" | "gold" | "sage" | "oxblood" | "blue";
 
 // Community (chat, prayer, ask-pastor, safety, notifications) enums.
@@ -1068,6 +1082,156 @@ export interface Database {
         >;
         Relationships: [];
       };
+      giving_funds: {
+        Row: {
+          id: string;
+          parish_id: string;
+          slug: string;
+          name: string;
+          description: string | null;
+          active: boolean;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          parish_id: string;
+          slug: string;
+          name: string;
+          description?: string | null;
+          active?: boolean;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["giving_funds"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      giving_recurring: {
+        Row: {
+          id: string;
+          parish_id: string;
+          user_id: string;
+          fund_id: string | null;
+          amount_kobo: number;
+          currency: string;
+          interval: GivingInterval;
+          status: GivingRecurringStatus;
+          anonymous: boolean;
+          note: string | null;
+          paystack_customer_code: string | null;
+          paystack_plan_code: string | null;
+          paystack_subscription_code: string | null;
+          paystack_email_token: string | null;
+          next_payment_at: string | null;
+          started_at: string | null;
+          cancelled_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          parish_id: string;
+          user_id: string;
+          fund_id?: string | null;
+          amount_kobo: number;
+          currency?: string;
+          interval: GivingInterval;
+          status?: GivingRecurringStatus;
+          anonymous?: boolean;
+          note?: string | null;
+          paystack_customer_code?: string | null;
+          paystack_plan_code?: string | null;
+          paystack_subscription_code?: string | null;
+          paystack_email_token?: string | null;
+          next_payment_at?: string | null;
+          started_at?: string | null;
+          cancelled_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["giving_recurring"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      donations: {
+        Row: {
+          id: string;
+          parish_id: string;
+          user_id: string;
+          fund_id: string | null;
+          recurring_id: string | null;
+          amount_kobo: number;
+          fees_kobo: number | null;
+          currency: string;
+          kind: DonationKind;
+          status: DonationStatus;
+          reference: string;
+          paystack_reference: string | null;
+          channel: string | null;
+          anonymous: boolean;
+          note: string | null;
+          paid_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          parish_id: string;
+          user_id: string;
+          fund_id?: string | null;
+          recurring_id?: string | null;
+          amount_kobo: number;
+          fees_kobo?: number | null;
+          currency?: string;
+          kind?: DonationKind;
+          status?: DonationStatus;
+          reference?: string;
+          paystack_reference?: string | null;
+          channel?: string | null;
+          anonymous?: boolean;
+          note?: string | null;
+          paid_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["donations"]["Insert"]>;
+        Relationships: [];
+      };
+      paystack_events: {
+        Row: {
+          id: string;
+          event_type: string;
+          reference: string | null;
+          paystack_id: string | null;
+          signature_valid: boolean;
+          processed: boolean;
+          error: string | null;
+          payload: Json;
+          created_at: string;
+          processed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          event_type: string;
+          reference?: string | null;
+          paystack_id?: string | null;
+          signature_valid?: boolean;
+          processed?: boolean;
+          error?: string | null;
+          payload: Json;
+          created_at?: string;
+          processed_at?: string | null;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["paystack_events"]["Insert"]
+        >;
+        Relationships: [];
+      };
     };
     Views: {
       todays_word_of_day: {
@@ -1165,6 +1329,10 @@ export type ReadingPlanSubscription =
   Database["public"]["Tables"]["reading_plan_subscriptions"]["Row"];
 export type ReadingPlanProgress =
   Database["public"]["Tables"]["reading_plan_progress"]["Row"];
+export type GivingFund = Database["public"]["Tables"]["giving_funds"]["Row"];
+export type GivingRecurring =
+  Database["public"]["Tables"]["giving_recurring"]["Row"];
+export type Donation = Database["public"]["Tables"]["donations"]["Row"];
 export type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 export type UserPrivacy = Database["public"]["Tables"]["user_privacy"]["Row"];
 export type DevotionalSeries =
