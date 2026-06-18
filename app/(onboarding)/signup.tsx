@@ -94,7 +94,8 @@ export default function SignUp() {
             <Text className="font-display-italic text-copper-deep">walk</Text>.
           </Text>
           <Text className="mt-2 text-sm leading-5 text-ink-mute">
-            It takes a moment. Your place is kept from the first morning.
+            Students: sign up with your school email to be approved
+            automatically. Others are welcomed in once a leader approves you.
           </Text>
 
           <View className="mt-8 gap-4">
@@ -107,16 +108,22 @@ export default function SignUp() {
               autoComplete="name"
               error={errors.name?.message}
             />
-            <TextField
-              control={control}
-              name="email"
-              label="Email"
-              placeholder="you@example.com"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              autoComplete="email"
-              error={errors.email?.message}
-            />
+            <View>
+              <TextField
+                control={control}
+                name="email"
+                label="Email"
+                placeholder="you@students.fuoye.edu.ng"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                autoComplete="email"
+                error={errors.email?.message}
+              />
+              <Text className="mt-1.5 text-[11.5px] leading-4 text-ink-mute">
+                Use your school email for instant access. No school email? You
+                can still join — a house leader will approve you.
+              </Text>
+            </View>
             <TextField
               control={control}
               name="password"
