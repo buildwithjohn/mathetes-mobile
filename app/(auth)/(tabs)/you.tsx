@@ -99,7 +99,7 @@ export default function You() {
                         className="mt-1.5 font-sans-semibold text-[11px] uppercase"
                         style={{ color: accent, letterSpacing: 1.76 }}
                       >
-                        {house.name} House
+                        {house.name}
                       </Text>
                     ) : (
                       <Text className="mt-1 text-xs text-ink-mute">
