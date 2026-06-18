@@ -1,8 +1,14 @@
 import { Tabs } from "expo-router";
-import { Sun, BookOpen, Users, User } from "lucide-react-native";
+import { Sun, BookOpen, Users, User, Shield } from "lucide-react-native";
+import { useProfile } from "@/lib/queries/profile";
 import { colors } from "@/theme/colors";
 
+const LEADER_ROLES = ["house_leader", "discipler", "pastor", "admin"];
+
 export default function TabsLayout() {
+  const { data: profile } = useProfile();
+  const isLeader = !!profile && LEADER_ROLES.includes(profile.role);
+
   return (
     <Tabs
       screenOptions={{
@@ -34,6 +40,15 @@ export default function TabsLayout() {
         options={{
           title: "Community",
           tabBarIcon: ({ color, size }) => <Users color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="oversight"
+        options={{
+          title: "Oversight",
+          // Hidden for ordinary members; shown only to leaders.
+          href: isLeader ? undefined : null,
+          tabBarIcon: ({ color, size }) => <Shield color={color} size={size} />,
         }}
       />
       <Tabs.Screen

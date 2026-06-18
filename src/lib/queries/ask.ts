@@ -7,6 +7,7 @@ import type { AskQuestion, PublicQa } from "@/lib/database.types";
 export const askKeys = {
   mine: ["ask", "mine"] as const,
   publicQa: ["ask", "public"] as const,
+  pending: ["ask", "pending"] as const,
 };
 
 // The caller's own questions (any status), newest first.
@@ -40,6 +41,51 @@ export function usePublicQa() {
         .order("answered_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
+    },
+  });
+}
+
+// Oversight: questions awaiting an answer. RLS scopes this to leaders who may
+// answer (pastor/admin); for members it returns only their own pending items.
+export function usePendingQuestions() {
+  const authId = useAuth((s) => s.session?.user.id ?? null);
+  return useQuery({
+    queryKey: askKeys.pending,
+    enabled: !!authId,
+    queryFn: async (): Promise<AskQuestion[]> => {
+      const { data, error } = await supabase
+        .from("ask_questions")
+        .select("*")
+        .eq("status", "awaiting")
+        .order("urgent", { ascending: false })
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
+
+// Answer a question (pastor/admin). p_public posts an anonymized copy to the
+// public Q&A feed.
+export function useAnswerQuestion() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: {
+      id: string;
+      response: string;
+      makePublic: boolean;
+    }): Promise<void> => {
+      const { error } = await supabase.rpc("answer_question", {
+        p_id: args.id,
+        p_response: args.response.trim(),
+        p_public: args.makePublic,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: askKeys.pending });
+      queryClient.invalidateQueries({ queryKey: askKeys.publicQa });
+      queryClient.invalidateQueries({ queryKey: askKeys.mine });
     },
   });
 }
