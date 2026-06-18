@@ -44,7 +44,8 @@ import { colors } from "@/theme/colors";
 import type { AskQuestion, Report, Campus } from "@/lib/database.types";
 
 const ROLE_LABEL: Record<string, string> = {
-  house_leader: "House leader",
+  member: "Student",
+  house_leader: "House Leader",
   discipler: "Discipler",
   pastor: "Pastor",
   admin: "Admin",
@@ -56,13 +57,21 @@ export default function Oversight() {
   const pending = usePendingQuestions();
   const [answering, setAnswering] = useState<AskQuestion | null>(null);
 
-  // Approvals + reports + ask-answering are pastor/admin only (RLS-gated too).
-  const isAdmin = profile?.role === "pastor" || profile?.role === "admin";
-  const pendingMembers = usePendingMembers(isAdmin);
-  const openReports = useOpenReports(isAdmin);
+  // Action gating per the role contract (RLS is the real ceiling):
+  //  - manage (approve members, resolve flags): owner / admin
+  //  - answer Ask-Pastor: owner / admin / pastor
+  //  - discipler / house_leader: Oversight is view-only.
+  const isOwner = profile?.is_owner === true;
+  const canManage = isOwner || profile?.role === "admin";
+  const canAnswer = canManage || profile?.role === "pastor";
+  const badgeLabel = isOwner
+    ? "Owner"
+    : ROLE_LABEL[profile?.role ?? ""] ?? "Leader";
+
+  const pendingMembers = usePendingMembers(canManage);
+  const openReports = useOpenReports(canManage);
   const { data: campuses } = useCampuses();
 
-  const canAnswer = isAdmin;
   const questions = pending.data ?? [];
   const members = pendingMembers.data ?? [];
   const reports = openReports.data ?? [];
@@ -74,7 +83,7 @@ export default function Oversight() {
         {profile ? (
           <View className="rounded-full border border-rule px-3 py-1">
             <Text className="font-sans-medium text-[11px] uppercase text-copper-deep" style={{ letterSpacing: 0.8 }}>
-              {ROLE_LABEL[profile.role] ?? "Leader"}
+              {badgeLabel}
             </Text>
           </View>
         ) : null}
@@ -138,8 +147,8 @@ export default function Oversight() {
           </>
         ) : null}
 
-        {/* Member approvals (pastor/admin) */}
-        {isAdmin ? (
+        {/* Member approvals (owner/admin) */}
+        {canManage ? (
           <>
             <SectionLabel>Approvals</SectionLabel>
             {pendingMembers.isLoading ? (
@@ -156,8 +165,8 @@ export default function Oversight() {
           </>
         ) : null}
 
-        {/* Reports / flags (pastor/admin) */}
-        {isAdmin ? (
+        {/* Reports / flags (owner/admin) */}
+        {canManage ? (
           <>
             <SectionLabel>Flags to review</SectionLabel>
             {openReports.isLoading ? (

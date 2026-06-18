@@ -163,6 +163,7 @@ export interface Database {
           photo_visibility: PhotoVisibility;
           role: UserRole;
           status: MembershipStatus;
+          is_owner: boolean;
           gender: Gender | null;
           year: string | null;
           dept: string | null;
