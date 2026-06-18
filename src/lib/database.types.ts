@@ -1316,6 +1316,27 @@ export interface Database {
         Args: { p_campus: string };
         Returns: undefined;
       };
+      list_pending_members: {
+        Args: Record<string, never>;
+        Returns: {
+          id: string;
+          name: string;
+          email: string;
+          created_at: string;
+        }[];
+      };
+      approve_member: {
+        Args: { p_user: string; p_campus: string };
+        Returns: undefined;
+      };
+      reject_member: {
+        Args: { p_user: string };
+        Returns: undefined;
+      };
+      resolve_report: {
+        Args: { p_report: string; p_status: string };
+        Returns: undefined;
+      };
     };
     Enums: {
       photo_visibility: PhotoVisibility;

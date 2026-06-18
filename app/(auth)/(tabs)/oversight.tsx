@@ -24,14 +24,24 @@ import {
   X,
   Check,
   Eye,
+  UserCheck,
+  Flag,
 } from "lucide-react-native";
-import { useProfile } from "@/lib/queries/profile";
+import { useProfile, useCampuses } from "@/lib/queries/profile";
 import {
   usePendingQuestions,
   useAnswerQuestion,
 } from "@/lib/queries/ask";
+import {
+  usePendingMembers,
+  useApproveMember,
+  useRejectMember,
+  useOpenReports,
+  useResolveReport,
+  type PendingMember,
+} from "@/lib/queries/oversight";
 import { colors } from "@/theme/colors";
-import type { AskQuestion } from "@/lib/database.types";
+import type { AskQuestion, Report, Campus } from "@/lib/database.types";
 
 const ROLE_LABEL: Record<string, string> = {
   house_leader: "House leader",
@@ -46,8 +56,16 @@ export default function Oversight() {
   const pending = usePendingQuestions();
   const [answering, setAnswering] = useState<AskQuestion | null>(null);
 
-  const canAnswer = profile?.role === "pastor" || profile?.role === "admin";
+  // Approvals + reports + ask-answering are pastor/admin only (RLS-gated too).
+  const isAdmin = profile?.role === "pastor" || profile?.role === "admin";
+  const pendingMembers = usePendingMembers(isAdmin);
+  const openReports = useOpenReports(isAdmin);
+  const { data: campuses } = useCampuses();
+
+  const canAnswer = isAdmin;
   const questions = pending.data ?? [];
+  const members = pendingMembers.data ?? [];
+  const reports = openReports.data ?? [];
 
   return (
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
@@ -120,6 +138,40 @@ export default function Oversight() {
           </>
         ) : null}
 
+        {/* Member approvals (pastor/admin) */}
+        {isAdmin ? (
+          <>
+            <SectionLabel>Approvals</SectionLabel>
+            {pendingMembers.isLoading ? (
+              <ActivityIndicator className="mt-4" color={colors.copper} />
+            ) : members.length === 0 ? (
+              <Text className="px-6 text-sm text-ink-mute">
+                No one is waiting to be approved.
+              </Text>
+            ) : (
+              members.map((m) => (
+                <ApprovalRow key={m.id} member={m} campuses={campuses ?? []} />
+              ))
+            )}
+          </>
+        ) : null}
+
+        {/* Reports / flags (pastor/admin) */}
+        {isAdmin ? (
+          <>
+            <SectionLabel>Flags to review</SectionLabel>
+            {openReports.isLoading ? (
+              <ActivityIndicator className="mt-4" color={colors.copper} />
+            ) : reports.length === 0 ? (
+              <Text className="px-6 text-sm text-ink-mute">
+                No open flags. Nothing needs review.
+              </Text>
+            ) : (
+              reports.map((r) => <ReportRow key={r.id} report={r} />)
+            )}
+          </>
+        ) : null}
+
         {/* Surfaces the leader already has access to (RLS-scoped) */}
         <SectionLabel>Where you serve</SectionLabel>
         <EntryRow
@@ -141,10 +193,10 @@ export default function Oversight() {
           onPress={() => router.push("/announcements")}
         />
 
-        {/* TODO(backend): member approvals queue + reports/flags inbox need
-            confirmed RLS reads (pending profiles, reports) and the
-            approve_member/reject_member RPCs; wire once confirmed. Management
-            (create/edit/delete) stays in the admin portal. */}
+        {/* TODO(backend): DM-content oversight view is intentionally NOT built
+            yet — RLS may tighten to existence-only (+ content on open report)
+            in 0028. House-leader-scoped report reads aren't available either
+            (reports have no house_id), so the flags inbox is admin-only. */}
       </ScrollView>
 
       <AnswerModal
@@ -191,6 +243,155 @@ function EntryRow({
       </View>
       <ChevronRight color={colors.inkFaint} size={16} strokeWidth={1.5} />
     </Pressable>
+  );
+}
+
+function ApprovalRow({
+  member,
+  campuses,
+}: {
+  member: PendingMember;
+  campuses: Campus[];
+}) {
+  const approve = useApproveMember();
+  const reject = useRejectMember();
+  const busy = approve.isPending || reject.isPending;
+
+  const onApprove = () => {
+    const doApprove = (campusId: string) =>
+      approve.mutate(
+        { userId: member.id, campusId },
+        {
+          onError: (e) =>
+            Alert.alert(
+              "Could not approve",
+              e instanceof Error ? e.message : "Please try again."
+            ),
+        }
+      );
+    if (campuses.length <= 1) {
+      if (campuses[0]) doApprove(campuses[0].id);
+      return;
+    }
+    Alert.alert(`Approve ${member.name}`, "Assign to which campus?", [
+      ...campuses.map((c) => ({ text: c.name, onPress: () => doApprove(c.id) })),
+      { text: "Cancel", style: "cancel" as const },
+    ]);
+  };
+
+  const onReject = () =>
+    Alert.alert("Reject this request?", member.name, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Reject",
+        style: "destructive",
+        onPress: () =>
+          reject.mutate(member.id, {
+            onError: (e) =>
+              Alert.alert(
+                "Could not reject",
+                e instanceof Error ? e.message : "Please try again."
+              ),
+          }),
+      },
+    ]);
+
+  return (
+    <View className="border-b border-rule-soft px-6 py-3.5">
+      <View className="flex-row items-center gap-3">
+        <View className="h-9 w-9 items-center justify-center rounded-full bg-paper-raised">
+          <UserCheck color={colors.inkSoft} size={18} strokeWidth={1.7} />
+        </View>
+        <View className="flex-1">
+          <Text className="font-sans-semibold text-[14.5px] text-ink">
+            {member.name}
+          </Text>
+          <Text className="mt-0.5 text-[12px] text-ink-mute" numberOfLines={1}>
+            {member.email} · {format(new Date(member.created_at), "d MMM")}
+          </Text>
+        </View>
+      </View>
+      <View className="mt-2.5 flex-row gap-2 pl-12">
+        <Pressable
+          onPress={onApprove}
+          disabled={busy}
+          className="rounded-full bg-copper px-4 py-1.5 active:opacity-90 disabled:opacity-50"
+        >
+          <Text className="text-[13px] font-sans-semibold text-white">Approve</Text>
+        </Pressable>
+        <Pressable
+          onPress={onReject}
+          disabled={busy}
+          className="rounded-full border border-rule px-4 py-1.5 active:opacity-70 disabled:opacity-50"
+        >
+          <Text className="text-[13px] text-oxblood">Reject</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+const REPORT_TARGET_LABEL: Record<string, string> = {
+  message: "Message",
+  user: "User",
+  prayer_request: "Prayer request",
+  ask_question: "Ask Pastor question",
+};
+
+function ReportRow({ report }: { report: Report }) {
+  const resolve = useResolveReport();
+  const act = (status: "reviewing" | "resolved" | "dismissed") =>
+    resolve.mutate(
+      { reportId: report.id, status },
+      {
+        onError: (e) =>
+          Alert.alert(
+            "Could not update",
+            e instanceof Error ? e.message : "Please try again."
+          ),
+      }
+    );
+
+  return (
+    <View className="border-b border-rule-soft px-6 py-3.5">
+      <View className="flex-row items-center gap-3">
+        <View className="h-9 w-9 items-center justify-center rounded-full bg-paper-raised">
+          <Flag color={colors.oxblood} size={18} strokeWidth={1.7} />
+        </View>
+        <View className="flex-1">
+          <Text className="font-sans-semibold text-[14.5px] text-ink">
+            {REPORT_TARGET_LABEL[report.target_type] ?? "Flag"}
+          </Text>
+          <Text className="mt-0.5 text-[12px] text-ink-mute" numberOfLines={2}>
+            {report.reason || "No reason given"} ·{" "}
+            {format(new Date(report.created_at), "d MMM")}
+          </Text>
+        </View>
+      </View>
+      <View className="mt-2.5 flex-row gap-2 pl-12">
+        <Pressable
+          onPress={() => act("reviewing")}
+          disabled={resolve.isPending}
+          className="rounded-full border border-rule px-3.5 py-1.5 active:opacity-70 disabled:opacity-50"
+        >
+          <Text className="text-[13px] text-ink">Reviewing</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => act("resolved")}
+          disabled={resolve.isPending}
+          className="rounded-full bg-ink px-3.5 py-1.5 active:opacity-90 disabled:opacity-50"
+        >
+          <Text className="text-[13px] font-sans-medium text-parchment">Resolve</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => act("dismissed")}
+          disabled={resolve.isPending}
+          className="rounded-full border border-rule px-3.5 py-1.5 active:opacity-70 disabled:opacity-50"
+        >
+          <Text className="text-[13px] text-ink-mute">Dismiss</Text>
+        </Pressable>
+      </View>
+    </View>
   );
 }
 
