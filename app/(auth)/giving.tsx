@@ -30,6 +30,11 @@ import type {
   Donation,
 } from "@/lib/database.types";
 
+// Paystack isn't set up yet (edge functions not deployed), so the give action
+// is gated. The rest of the screen (funds, history, recurring) is live.
+// Flip to true once the backend deploys the functions + sets the webhook.
+const GIVING_ENABLED = false;
+
 const PRESETS = [500, 1000, 2000, 5000];
 const INTERVALS: { key: GivingInterval; label: string }[] = [
   { key: "weekly", label: "Weekly" },
@@ -64,6 +69,13 @@ export default function Giving() {
   const amountKobo = Math.round((parseFloat(amount) || 0) * 100);
 
   const onGive = () => {
+    if (!GIVING_ENABLED) {
+      Alert.alert(
+        "Giving opens soon",
+        "Online giving is being set up. You'll be able to give here shortly."
+      );
+      return;
+    }
     if (amountKobo <= 0) {
       Alert.alert("Enter an amount", "Please enter how much you'd like to give.");
       return;
@@ -280,7 +292,7 @@ export default function Giving() {
 
         <Pressable
           onPress={onGive}
-          disabled={init.isPending || processing}
+          disabled={!GIVING_ENABLED || init.isPending || processing}
           className="mt-5 h-[52px] flex-row items-center justify-center gap-2 rounded-full bg-copper active:opacity-90 disabled:opacity-50"
         >
           {init.isPending || processing ? (
@@ -289,8 +301,11 @@ export default function Giving() {
             <>
               <HeartHandshake color="#fff" size={18} strokeWidth={1.8} />
               <Text className="font-sans-semibold text-base text-white">
-                {recurringOn ? "Start recurring gift" : "Give"}
-                {amountKobo > 0 ? ` ${naira(amountKobo)}` : ""}
+                {!GIVING_ENABLED
+                  ? "Giving opens soon"
+                  : `${recurringOn ? "Start recurring gift" : "Give"}${
+                      amountKobo > 0 ? ` ${naira(amountKobo)}` : ""
+                    }`}
               </Text>
             </>
           )}
@@ -302,7 +317,9 @@ export default function Giving() {
         ) : null}
 
         <Text className="mt-3 text-center text-[11px] text-ink-faint">
-          Payments are processed securely by Paystack.
+          {GIVING_ENABLED
+            ? "Payments are processed securely by Paystack."
+            : "Online giving is being set up. Payments are processed securely by Paystack."}
         </Text>
 
         {/* Recurring mandates */}

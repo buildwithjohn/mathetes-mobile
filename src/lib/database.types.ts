@@ -23,6 +23,7 @@ export type UserRole =
   | "admin";
 export type Gender = "male" | "female";
 export type DmWho = "all_parish" | "house" | "discipler" | "none";
+export type MembershipStatus = "pending" | "active" | "rejected" | "suspended";
 export type ContentStatus = "draft" | "scheduled" | "published";
 export type AssetKind = "image" | "audio";
 export type Testament = "OT" | "NT";
@@ -161,6 +162,7 @@ export interface Database {
           photo_url: string | null;
           photo_visibility: PhotoVisibility;
           role: UserRole;
+          status: MembershipStatus;
           gender: Gender | null;
           year: string | null;
           dept: string | null;
@@ -517,6 +519,7 @@ export interface Database {
           slug: string;
           name: string;
           is_primary: boolean;
+          allowed_email_domains: string[];
           created_at: string;
         };
         Insert: {
@@ -525,6 +528,7 @@ export interface Database {
           slug: string;
           name: string;
           is_primary?: boolean;
+          allowed_email_domains?: string[];
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["campuses"]["Insert"]>;
