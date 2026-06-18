@@ -120,6 +120,23 @@ export function useUpdateProfile() {
   });
 }
 
+// Campus is set via a dedicated RPC (direct campus_id writes are rejected by
+// the self-escalation guard). Sets the caller's own campus, once.
+export function useSetMyCampus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (campusId: string): Promise<void> => {
+      const { error } = await supabase.rpc("set_my_campus", {
+        p_campus: campusId,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: profileKeys.me });
+    },
+  });
+}
+
 // Upload a picked image to the avatars bucket and point the profile at its
 // public URL. Photos are opt-in; visibility defaults to parish (schema default)
 // and is editable on the profile screen.

@@ -1312,6 +1312,10 @@ export interface Database {
         Args: { p_subscription_id: string };
         Returns: boolean;
       };
+      set_my_campus: {
+        Args: { p_campus: string };
+        Returns: undefined;
+      };
     };
     Enums: {
       photo_visibility: PhotoVisibility;

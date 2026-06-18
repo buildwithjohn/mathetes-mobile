@@ -10,7 +10,7 @@ import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { Check, MapPin } from "lucide-react-native";
-import { useCampuses, useUpdateProfile } from "@/lib/queries/profile";
+import { useCampuses, useSetMyCampus } from "@/lib/queries/profile";
 import { OnboardingProgress } from "@/components/OnboardingProgress";
 import { colors } from "@/theme/colors";
 
@@ -19,7 +19,7 @@ import { colors } from "@/theme/colors";
 export default function CampusPicker() {
   const router = useRouter();
   const { data: campuses, isLoading } = useCampuses();
-  const updateProfile = useUpdateProfile();
+  const setMyCampus = useSetMyCampus();
   const [selected, setSelected] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,7 +31,8 @@ export default function CampusPicker() {
   const onContinue = async () => {
     if (!selected) return;
     try {
-      await updateProfile.mutateAsync({ campus_id: selected });
+      // campus_id is set via RPC (direct writes are rejected server-side).
+      await setMyCampus.mutateAsync(selected);
       router.replace("/(onboarding)/house");
     } catch {
       // Error surfaced in the banner below.
@@ -115,19 +116,19 @@ export default function CampusPicker() {
       )}
 
       <View className="border-t border-rule-soft bg-parchment px-6 pb-8 pt-4">
-        {updateProfile.isError ? (
+        {setMyCampus.isError ? (
           <Text className="mb-3 text-center text-sm text-oxblood">
-            {updateProfile.error instanceof Error
-              ? updateProfile.error.message
+            {setMyCampus.error instanceof Error
+              ? setMyCampus.error.message
               : "Could not save your campus. Please try again."}
           </Text>
         ) : null}
         <Pressable
           onPress={onContinue}
-          disabled={!selected || updateProfile.isPending}
+          disabled={!selected || setMyCampus.isPending}
           className="h-[52px] items-center justify-center rounded-full bg-ink active:opacity-90 disabled:opacity-40"
         >
-          {updateProfile.isPending ? (
+          {setMyCampus.isPending ? (
             <ActivityIndicator color={colors.parchment} />
           ) : (
             <Text className="font-sans-semibold text-base text-parchment">
