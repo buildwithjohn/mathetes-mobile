@@ -42,6 +42,7 @@ export type DonationStatus =
   | "failed"
   | "abandoned"
   | "reversed";
+export type LibraryItemKind = "book" | "manual" | "audio" | "video";
 export type HighlightColor = "copper" | "gold" | "sage" | "oxblood" | "blue";
 
 // Community (chat, prayer, ask-pastor, safety, notifications) enums.
@@ -1237,6 +1238,48 @@ export interface Database {
         >;
         Relationships: [];
       };
+      library_items: {
+        Row: {
+          id: string;
+          parish_id: string;
+          kind: LibraryItemKind;
+          title: string;
+          description: string | null;
+          author: string | null;
+          category: string | null;
+          cover_image_url: string | null;
+          file_url: string | null;
+          external_url: string | null;
+          duration_seconds: number | null;
+          published: boolean;
+          published_at: string | null;
+          author_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          parish_id: string;
+          kind: LibraryItemKind;
+          title: string;
+          description?: string | null;
+          author?: string | null;
+          category?: string | null;
+          cover_image_url?: string | null;
+          file_url?: string | null;
+          external_url?: string | null;
+          duration_seconds?: number | null;
+          published?: boolean;
+          published_at?: string | null;
+          author_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["library_items"]["Insert"]
+        >;
+        Relationships: [];
+      };
     };
     Views: {
       todays_word_of_day: {
@@ -1363,6 +1406,8 @@ export type GivingFund = Database["public"]["Tables"]["giving_funds"]["Row"];
 export type GivingRecurring =
   Database["public"]["Tables"]["giving_recurring"]["Row"];
 export type Donation = Database["public"]["Tables"]["donations"]["Row"];
+export type LibraryItem =
+  Database["public"]["Tables"]["library_items"]["Row"];
 export type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 export type UserPrivacy = Database["public"]["Tables"]["user_privacy"]["Row"];
 export type DevotionalSeries =

@@ -20,6 +20,7 @@ import {
   BookOpen,
   Layers,
   HandCoins,
+  Library as LibraryIcon,
   type LucideIcon,
 } from "lucide-react-native";
 import { useAuth } from "@/lib/stores/auth";
@@ -173,6 +174,12 @@ export default function You() {
             icon={HandCoins}
             label="Give"
             onPress={() => router.push("/giving")}
+          />
+          <MenuRow
+            icon={LibraryIcon}
+            label="Library"
+            onPress={() => router.push("/resources")}
+            divider
           />
           <MenuRow
             icon={Layers}
