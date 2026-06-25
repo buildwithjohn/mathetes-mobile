@@ -308,6 +308,7 @@ export interface Database {
           verse_text: string;
           reflection_md: string | null;
           prompt: string | null;
+          prayer_md: string | null;
           author_id: string | null;
           publish_date: string | null;
           status: ContentStatus;
@@ -320,6 +321,7 @@ export interface Database {
           verse_text: string;
           reflection_md?: string | null;
           prompt?: string | null;
+          prayer_md?: string | null;
           author_id?: string | null;
           publish_date?: string | null;
           status?: ContentStatus;

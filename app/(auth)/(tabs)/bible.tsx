@@ -288,22 +288,29 @@ export default function Bible() {
             {verses.map((v) => {
               const isSelected = selected.has(v.number);
               const hColor = highlightMap.get(v.id);
-              const bg = isSelected
-                ? `${colors.copper}2E`
+              // A highlight is a vivid fill with dark text on top (reads on
+              // light and dark). Selection is a softer copper wash.
+              const verseStyle = isSelected
+                ? { backgroundColor: `${colors.copper}2E` }
                 : hColor
-                  ? `${highlightColors[hColor]}26`
+                  ? { backgroundColor: highlightColors[hColor], color: "#1A1A1A" }
                   : undefined;
+              const highlighted = !isSelected && !!hColor;
               return (
                 <Text
                   key={v.id}
                   onPress={() => toggleVerse(v.number)}
-                  style={bg ? { backgroundColor: bg } : undefined}
+                  style={verseStyle}
                 >
                   <Text
                     className="font-sans-semibold"
                     style={{
                       fontSize: 12,
-                      color: isSelected ? colors.oxblood : colors.copperDeep,
+                      color: highlighted
+                        ? "#1A1A1A"
+                        : isSelected
+                          ? colors.oxblood
+                          : colors.copperDeep,
                     }}
                   >
                     {v.number}{" "}

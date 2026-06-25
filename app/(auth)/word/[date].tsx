@@ -150,6 +150,19 @@ export default function WordExpanded() {
                 </Text>
               </View>
             ) : null}
+
+            {/* Prayer guide */}
+            {word.prayer_md ? (
+              <View className="mt-7 rounded-2xl bg-paper-raised px-[22px] py-5">
+                <Text
+                  className="mb-2.5 font-sans-medium text-[11px] uppercase text-copper-deep"
+                  style={{ letterSpacing: 1.76 }}
+                >
+                  Pray
+                </Text>
+                <Markdown body={word.prayer_md} />
+              </View>
+            ) : null}
           </ScrollView>
 
           {/* Sticky share footer */}

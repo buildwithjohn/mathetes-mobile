@@ -99,12 +99,13 @@ export const houseColors = {
 
 export type HouseSlug = keyof typeof houseColors;
 
-// Verse highlight palette (matches backend highlights.color check constraint).
-// Theme-invariant.
+// Verse highlight palette (keys match the backend highlights.color check
+// constraint; the hexes are client-side). Vivid so they read on both light and
+// dark backgrounds — highlighted verse text is drawn dark on top (see reader).
 export const highlightColors = {
-  copper: "#B87333",
-  gold: "#C9A24A",
-  sage: "#7A8A6E",
-  oxblood: "#722F37",
-  blue: "#6B7F8A",
+  copper: "#FFA552", // orange
+  gold: "#FFD54A", // yellow
+  sage: "#8BD17C", // green
+  oxblood: "#F58FA8", // rose
+  blue: "#6FB7E8", // blue
 } as const;
