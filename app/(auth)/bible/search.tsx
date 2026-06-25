@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,15 +8,23 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { ChevronLeft, Search as SearchIcon } from "lucide-react-native";
-import { useBibleSearch } from "@/lib/queries/bible";
+import { useBibleSearch, DEFAULT_VERSION } from "@/lib/queries/bible";
 import { colors } from "@/theme/colors";
 
 export default function BibleSearch() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const { data: results, isFetching } = useBibleSearch(query);
+  // Search the same translation the reader is set to.
+  const [versionCode, setVersionCode] = useState(DEFAULT_VERSION);
+  useEffect(() => {
+    AsyncStorage.getItem("bible.version").then((v) => {
+      if (v) setVersionCode(v);
+    });
+  }, []);
+  const { data: results, isFetching } = useBibleSearch(query, versionCode);
   const trimmed = query.trim();
 
   return (
@@ -36,7 +44,7 @@ export default function BibleSearch() {
             autoFocus
             value={query}
             onChangeText={setQuery}
-            placeholder="Search the Word"
+            placeholder={`Search the ${versionCode}`}
             placeholderTextColor="#9C968A"
             className="flex-1 py-3 text-base text-ink"
             returnKeyType="search"
