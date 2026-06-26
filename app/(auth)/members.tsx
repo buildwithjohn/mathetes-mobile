@@ -73,6 +73,13 @@ export default function Members() {
       );
       return;
     }
+    if (/not an active member/i.test(msg)) {
+      Alert.alert(
+        "Not available",
+        `${member.name} isn't an active member right now, so you can't message them here.`
+      );
+      return;
+    }
     Alert.alert("Could not open chat", msg || "Please try again.");
   };
 

@@ -139,10 +139,20 @@ pull-to-refresh, animations, tests + CI (20 Jest tests, typecheck clean).
   - discipler / house-leader → Oversight **view-only**.
 - RPCs: `list_pending_members`, `approve_member(p_user,p_campus)`,
   `reject_member(p_user)`, `resolve_report(p_report,p_status)`, `answer_question`.
-- ⚠️ **0028 pending decision:** house-leader DM oversight may tighten to
-  existence-only (+ content only on an open report). Mobile DM-content oversight
-  view is intentionally NOT built until this lands. Reports have no `house_id`, so
-  the flags inbox is admin-only for now.
+- **DM oversight (RESOLVED, 0029):** house-leader passive DM read is removed
+  entirely — DMs are private to their two participants; a reported message
+  surfaces to admin/pastor for that one message only. Reports have no `house_id`,
+  so the flags inbox stays admin-only.
+- **Leader reach (0033, in repo):** the two student guardrails are now
+  **role-aware** so leaders aren't confined to student scope (pastoral care):
+  - **Directory** (`user_profiles` SELECT): students see active parish-mates;
+    **parish admins (owner/pastor/admin) see the whole parish** (any status), plus
+    null-parish `pending` signups (0027). `photo_visibility` honoured app-side.
+  - **`create_dm`**: owner/pastor/admin may DM **any active parish member,
+    cross-house, cross-gender approval bypassed**; a member may DM their **own
+    disciples** (`discipler_id` pointer). Students unchanged (house-mates only,
+    cross-gender needs approval). **Initiation reach only** — no new DM read path
+    (0029 stands); same RPC signature, so mobile copy/types are unaffected.
 
 ### 4.3 Reading plans (V2.0) — backend 0022 (LIVE)
 Tables `reading_plans / _days / _subscriptions / _progress`. Guardrails:
