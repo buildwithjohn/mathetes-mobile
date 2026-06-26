@@ -1,6 +1,11 @@
 # Mathetes Mobile
 
-Expo (SDK 51) + Expo Router app for Mathetes.
+Expo + Expo Router app for Mathetes.
+
+> 📖 **Cross-repo context:** read [`docs/WORKSPACE.md`](docs/WORKSPACE.md) first
+> — it's the master source of truth across mobile, backend, and admin (branch
+> model, agreed contracts, outstanding work, launch checklist). When working in
+> the combined `~/Documents/Mathetes` workspace, start there.
 
 ## Quick start
 
