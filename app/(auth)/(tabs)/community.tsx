@@ -96,18 +96,14 @@ export default function Community() {
       </View>
 
       {/* Filter chips (underline tabs) */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerClassName="gap-5 px-6 pb-3"
-      >
+      <View className="flex-row gap-6 px-6 pb-2">
         {FILTERS.map((f) => {
           const on = f === filter;
           return (
             <Pressable
               key={f}
               onPress={() => setFilter(f)}
-              className={`py-1 ${on ? "border-b-2 border-b-copper" : ""}`}
+              className={`pb-1.5 ${on ? "border-b-2 border-b-copper" : ""}`}
             >
               <Text
                 className={`text-[13.5px] ${
@@ -119,7 +115,7 @@ export default function Community() {
             </Pressable>
           );
         })}
-      </ScrollView>
+      </View>
 
       <ScrollView
         className="flex-1"

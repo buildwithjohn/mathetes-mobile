@@ -15,22 +15,31 @@ function Splash() {
   );
 }
 
-// Wraps authenticated routes. While the session is initializing it shows the
-// brand splash; once resolved, an absent session redirects to onboarding. A
-// signed-in member who never finished onboarding (no house yet) is sent back to
-// the house step so the app's house-scoped surfaces have what they need.
+// Wraps authenticated routes. Order: while the session initializes, show the
+// splash; no session -> onboarding welcome. Then enforce membership gating:
+// a non-active member (pending/rejected/suspended) only ever sees the pending
+// screen. An active member who hasn't finished onboarding is routed to the
+// right next step (campus -> house). Role/status/campus are server-controlled;
+// the app only reads them.
 export function AuthGate({ children }: { children: ReactNode }) {
   const { session, initializing } = useAuth();
   const { data: profile, isLoading } = useProfile();
 
   if (initializing) return <Splash />;
   if (!session) return <Redirect href="/(onboarding)/welcome" />;
-  if (isLoading) return <Splash />;
-  // Incomplete onboarding starts at the campus step (which flows campus ->
-  // house -> about you). The campus step auto-skips to house if a parish has no
-  // campuses configured.
-  if (profile && !profile.house_id) {
+  if (isLoading || !profile) return <Splash />;
+
+  // Membership gating: only active members reach the app.
+  if (profile.status !== "active") {
+    return <Redirect href="/(onboarding)/pending" />;
+  }
+  // Active but onboarding incomplete: campus first (school-email signups come
+  // back active with no campus since both campuses share the domain), then house.
+  if (!profile.campus_id) {
     return <Redirect href="/(onboarding)/campus" />;
+  }
+  if (!profile.house_id) {
+    return <Redirect href="/(onboarding)/house" />;
   }
 
   return <>{children}</>;

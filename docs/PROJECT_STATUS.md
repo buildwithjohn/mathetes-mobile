@@ -162,6 +162,15 @@ Recommended order: **reading plans → giving → events/attendance → pathways
 - **Public storage buckets** (avatars, chat-media) with unguessable paths — a
   pragmatic pilot choice; tighten to signed URLs later if needed.
 - Backend deployed via **SQL Editor paste** of idempotent bundles.
+- **Leader reach is role-aware (backend migration 0033).** Students keep the
+  conservative defaults (directory = active parish-mates; DMs = house-mates,
+  cross-gender needs approval). **Leaders** (owner/pastor/admin, and a member
+  toward their own disciples) see the whole-parish directory and may DM any
+  active parish member cross-house, bypassing cross-gender approval, for pastoral
+  care. Reach to *initiate* only — DM oversight is unchanged (0029: DMs stay
+  private to participants). Mobile needed no query change: `useParishMembers`
+  is RLS-scoped and `create_dm` keeps its signature, so leaders' DMs just succeed.
+  The members screen maps a new `not an active member` error to warm copy.
 
 ## 12. Gotchas / notes
 - Native features (OAuth, Apple, push, deep links) **require an EAS build**, not

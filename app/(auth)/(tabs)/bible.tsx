@@ -5,8 +5,10 @@ import {
   Pressable,
   ScrollView,
   ActivityIndicator,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Clipboard from "expo-clipboard";
@@ -19,9 +21,11 @@ import {
   Highlighter,
   Bookmark,
   ImageDown,
+  Check,
   X,
 } from "lucide-react-native";
 import {
+  useBibleVersions,
   useBibleBooks,
   useChapterVerses,
   useBookChapters,
@@ -44,7 +48,9 @@ const HIGHLIGHT_KEYS = Object.keys(highlightColors) as HighlightColor[];
 export default function Bible() {
   const router = useRouter();
   const { data: profile } = useProfile();
-  const { data: books } = useBibleBooks();
+  const { data: versions } = useBibleVersions();
+  const [versionCode, setVersionCode] = useState(DEFAULT_VERSION);
+  const { data: books } = useBibleBooks(versionCode);
   const { data: position } = useReadingPosition();
   const updatePosition = useUpdateReadingPosition();
   const { data: highlights } = useHighlights();
@@ -55,9 +61,22 @@ export default function Bible() {
   const [abbrev, setAbbrev] = useState<string | null>(null);
   const [chapter, setChapter] = useState<number>(1);
   const [navOpen, setNavOpen] = useState(false);
+  const [transOpen, setTransOpen] = useState(false);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [pickerOpen, setPickerOpen] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
+
+  // Remember the chosen translation across launches.
+  useEffect(() => {
+    AsyncStorage.getItem("bible.version").then((v) => {
+      if (v) setVersionCode(v);
+    });
+  }, []);
+  const pickVersion = (code: string) => {
+    setVersionCode(code);
+    setTransOpen(false);
+    AsyncStorage.setItem("bible.version", code).catch(() => {});
+  };
 
   // Initialize the location from the saved reading position, else John 1. A
   // location passed via params (from the library) takes over in its own effect.
@@ -161,7 +180,7 @@ export default function Bible() {
     if (selectedVerses.length === 0) return;
     const body = selectedVerses.map((v) => `${v.number} ${v.text}`).join("\n");
     await Clipboard.setStringAsync(
-      `${body}\n\n${reference} (${DEFAULT_VERSION})`
+      `${body}\n\n${reference} (${versionCode})`
     );
     clearSelection();
     setFlash("Copied to clipboard");
@@ -189,7 +208,7 @@ export default function Bible() {
       params: {
         text: v.text,
         reference: `${book.name} ${chapter}:${v.number}`,
-        label: DEFAULT_VERSION,
+        label: versionCode,
       },
     });
     clearSelection();
@@ -209,16 +228,19 @@ export default function Bible() {
           <ChevronDown color={colors.inkMute} size={14} strokeWidth={2} />
         </Pressable>
         <View className="flex-row items-center gap-1">
-          {/* TODO(backend): only the public-domain KJV is loaded; a translation
-              switcher sheet lands when more versions are available. */}
-          <View className="rounded-full border border-rule px-3 py-2">
+          {/* Translation switcher — lists whatever versions the backend has. */}
+          <Pressable
+            onPress={() => setTransOpen(true)}
+            className="flex-row items-center gap-1 rounded-full border border-rule px-3 py-2 active:opacity-70"
+          >
             <Text
               className="font-sans-medium text-xs text-ink-soft"
               style={{ letterSpacing: 0.72 }}
             >
-              {DEFAULT_VERSION}
+              {versionCode}
             </Text>
-          </View>
+            <ChevronDown color={colors.inkMute} size={12} strokeWidth={2} />
+          </Pressable>
           <Pressable
             onPress={() => router.push("/bible/search")}
             className="h-10 w-10 items-center justify-center"
@@ -266,22 +288,29 @@ export default function Bible() {
             {verses.map((v) => {
               const isSelected = selected.has(v.number);
               const hColor = highlightMap.get(v.id);
-              const bg = isSelected
-                ? `${colors.copper}2E`
+              // A highlight is a vivid fill with dark text on top (reads on
+              // light and dark). Selection is a softer copper wash.
+              const verseStyle = isSelected
+                ? { backgroundColor: `${colors.copper}2E` }
                 : hColor
-                  ? `${highlightColors[hColor]}26`
+                  ? { backgroundColor: highlightColors[hColor], color: "#1A1A1A" }
                   : undefined;
+              const highlighted = !isSelected && !!hColor;
               return (
                 <Text
                   key={v.id}
                   onPress={() => toggleVerse(v.number)}
-                  style={bg ? { backgroundColor: bg } : undefined}
+                  style={verseStyle}
                 >
                   <Text
                     className="font-sans-semibold"
                     style={{
                       fontSize: 12,
-                      color: isSelected ? colors.oxblood : colors.copperDeep,
+                      color: highlighted
+                        ? "#1A1A1A"
+                        : isSelected
+                          ? colors.oxblood
+                          : colors.copperDeep,
                     }}
                   >
                     {v.number}{" "}
@@ -397,6 +426,62 @@ export default function Bible() {
           }}
         />
       ) : null}
+
+      {/* Translation switcher sheet */}
+      <Modal
+        visible={transOpen}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setTransOpen(false)}
+      >
+        <Pressable
+          className="flex-1 justify-end bg-ink/30"
+          onPress={() => setTransOpen(false)}
+        >
+          <View className="rounded-t-3xl bg-surface1 px-5 pb-10 pt-3">
+            <View className="mb-2 h-1 w-10 self-center rounded-full bg-rule" />
+            <Text className="mb-2 px-1 font-display text-lg text-ink">
+              Translation
+            </Text>
+            {(versions ?? []).map((v, i) => {
+              const active = v.code === versionCode;
+              return (
+                <Pressable
+                  key={v.id}
+                  onPress={() => pickVersion(v.code)}
+                  className={`flex-row items-center gap-3 py-3.5 ${
+                    i < (versions?.length ?? 0) - 1
+                      ? "border-b border-rule-soft"
+                      : ""
+                  }`}
+                >
+                  <View className="h-9 w-12 items-center justify-center rounded-lg bg-paper-raised">
+                    <Text className="font-display text-[13px] text-ink-soft">
+                      {v.code}
+                    </Text>
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-[14.5px] text-ink">{v.name}</Text>
+                    {v.license ? (
+                      <Text className="mt-0.5 text-[11.5px] text-ink-mute">
+                        {v.license}
+                      </Text>
+                    ) : null}
+                  </View>
+                  {active ? (
+                    <Check color={colors.copper} size={18} strokeWidth={2} />
+                  ) : null}
+                </Pressable>
+              );
+            })}
+            {(versions ?? []).length <= 1 ? (
+              <Text className="px-1 pt-3 text-[12px] text-ink-mute">
+                More translations are on the way.
+              </Text>
+            ) : null}
+          </View>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }

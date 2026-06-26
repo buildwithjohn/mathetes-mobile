@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { ChevronLeft, Check } from "lucide-react-native";
+import { useTheme, type ThemeMode } from "@/lib/stores/theme";
 import {
   useUserPrivacy,
   useUpdatePrivacy,
@@ -51,9 +52,18 @@ export default function Settings() {
         contentContainerClassName="px-6 pb-16 pt-2"
         showsVerticalScrollIndicator={false}
       >
+        {/* Appearance */}
+        <Text
+          className="mb-2 mt-4 font-sans-medium text-[11px] uppercase text-ink-mute"
+          style={{ letterSpacing: 1.6 }}
+        >
+          Appearance
+        </Text>
+        <Appearance />
+
         {/* Notifications */}
         <Text
-          className="mb-1 mt-4 font-sans-medium text-[11px] uppercase text-ink-mute"
+          className="mb-1 mt-8 font-sans-medium text-[11px] uppercase text-ink-mute"
           style={{ letterSpacing: 1.6 }}
         >
           Notifications
@@ -180,6 +190,41 @@ export default function Settings() {
         )}
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+const THEME_OPTIONS: { key: ThemeMode; label: string }[] = [
+  { key: "system", label: "System" },
+  { key: "light", label: "Light" },
+  { key: "dark", label: "Dark" },
+];
+
+function Appearance() {
+  const mode = useTheme((s) => s.mode);
+  const setMode = useTheme((s) => s.setMode);
+  return (
+    <View className="flex-row rounded-full bg-surface2 p-1">
+      {THEME_OPTIONS.map((o) => {
+        const activeOpt = mode === o.key;
+        return (
+          <Pressable
+            key={o.key}
+            onPress={() => setMode(o.key)}
+            className={`flex-1 items-center rounded-full py-2.5 ${
+              activeOpt ? "bg-paper" : ""
+            }`}
+          >
+            <Text
+              className={`font-sans-medium text-sm ${
+                activeOpt ? "text-ink" : "text-ink-mute"
+              }`}
+            >
+              {o.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
   );
 }
 

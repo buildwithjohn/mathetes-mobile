@@ -5,7 +5,8 @@ import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 import { format, parseISO } from "date-fns";
 import { X, CalendarDays, Bookmark, NotebookPen, ImageDown } from "lucide-react-native";
 import { useWordOfDay } from "@/lib/queries/content";
-import { sentences, paragraphs } from "@/utils/text";
+import { sentences } from "@/utils/text";
+import { Markdown } from "@/components/Markdown";
 import { colors } from "@/theme/colors";
 
 export default function WordExpanded() {
@@ -138,14 +139,7 @@ export default function WordExpanded() {
                 >
                   Reflection
                 </Text>
-                {paragraphs(word.reflection_md).map((p, i) => (
-                  <Text
-                    key={i}
-                    className="mb-4 font-scripture text-[18px] leading-[30px] text-ink"
-                  >
-                    {p}
-                  </Text>
-                ))}
+                <Markdown body={word.reflection_md} />
               </Animated.View>
             ) : null}
 
@@ -154,6 +148,19 @@ export default function WordExpanded() {
                 <Text className="font-display-italic text-[16px] leading-6 text-ink-soft">
                   {word.prompt}
                 </Text>
+              </View>
+            ) : null}
+
+            {/* Prayer guide */}
+            {word.prayer_md ? (
+              <View className="mt-7 rounded-2xl bg-paper-raised px-[22px] py-5">
+                <Text
+                  className="mb-2.5 font-sans-medium text-[11px] uppercase text-copper-deep"
+                  style={{ letterSpacing: 1.76 }}
+                >
+                  Pray
+                </Text>
+                <Markdown body={word.prayer_md} />
               </View>
             ) : null}
           </ScrollView>

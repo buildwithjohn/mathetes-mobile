@@ -65,7 +65,8 @@ function titleFor(
     case "parish_group":
       return "Parish Community";
     case "house_group":
-      return chat.houses ? `${chat.houses.name} House` : "House group";
+      // house names already include "House" (e.g. "Berea House").
+      return chat.houses ? chat.houses.name : "House group";
     case "discipler":
       return other ? other.name : "Discipler";
     case "ask_pastor_thread":

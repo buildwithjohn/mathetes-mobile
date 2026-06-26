@@ -23,9 +23,26 @@ export type UserRole =
   | "admin";
 export type Gender = "male" | "female";
 export type DmWho = "all_parish" | "house" | "discipler" | "none";
+export type MembershipStatus = "pending" | "active" | "rejected" | "suspended";
 export type ContentStatus = "draft" | "scheduled" | "published";
 export type AssetKind = "image" | "audio";
 export type Testament = "OT" | "NT";
+export type PlanDifficulty = "starter" | "intermediate" | "deep";
+export type GivingInterval = "weekly" | "monthly" | "quarterly" | "annually";
+export type GivingRecurringStatus =
+  | "pending"
+  | "active"
+  | "paused"
+  | "attention"
+  | "cancelled";
+export type DonationKind = "one_time" | "recurring";
+export type DonationStatus =
+  | "pending"
+  | "success"
+  | "failed"
+  | "abandoned"
+  | "reversed";
+export type LibraryItemKind = "book" | "manual" | "audio" | "video";
 export type HighlightColor = "copper" | "gold" | "sage" | "oxblood" | "blue";
 
 // Community (chat, prayer, ask-pastor, safety, notifications) enums.
@@ -146,6 +163,8 @@ export interface Database {
           photo_url: string | null;
           photo_visibility: PhotoVisibility;
           role: UserRole;
+          status: MembershipStatus;
+          is_owner: boolean;
           gender: Gender | null;
           year: string | null;
           dept: string | null;
@@ -289,6 +308,7 @@ export interface Database {
           verse_text: string;
           reflection_md: string | null;
           prompt: string | null;
+          prayer_md: string | null;
           author_id: string | null;
           publish_date: string | null;
           status: ContentStatus;
@@ -301,6 +321,7 @@ export interface Database {
           verse_text: string;
           reflection_md?: string | null;
           prompt?: string | null;
+          prayer_md?: string | null;
           author_id?: string | null;
           publish_date?: string | null;
           status?: ContentStatus;
@@ -502,6 +523,7 @@ export interface Database {
           slug: string;
           name: string;
           is_primary: boolean;
+          allowed_email_domains: string[];
           created_at: string;
         };
         Insert: {
@@ -510,6 +532,7 @@ export interface Database {
           slug: string;
           name: string;
           is_primary?: boolean;
+          allowed_email_domains?: string[];
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["campuses"]["Insert"]>;
@@ -943,6 +966,322 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["announcements"]["Insert"]>;
         Relationships: [];
       };
+      reading_plans: {
+        Row: {
+          id: string;
+          parish_id: string;
+          slug: string;
+          title: string;
+          description: string;
+          cover_image_url: string | null;
+          length_days: number;
+          difficulty: PlanDifficulty | null;
+          author_id: string | null;
+          sequence_locked: boolean;
+          published: boolean;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          parish_id: string;
+          slug: string;
+          title: string;
+          description: string;
+          cover_image_url?: string | null;
+          length_days: number;
+          difficulty?: PlanDifficulty | null;
+          author_id?: string | null;
+          sequence_locked?: boolean;
+          published?: boolean;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["reading_plans"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      reading_plan_days: {
+        Row: {
+          id: string;
+          plan_id: string;
+          day_number: number;
+          title: string;
+          scripture_reference: string;
+          scripture_text: string | null;
+          reflection_body: string;
+          reflection_prompt: string;
+          audio_url: string | null;
+          devotional_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          plan_id: string;
+          day_number: number;
+          title: string;
+          scripture_reference: string;
+          scripture_text?: string | null;
+          reflection_body: string;
+          reflection_prompt: string;
+          audio_url?: string | null;
+          devotional_id?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["reading_plan_days"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      reading_plan_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          plan_id: string;
+          started_at: string;
+          current_day: number;
+          last_activity_at: string;
+          completed_at: string | null;
+          paused: boolean;
+          streak_enabled: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          plan_id: string;
+          started_at?: string;
+          current_day?: number;
+          last_activity_at?: string;
+          completed_at?: string | null;
+          paused?: boolean;
+          streak_enabled?: boolean;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["reading_plan_subscriptions"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      reading_plan_progress: {
+        Row: {
+          id: string;
+          subscription_id: string;
+          day_id: string;
+          completed_at: string;
+          reflection_response: string | null;
+          share_with_discipler: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          subscription_id: string;
+          day_id: string;
+          completed_at?: string;
+          reflection_response?: string | null;
+          share_with_discipler?: boolean;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["reading_plan_progress"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      giving_funds: {
+        Row: {
+          id: string;
+          parish_id: string;
+          slug: string;
+          name: string;
+          description: string | null;
+          active: boolean;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          parish_id: string;
+          slug: string;
+          name: string;
+          description?: string | null;
+          active?: boolean;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["giving_funds"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      giving_recurring: {
+        Row: {
+          id: string;
+          parish_id: string;
+          user_id: string;
+          fund_id: string | null;
+          amount_kobo: number;
+          currency: string;
+          interval: GivingInterval;
+          status: GivingRecurringStatus;
+          anonymous: boolean;
+          note: string | null;
+          paystack_customer_code: string | null;
+          paystack_plan_code: string | null;
+          paystack_subscription_code: string | null;
+          paystack_email_token: string | null;
+          next_payment_at: string | null;
+          started_at: string | null;
+          cancelled_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          parish_id: string;
+          user_id: string;
+          fund_id?: string | null;
+          amount_kobo: number;
+          currency?: string;
+          interval: GivingInterval;
+          status?: GivingRecurringStatus;
+          anonymous?: boolean;
+          note?: string | null;
+          paystack_customer_code?: string | null;
+          paystack_plan_code?: string | null;
+          paystack_subscription_code?: string | null;
+          paystack_email_token?: string | null;
+          next_payment_at?: string | null;
+          started_at?: string | null;
+          cancelled_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["giving_recurring"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      donations: {
+        Row: {
+          id: string;
+          parish_id: string;
+          user_id: string;
+          fund_id: string | null;
+          recurring_id: string | null;
+          amount_kobo: number;
+          fees_kobo: number | null;
+          currency: string;
+          kind: DonationKind;
+          status: DonationStatus;
+          reference: string;
+          paystack_reference: string | null;
+          channel: string | null;
+          anonymous: boolean;
+          note: string | null;
+          paid_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          parish_id: string;
+          user_id: string;
+          fund_id?: string | null;
+          recurring_id?: string | null;
+          amount_kobo: number;
+          fees_kobo?: number | null;
+          currency?: string;
+          kind?: DonationKind;
+          status?: DonationStatus;
+          reference?: string;
+          paystack_reference?: string | null;
+          channel?: string | null;
+          anonymous?: boolean;
+          note?: string | null;
+          paid_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["donations"]["Insert"]>;
+        Relationships: [];
+      };
+      paystack_events: {
+        Row: {
+          id: string;
+          event_type: string;
+          reference: string | null;
+          paystack_id: string | null;
+          signature_valid: boolean;
+          processed: boolean;
+          error: string | null;
+          payload: Json;
+          created_at: string;
+          processed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          event_type: string;
+          reference?: string | null;
+          paystack_id?: string | null;
+          signature_valid?: boolean;
+          processed?: boolean;
+          error?: string | null;
+          payload: Json;
+          created_at?: string;
+          processed_at?: string | null;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["paystack_events"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      library_items: {
+        Row: {
+          id: string;
+          parish_id: string;
+          kind: LibraryItemKind;
+          title: string;
+          description: string | null;
+          author: string | null;
+          category: string | null;
+          cover_image_url: string | null;
+          file_url: string | null;
+          external_url: string | null;
+          duration_seconds: number | null;
+          published: boolean;
+          published_at: string | null;
+          author_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          parish_id: string;
+          kind: LibraryItemKind;
+          title: string;
+          description?: string | null;
+          author?: string | null;
+          category?: string | null;
+          cover_image_url?: string | null;
+          file_url?: string | null;
+          external_url?: string | null;
+          duration_seconds?: number | null;
+          published?: boolean;
+          published_at?: string | null;
+          author_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["library_items"]["Insert"]
+        >;
+        Relationships: [];
+      };
     };
     Views: {
       todays_word_of_day: {
@@ -1003,6 +1342,47 @@ export interface Database {
         Args: { p_id: string; p_response: string; p_public?: boolean };
         Returns: Database["public"]["Tables"]["ask_questions"]["Row"];
       };
+      subscribe_to_plan: {
+        Args: { p_plan_id: string };
+        Returns: string;
+      };
+      complete_plan_day: {
+        Args: {
+          p_day_id: string;
+          p_reflection_response?: string;
+          p_share_with_discipler?: boolean;
+        };
+        Returns: string;
+      };
+      toggle_plan_pause: {
+        Args: { p_subscription_id: string };
+        Returns: boolean;
+      };
+      set_my_campus: {
+        Args: { p_campus: string };
+        Returns: undefined;
+      };
+      list_pending_members: {
+        Args: Record<string, never>;
+        Returns: {
+          id: string;
+          name: string;
+          email: string;
+          created_at: string;
+        }[];
+      };
+      approve_member: {
+        Args: { p_user: string; p_campus: string };
+        Returns: undefined;
+      };
+      reject_member: {
+        Args: { p_user: string };
+        Returns: undefined;
+      };
+      resolve_report: {
+        Args: { p_report: string; p_status: string };
+        Returns: undefined;
+      };
     };
     Enums: {
       photo_visibility: PhotoVisibility;
@@ -1017,6 +1397,19 @@ export interface Database {
 // Convenience row aliases.
 export type Parish = Database["public"]["Tables"]["parishes"]["Row"];
 export type House = Database["public"]["Tables"]["houses"]["Row"];
+export type ReadingPlan = Database["public"]["Tables"]["reading_plans"]["Row"];
+export type ReadingPlanDay =
+  Database["public"]["Tables"]["reading_plan_days"]["Row"];
+export type ReadingPlanSubscription =
+  Database["public"]["Tables"]["reading_plan_subscriptions"]["Row"];
+export type ReadingPlanProgress =
+  Database["public"]["Tables"]["reading_plan_progress"]["Row"];
+export type GivingFund = Database["public"]["Tables"]["giving_funds"]["Row"];
+export type GivingRecurring =
+  Database["public"]["Tables"]["giving_recurring"]["Row"];
+export type Donation = Database["public"]["Tables"]["donations"]["Row"];
+export type LibraryItem =
+  Database["public"]["Tables"]["library_items"]["Row"];
 export type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 export type UserPrivacy = Database["public"]["Tables"]["user_privacy"]["Row"];
 export type DevotionalSeries =

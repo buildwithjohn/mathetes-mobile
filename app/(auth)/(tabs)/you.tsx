@@ -17,6 +17,10 @@ import {
   User as UserIcon,
   Users,
   HeartHandshake,
+  BookOpen,
+  Layers,
+  HandCoins,
+  Library as LibraryIcon,
   type LucideIcon,
 } from "lucide-react-native";
 import { useAuth } from "@/lib/stores/auth";
@@ -96,7 +100,7 @@ export default function You() {
                         className="mt-1.5 font-sans-semibold text-[11px] uppercase"
                         style={{ color: accent, letterSpacing: 1.76 }}
                       >
-                        {house.name} House
+                        {house.name}
                       </Text>
                     ) : (
                       <Text className="mt-1 text-xs text-ink-mute">
@@ -167,9 +171,33 @@ export default function You() {
         <SectionEyebrow>Account &amp; community</SectionEyebrow>
         <View className="overflow-hidden rounded-2xl border border-rule bg-paper">
           <MenuRow
+            icon={HandCoins}
+            label="Give"
+            onPress={() => router.push("/giving")}
+          />
+          <MenuRow
+            icon={LibraryIcon}
+            label="Library"
+            onPress={() => router.push("/resources")}
+            divider
+          />
+          <MenuRow
+            icon={Layers}
+            label="Devotionals"
+            onPress={() => router.push("/devotionals")}
+            divider
+          />
+          <MenuRow
+            icon={BookOpen}
+            label="Reading plans"
+            onPress={() => router.push("/plans")}
+            divider
+          />
+          <MenuRow
             icon={UserIcon}
             label="Edit profile"
             onPress={() => router.push("/profile/edit")}
+            divider
           />
           <MenuRow
             icon={Users}

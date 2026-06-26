@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { View, Text, Pressable, ActivityIndicator, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -16,7 +16,7 @@ import {
 } from "lucide-react-native";
 import { useDevotional } from "@/lib/queries/content";
 import { AudioPlayer } from "@/components/AudioPlayer";
-import { paragraphs, sentences } from "@/utils/text";
+import { Markdown } from "@/components/Markdown";
 import { colors } from "@/theme/colors";
 
 export default function DevotionalScreen() {
@@ -37,12 +37,6 @@ export default function DevotionalScreen() {
   const barStyle = useAnimatedStyle(() => ({
     width: `${progress.value * 100}%`,
   }));
-
-  const paras = dev ? paragraphs(dev.body_md) : [];
-  // Derived pull-quote (no dedicated field in schema): first sentence of an
-  // early paragraph, surfaced after the second paragraph as the design does.
-  const pullQuote =
-    paras.length > 1 ? sentences(paras[1] ?? paras[0])[0] ?? null : null;
 
   const onWriteReflection = () =>
     Alert.alert(
@@ -137,30 +131,9 @@ export default function DevotionalScreen() {
             </View>
           ) : null}
 
-          {/* Body. First paragraph gets a drop cap; the pull quote follows the
-              second paragraph (matches the design composition). */}
+          {/* Body — rendered from markdown (bold/headings/lists/quotes). */}
           <View className="mt-7">
-            {paras.map((p, i) => (
-              <Fragment key={i}>
-                {i === 0 ? (
-                  <Text className="mb-4 font-scripture text-[18px] leading-[30px] text-ink">
-                    <Text className="font-display text-[52px] leading-[48px] text-copper">
-                      {p.charAt(0)}
-                    </Text>
-                    {p.slice(1)}
-                  </Text>
-                ) : (
-                  <Text className="mb-4 font-scripture text-[18px] leading-[30px] text-ink">
-                    {p}
-                  </Text>
-                )}
-                {i === 1 && pullQuote ? (
-                  <Text className="my-6 border-l-2 border-l-copper pl-[18px] font-display-italic text-[22px] leading-[29px] text-ink">
-                    {pullQuote}
-                  </Text>
-                ) : null}
-              </Fragment>
-            ))}
+            <Markdown body={dev.body_md} />
           </View>
 
           {/* Reflection prompt */}
