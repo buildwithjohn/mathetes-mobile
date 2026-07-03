@@ -32,10 +32,20 @@ function dobToISO(s: string): string | null {
   const thisYear = new Date().getFullYear();
   if (month < 1 || month > 12 || day < 1 || day > 31) return null;
   if (year < 1900 || year > thisYear) return null;
-  const iso = `${yyyy}-${mm}-${dd}`;
-  const dt = new Date(`${iso}T00:00:00`);
-  if (Number.isNaN(dt.getTime()) || dt.getUTCDate() !== day) return null;
-  return iso;
+  // Reject impossible calendar dates (e.g. 31/02) in a timezone-independent way.
+  // Building a local-time Date and comparing getUTCDate() is wrong for users
+  // ahead of UTC (e.g. WAT/UTC+1): local midnight falls on the previous UTC day,
+  // so every valid DOB was rejected and Continue never enabled. Use Date.UTC and
+  // compare the UTC parts, which round-trips regardless of device timezone.
+  const dt = new Date(Date.UTC(year, month - 1, day));
+  if (
+    dt.getUTCFullYear() !== year ||
+    dt.getUTCMonth() !== month - 1 ||
+    dt.getUTCDate() !== day
+  ) {
+    return null;
+  }
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 // Final onboarding step: a little about the member. Gender is required because
