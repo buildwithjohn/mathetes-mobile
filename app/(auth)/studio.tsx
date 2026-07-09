@@ -1,5 +1,12 @@
 import { useMemo, useRef, useState } from "react";
-import { View, Text, Pressable, ActivityIndicator, Alert } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { captureRef } from "react-native-view-shot";
@@ -197,7 +204,18 @@ export default function Studio() {
             </View>
 
             {/* Theme swatches */}
-            <View className="mt-7 flex-row justify-center gap-3">
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              className="mt-7"
+              contentContainerStyle={{
+                flexGrow: 1,
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 12,
+                paddingHorizontal: 24,
+              }}
+            >
               {themes.map((t, i) => {
                 const active = i === themeIndex;
                 return (
@@ -215,7 +233,7 @@ export default function Studio() {
                   </Pressable>
                 );
               })}
-            </View>
+            </ScrollView>
           </View>
 
           {/* Footer actions */}
