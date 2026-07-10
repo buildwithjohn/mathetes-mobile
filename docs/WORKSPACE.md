@@ -143,16 +143,18 @@ pull-to-refresh, animations, tests + CI (20 Jest tests, typecheck clean).
   entirely — DMs are private to their two participants; a reported message
   surfaces to admin/pastor for that one message only. Reports have no `house_id`,
   so the flags inbox stays admin-only.
-- **Leader reach (0033, in repo):** the two student guardrails are now
-  **role-aware** so leaders aren't confined to student scope (pastoral care):
-  - **Directory** (`user_profiles` SELECT): students see active parish-mates;
-    **parish admins (owner/pastor/admin) see the whole parish** (any status), plus
-    null-parish `pending` signups (0027). `photo_visibility` honoured app-side.
-  - **`create_dm`**: owner/pastor/admin may DM **any active parish member,
-    cross-house, cross-gender approval bypassed**; a member may DM their **own
-    disciples** (`discipler_id` pointer). Students unchanged (house-mates only,
-    cross-gender needs approval). **Initiation reach only** — no new DM read path
-    (0029 stands); same RPC signature, so mobile copy/types are unaffected.
+- **Directory (0033):** students see active parish-mates; **parish admins
+  (owner/pastor/admin) see the whole parish** (any status) plus null-parish
+  `pending` signups (0027). `photo_visibility` honoured app-side.
+- **DMs are FULLY OPEN (0034, John's decision):** any **active** member may DM
+  any other active member in the **same parish**. The cross-house (B1) and
+  cross-gender-approval (B2) gates are **removed** — 0033's role-aware reach is
+  superseded because everyone now has full reach. Kept: same parish + active
+  target. This is **initiation** only; DM oversight is unchanged (0029: private
+  to participants). Same RPC signature, so mobile copy/types are unaffected (the
+  old "cross-house"/"cross-gender" error strings just never fire now).
+  ⚠️ Safeguarding note: this removed the cross-gender approval safeguard for
+  students; revisit if the parish wants it back.
 
 ### 4.3 Reading plans (V2.0) — backend 0022 (LIVE)
 Tables `reading_plans / _days / _subscriptions / _progress`. Guardrails:
