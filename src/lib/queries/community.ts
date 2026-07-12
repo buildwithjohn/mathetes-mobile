@@ -428,7 +428,7 @@ export function useParishMembers() {
       const { data, error } = await supabase
         .from("user_profiles")
         .select(
-          `id, name, photo_url, photo_visibility, house_id, role, year, dept, houses(name, color)`
+          `id, name, photo_url, photo_visibility, house_id, role, year, dept, houses!user_profiles_house_id_fkey(name, color)`
         )
         .order("name", { ascending: true })
         .returns<DirectoryMember[]>();

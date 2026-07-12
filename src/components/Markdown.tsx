@@ -44,8 +44,31 @@ function Inline({ text }: { text: string }) {
   );
 }
 
+// Devotional bodies authored in TipTap serialize hard line breaks as a trailing
+// backslash, so sections (CONFESSION / PRAYER / MEMORY VERSE) arrive as one run
+// of "\ LABEL \ text" with no blank-line breaks and render inline with stray
+// backslashes. When the body carries these markers, rebuild it into real blocks:
+// split on backslash runs, promote known section labels to headings, and
+// separate blocks with blank lines. Guarded, so clean markdown is left untouched.
+const SECTION_LABELS =
+  /^(confession|prayer|prayer point(s)?|memory verse|declaration|reflection|scripture|key verse|application|meditation|affirmation)$/i;
+
+function preprocessSections(body: string): string {
+  if (!body.includes("\\")) return body;
+  return body
+    .split(/\s*\\+\s*/g)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) =>
+      SECTION_LABELS.test(s)
+        ? `## ${s.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())}`
+        : s
+    )
+    .join("\n\n");
+}
+
 export function Markdown({ body }: { body: string }) {
-  const blocks = body
+  const blocks = preprocessSections(body)
     .replace(/\r\n/g, "\n")
     .split(/\n{2,}/)
     .map((b) => b.trim())
