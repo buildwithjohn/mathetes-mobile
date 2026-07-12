@@ -4,7 +4,7 @@ import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 import { useRouter } from "expo-router";
 import { format } from "date-fns";
-import { ChevronRight, BookOpen } from "lucide-react-native";
+import { ChevronRight, BookOpen, Share2 } from "lucide-react-native";
 import { AnimatedFlame } from "@/components/AnimatedFlame";
 import { Ring } from "@/components/Ring";
 import {
@@ -68,8 +68,8 @@ export default function Today() {
           {/* Top bar: date eyebrow + greeting + streak chip */}
           <View className="flex-row items-start justify-between px-6 pb-3 pt-4">
             <View className="flex-1 pr-3">
-              <Eyebrow className="mb-1">{format(new Date(), "EEEE, d MMMM")}</Eyebrow>
-              <Text className="font-display text-xl text-ink">
+              <Eyebrow className="mb-1.5">{format(new Date(), "EEEE, d MMMM")}</Eyebrow>
+              <Text className="font-display text-[26px] leading-8 text-ink">
                 {greeting()},{" "}
                 {firstName ? (
                   <Text className="font-display-italic text-copper-deep">{firstName}</Text>
@@ -89,42 +89,48 @@ export default function Today() {
             </Pressable>
           </View>
 
-          {/* Word of the Day hero card */}
-          <View className="px-5 pt-5">
+          {/* Word of the Day — immersive verse hero (YouVersion-style) */}
+          <View className="px-5 pt-4">
             <Pressable
               onPress={() => router.push(`/word/${todayKey()}`)}
               disabled={!word.data}
-              className="overflow-hidden rounded-2xl border border-rule bg-paper active:opacity-90"
+              className="overflow-hidden rounded-[28px] active:opacity-95"
+              style={{ backgroundColor: "#17242E" }}
             >
-              <View className="relative px-5 py-5">
-                {/* copper edge strip */}
-                <View
-                  className="absolute bg-copper"
-                  style={{ left: 0, top: 22, bottom: 22, width: 3 }}
-                />
-                <Eyebrow className="mb-3 pl-1 text-copper-deep">Word of the day</Eyebrow>
+              <View className="px-6 pb-6 pt-7">
+                <Text
+                  className="font-sans-medium text-[11px] uppercase"
+                  style={{ letterSpacing: 1.8, color: "#7EA8CD" }}
+                >
+                  Word of the day · {format(new Date(), "EEE, d MMM")}
+                </Text>
                 {word.isLoading ? (
-                  <ActivityIndicator className="self-start" color={colors.copper} />
+                  <ActivityIndicator className="mt-6 self-start" color="#7EA8CD" />
                 ) : word.data ? (
                   <>
                     <Animated.Text
                       entering={FadeInDown.delay(60).duration(620)}
-                      className="pl-1 font-display text-[26px] leading-[32px] text-ink"
+                      className="mt-5 font-display text-[27px] leading-[36px]"
+                      style={{ color: "#F2F4F6" }}
                     >
                       {word.data.verse_text}
                     </Animated.Text>
-                    <View className="mt-4 flex-row items-center justify-between pl-1">
+                    <View
+                      className="mt-6"
+                      style={{ height: 1, width: 34, backgroundColor: "#7EA8CD" }}
+                    />
+                    <View className="mt-4 flex-row items-center justify-between">
                       <Text
-                        className="font-sans-medium text-[11.5px] uppercase text-copper-deep"
-                        style={{ letterSpacing: 1.84 }}
+                        className="font-sans-medium text-[12px] uppercase"
+                        style={{ letterSpacing: 1.8, color: "#7EA8CD" }}
                       >
                         {word.data.verse_ref}
                       </Text>
-                      <ChevronRight color={colors.inkMute} size={18} strokeWidth={1.5} />
+                      <Share2 color="#7EA8CD" size={17} strokeWidth={1.6} />
                     </View>
                   </>
                 ) : (
-                  <Text className="pl-1 text-sm text-ink-mute">
+                  <Text className="mt-5 text-sm" style={{ color: "#9FB3C4" }}>
                     No Word posted yet today. Check back soon.
                   </Text>
                 )}
