@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { ChevronLeft, Search, MessageSquare, X } from "lucide-react-native";
+import { ChevronLeft, Search, MessageSquare, X, Users } from "lucide-react-native";
 import {
   useParishMembers,
   useCreateDm,
@@ -101,7 +101,14 @@ export default function Members() {
         >
           <ChevronLeft color={colors.ink} size={26} />
         </Pressable>
-        <Text className="font-display text-xl text-ink">Members</Text>
+        <View className="flex-1">
+          <Text className="font-display text-xl text-ink">Members</Text>
+          {members && members.length > 0 ? (
+            <Text className="text-[12px] text-ink/50">
+              {members.length} in the parish
+            </Text>
+          ) : null}
+        </View>
       </View>
 
       {/* Search */}
@@ -155,9 +162,15 @@ export default function Members() {
             );
           }}
           ListEmptyComponent={
-            <Text className="mt-10 text-center text-sm text-ink/50">
-              No members found.
-            </Text>
+            <View className="mt-24 items-center px-10">
+              <Users color={colors.inkFaint} size={30} strokeWidth={1.5} />
+              <Text className="mt-3 text-center text-[15px] text-ink/60">
+                {query ? "No one matches that search." : "No members yet."}
+              </Text>
+              <Text className="mt-1 text-center text-[13px] text-ink/40">
+                Approved members of your parish appear here.
+              </Text>
+            </View>
           }
         />
       )}

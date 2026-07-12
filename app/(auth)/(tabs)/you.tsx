@@ -89,10 +89,10 @@ export default function You() {
                     name={profile?.name ?? "Disciple"}
                     photoUrl={profile?.photo_url}
                     ringColor={house?.color}
-                    size={64}
+                    size={70}
                   />
                   <View className="flex-1">
-                    <Text className="font-display text-2xl text-ink">
+                    <Text className="font-display text-[27px] leading-8 text-ink">
                       {profile?.name ?? "Disciple"}
                     </Text>
                     {house ? (
@@ -142,6 +142,25 @@ export default function You() {
               </>
             )}
           </View>
+        </View>
+
+        {/* Quick shortcuts (YouVersion-style) */}
+        <View className="mt-3 flex-row gap-2.5">
+          <Shortcut
+            icon={Bookmark}
+            label="Saved"
+            onPress={() => router.push("/library")}
+          />
+          <Shortcut
+            icon={HeartHandshake}
+            label="Prayer"
+            onPress={() => router.push("/prayer")}
+          />
+          <Shortcut
+            icon={HandCoins}
+            label="Give"
+            onPress={() => router.push("/giving")}
+          />
         </View>
 
         {/* Library */}
@@ -238,6 +257,26 @@ function SectionEyebrow({ children }: { children: React.ReactNode }) {
     >
       {children}
     </Text>
+  );
+}
+
+function Shortcut({
+  icon: Icon,
+  label,
+  onPress,
+}: {
+  icon: LucideIcon;
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      className="flex-1 items-center gap-1.5 rounded-2xl border border-rule bg-paper py-4 active:opacity-90"
+    >
+      <Icon color={colors.copper} size={20} strokeWidth={1.7} />
+      <Text className="text-[13px] text-ink">{label}</Text>
+    </Pressable>
   );
 }
 
