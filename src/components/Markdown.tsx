@@ -60,7 +60,7 @@ export function Markdown({ body }: { body: string }) {
           return (
             <Text
               key={i}
-              className="mb-2 mt-5 font-display text-[22px] leading-7 text-ink"
+              className="mb-2 mt-7 font-display text-[21px] leading-7 text-copper-deep"
             >
               <Inline text={heading[2]} />
             </Text>
