@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { captureRef } from "react-native-view-shot";
 import * as Sharing from "expo-sharing";
@@ -57,6 +57,7 @@ export default function Studio() {
   const saveToGallery = useSaveVerseImage();
   const [busy, setBusy] = useState<null | "save" | "share">(null);
   const [flash, setFlash] = useState<string | null>(null);
+  const insets = useSafeAreaInsets();
 
   const showFlash = (msg: string) => {
     setFlash(msg);
@@ -237,7 +238,10 @@ export default function Studio() {
           </View>
 
           {/* Footer actions */}
-          <View className="flex-row gap-3 border-t border-border bg-parchment px-6 pb-8 pt-4">
+          <View
+            className="flex-row gap-3 border-t border-border bg-parchment px-6 pt-4"
+            style={{ paddingBottom: insets.bottom + 12 }}
+          >
             <Pressable
               onPress={onSave}
               disabled={busy !== null}

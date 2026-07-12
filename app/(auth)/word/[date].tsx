@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 import { format, parseISO } from "date-fns";
@@ -43,6 +43,7 @@ export default function WordExpanded() {
   const onSave = () =>
     Alert.alert("Save", "Saving the Word for later is coming soon.");
 
+  const insets = useSafeAreaInsets();
   const verseLines = word ? sentences(word.verse_text) : [];
 
   return (
@@ -166,7 +167,10 @@ export default function WordExpanded() {
           </ScrollView>
 
           {/* Sticky share footer */}
-          <View className="flex-row gap-2.5 border-t border-rule-soft bg-parchment px-6 pb-8 pt-2.5">
+          <View
+            className="flex-row gap-2.5 border-t border-rule-soft bg-parchment px-6 pt-2.5"
+            style={{ paddingBottom: insets.bottom + 12 }}
+          >
             <Pressable
               onPress={onNote}
               className="h-[50px] flex-1 flex-row items-center justify-center gap-2 rounded-full border border-rule active:opacity-70"

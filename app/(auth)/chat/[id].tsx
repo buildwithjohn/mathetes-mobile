@@ -12,7 +12,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { format } from "date-fns";
 import * as Clipboard from "expo-clipboard";
@@ -75,6 +75,7 @@ export default function ChatScreen() {
   const queryClient = useQueryClient();
   const { id } = useLocalSearchParams<{ id: string }>();
   const chatId = id ?? "";
+  const insets = useSafeAreaInsets();
 
   const { data: profile } = useProfile();
   const me = profile?.id ?? null;
@@ -465,7 +466,10 @@ export default function ChatScreen() {
             </View>
           ) : null}
           {recording ? (
-            <View className="flex-row items-center gap-3 border-t border-border bg-parchment px-4 pb-6 pt-2">
+            <View
+              className="flex-row items-center gap-3 border-t border-border bg-parchment px-4 pt-2"
+              style={{ paddingBottom: insets.bottom + 6 }}
+            >
               <Pressable
                 onPress={onCancelRecording}
                 className="h-11 w-11 items-center justify-center rounded-full active:opacity-70"
@@ -488,7 +492,10 @@ export default function ChatScreen() {
               </Pressable>
             </View>
           ) : (
-            <View className="flex-row items-end gap-2 border-t border-rule-soft bg-parchment px-3 pb-6 pt-2.5">
+            <View
+              className="flex-row items-end gap-2 border-t border-rule-soft bg-parchment px-3 pt-2.5"
+              style={{ paddingBottom: insets.bottom + 6 }}
+            >
               <Pressable
                 onPress={onPickImage}
                 disabled={sendMedia.isPending}
@@ -528,7 +535,10 @@ export default function ChatScreen() {
           )}
         </KeyboardAvoidingView>
       ) : !isOversight ? (
-        <View className="border-t border-border bg-parchment px-6 pb-8 pt-3">
+        <View
+          className="border-t border-border bg-parchment px-6 pt-3"
+          style={{ paddingBottom: insets.bottom + 12 }}
+        >
           <Text className="text-center text-xs text-ink/50">
             {chat?.kind === "announcements"
               ? "Only parish leaders can post here."
