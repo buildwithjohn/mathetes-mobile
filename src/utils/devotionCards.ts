@@ -20,6 +20,13 @@ function titleCase(s: string): string {
   );
 }
 
+// Break a long paragraph into sentence-aligned chunks that each fit the budget,
+// so no single card becomes an unreadable wall of text.
+function splitSentences(text: string): string[] {
+  const sentences = text.match(/[^.!?]+[.!?]+["')\]]*\s*|[^.!?]+$/g) ?? [text];
+  return sentences.map((s) => s.trim()).filter(Boolean);
+}
+
 export function buildDevotionCards(body: string): DevotionCard[] {
   const segments = (
     body.includes("\\") ? body.split(/\s*\\+\s*/g) : body.split(/\n{2,}/)
@@ -27,13 +34,11 @@ export function buildDevotionCards(body: string): DevotionCard[] {
     .map((s) => s.trim())
     .filter(Boolean);
 
-  const cards: { heading: string | null; paragraphs: string[] }[] = [];
-  let current: { heading: string | null; paragraphs: string[] } = {
-    heading: null,
-    paragraphs: [],
-  };
+  type Raw = { heading: string | null; paragraphs: string[] };
+  const cards: Raw[] = [];
+  let current: Raw = { heading: null, paragraphs: [] };
   let budget = 0;
-  const MAX = 460; // characters per card before starting a new one
+  const MAX = 420; // characters per card before starting a new one
 
   const flush = () => {
     if (current.heading || current.paragraphs.length) {
@@ -43,18 +48,43 @@ export function buildDevotionCards(body: string): DevotionCard[] {
     }
   };
 
+  // Add one paragraph-sized chunk, starting a fresh card when the running card
+  // is already full (but never orphaning a chunk onto its own heading-only page).
+  const addChunk = (chunk: string) => {
+    if (budget + chunk.length > MAX && current.paragraphs.length) flush();
+    current.paragraphs.push(chunk);
+    budget += chunk.length;
+  };
+
   for (const seg of segments) {
     if (SECTION_LABELS.test(seg)) {
       flush();
       current.heading = titleCase(seg);
       continue;
     }
-    if (budget + seg.length > MAX && current.paragraphs.length) flush();
-    current.paragraphs.push(seg);
-    budget += seg.length;
+    // A single long teaching paragraph is paginated across several cards at
+    // sentence boundaries; short ones are packed as before.
+    if (seg.length > MAX) {
+      let buf = "";
+      for (const sentence of splitSentences(seg)) {
+        if (buf && buf.length + 1 + sentence.length > MAX) {
+          addChunk(buf);
+          buf = "";
+        }
+        buf = buf ? `${buf} ${sentence}` : sentence;
+      }
+      if (buf) addChunk(buf);
+    } else {
+      addChunk(seg);
+    }
   }
   flush();
 
-  const total = cards.length;
-  return cards.map((c, i) => ({ ...c, index: i + 1, total }));
+  // Never ship a blank card (a stray separator can otherwise leave an empty page).
+  const kept = cards.filter(
+    (c) => c.heading || c.paragraphs.some((p) => p.trim().length > 0)
+  );
+
+  const total = kept.length;
+  return kept.map((c, i) => ({ ...c, index: i + 1, total }));
 }
