@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { View, Text, Pressable, ActivityIndicator, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -7,16 +7,20 @@ import Animated, {
   useAnimatedScrollHandler,
   useAnimatedStyle,
 } from "react-native-reanimated";
+import { captureRef } from "react-native-view-shot";
+import Share from "react-native-share";
 import {
   ChevronLeft,
   ChevronRight,
   Bookmark,
   BookmarkCheck,
   NotebookPen,
+  Share2,
 } from "lucide-react-native";
 import { useDevotional } from "@/lib/queries/content";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { Markdown } from "@/components/Markdown";
+import { buildDevotionCards, type DevotionCard } from "@/utils/devotionCards";
 import { colors } from "@/theme/colors";
 
 export default function DevotionalScreen() {
@@ -38,6 +42,40 @@ export default function DevotionalScreen() {
     width: `${progress.value * 100}%`,
   }));
 
+  // Share the devotional as a small set of branded images (one per section /
+  // page), captured off-screen and sent together to WhatsApp etc.
+  const [sharing, setSharing] = useState(false);
+  const cardRefs = useRef<(View | null)[]>([]);
+  const cards = useMemo(
+    () => buildDevotionCards(dev?.body_md ?? ""),
+    [dev?.body_md]
+  );
+
+  const onShareImages = async () => {
+    if (!dev || cards.length === 0 || sharing) return;
+    setSharing(true);
+    try {
+      const urls: string[] = [];
+      for (let i = 0; i < cards.length; i++) {
+        const node = cardRefs.current[i];
+        if (!node) continue;
+        const uri = await captureRef(node, { format: "png", quality: 1 });
+        urls.push(uri.startsWith("file://") ? uri : `file://${uri}`);
+      }
+      if (urls.length === 0) return;
+      await Share.open({
+        urls,
+        type: "image/png",
+        title: dev.title,
+        failOnCancel: false,
+      });
+    } catch {
+      // user cancelled or sharing unavailable; no-op
+    } finally {
+      setSharing(false);
+    }
+  };
+
   const onWriteReflection = () =>
     Alert.alert(
       "Write your reflection",
@@ -56,17 +94,31 @@ export default function DevotionalScreen() {
           >
             <ChevronLeft color={colors.ink} size={26} />
           </Pressable>
-          <Pressable
-            onPress={() => setBookmarked((b) => !b)}
-            className="h-11 w-11 items-center justify-center"
-            accessibilityLabel={bookmarked ? "Remove bookmark" : "Bookmark"}
-          >
-            {bookmarked ? (
-              <BookmarkCheck color={colors.copper} size={22} />
-            ) : (
-              <Bookmark color={colors.inkSoft} size={22} strokeWidth={1.6} />
-            )}
-          </Pressable>
+          <View className="flex-row">
+            <Pressable
+              onPress={onShareImages}
+              disabled={sharing}
+              className="h-11 w-11 items-center justify-center"
+              accessibilityLabel="Share as images"
+            >
+              {sharing ? (
+                <ActivityIndicator color={colors.copper} />
+              ) : (
+                <Share2 color={colors.inkSoft} size={21} strokeWidth={1.6} />
+              )}
+            </Pressable>
+            <Pressable
+              onPress={() => setBookmarked((b) => !b)}
+              className="h-11 w-11 items-center justify-center"
+              accessibilityLabel={bookmarked ? "Remove bookmark" : "Bookmark"}
+            >
+              {bookmarked ? (
+                <BookmarkCheck color={colors.copper} size={22} />
+              ) : (
+                <Bookmark color={colors.inkSoft} size={22} strokeWidth={1.6} />
+              )}
+            </Pressable>
+          </View>
         </View>
         <View className="h-[1.5px] w-full bg-rule-soft">
           <Animated.View className="h-[1.5px] bg-copper" style={barStyle} />
@@ -174,6 +226,88 @@ export default function DevotionalScreen() {
           ) : null}
         </Animated.ScrollView>
       )}
+
+      {/* Off-screen cards, captured to images on demand for sharing */}
+      {dev && cards.length > 0 ? (
+        <View
+          style={{ position: "absolute", left: -10000, top: 0 }}
+          pointerEvents="none"
+        >
+          {cards.map((c, i) => (
+            <View
+              key={i}
+              collapsable={false}
+              ref={(node) => {
+                cardRefs.current[i] = node;
+              }}
+            >
+              <ShareCard
+                card={c}
+                title={i === 0 ? dev.title : undefined}
+                verseRef={i === 0 ? dev.scripture_refs[0] : undefined}
+              />
+            </View>
+          ))}
+        </View>
+      ) : null}
     </SafeAreaView>
+  );
+}
+
+function ShareCard({
+  card,
+  title,
+  verseRef,
+}: {
+  card: DevotionCard;
+  title?: string;
+  verseRef?: string;
+}) {
+  return (
+    <View className="bg-parchment" style={{ width: 384 }}>
+      <View className="px-10 py-12">
+        <Text
+          className="font-sans-medium text-[11px] uppercase text-copper-deep"
+          style={{ letterSpacing: 1.8 }}
+        >
+          Devotional · {card.index}/{card.total}
+        </Text>
+        {title ? (
+          <Text className="mt-4 font-display text-[29px] leading-9 text-ink">
+            {title}
+          </Text>
+        ) : null}
+        {verseRef ? (
+          <Text
+            className="mt-2 font-sans-medium text-[11px] uppercase text-oxblood"
+            style={{ letterSpacing: 1.6 }}
+          >
+            {verseRef}
+          </Text>
+        ) : null}
+        {card.heading ? (
+          <Text className="mb-1 mt-6 font-display text-[22px] text-copper-deep">
+            {card.heading}
+          </Text>
+        ) : null}
+        {card.paragraphs.map((p, i) => (
+          <Text
+            key={i}
+            className="mt-3.5 font-scripture text-[17px] leading-[27px] text-ink"
+          >
+            {p}
+          </Text>
+        ))}
+        <View className="mt-10 flex-row items-center justify-between border-t border-rule pt-4">
+          <Text className="font-display text-[17px] text-ink">Mathetes</Text>
+          <Text
+            className="text-[10px] uppercase text-ink-mute"
+            style={{ letterSpacing: 1.5 }}
+          >
+            CCCFSP FUOYE
+          </Text>
+        </View>
+      </View>
+    </View>
   );
 }

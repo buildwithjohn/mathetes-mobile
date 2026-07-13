@@ -54,7 +54,8 @@
         {
           "microphonePermission": "Allow Mathetes to record voice notes."
         }
-      ]
+      ],
+      "react-native-share"
     ],
     "experiments": {
       "typedRoutes": true
