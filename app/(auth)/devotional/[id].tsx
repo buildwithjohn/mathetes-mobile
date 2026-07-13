@@ -8,7 +8,6 @@ import Animated, {
   useAnimatedStyle,
 } from "react-native-reanimated";
 import { captureRef } from "react-native-view-shot";
-import Share from "react-native-share";
 import {
   ChevronLeft,
   ChevronRight,
@@ -63,6 +62,9 @@ export default function DevotionalScreen() {
         urls.push(uri.startsWith("file://") ? uri : `file://${uri}`);
       }
       if (urls.length === 0) return;
+      // Lazily load the native share module so the screen still works in Expo
+      // Go (RNShare is only in an EAS build).
+      const Share = (await import("react-native-share")).default;
       await Share.open({
         urls,
         type: "image/png",
@@ -70,7 +72,7 @@ export default function DevotionalScreen() {
         failOnCancel: false,
       });
     } catch {
-      // user cancelled or sharing unavailable; no-op
+      // Expo Go (no native module), user cancelled, or share unavailable: no-op.
     } finally {
       setSharing(false);
     }
