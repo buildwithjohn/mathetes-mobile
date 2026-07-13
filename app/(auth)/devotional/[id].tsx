@@ -8,6 +8,7 @@ import Animated, {
   useAnimatedStyle,
 } from "react-native-reanimated";
 import { captureRef } from "react-native-view-shot";
+import Constants, { ExecutionEnvironment } from "expo-constants";
 import {
   ChevronLeft,
   ChevronRight,
@@ -52,6 +53,14 @@ export default function DevotionalScreen() {
 
   const onShareImages = async () => {
     if (!dev || cards.length === 0 || sharing) return;
+    // Image sharing needs the native share module, absent from Expo Go.
+    if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
+      Alert.alert(
+        "Available in the app",
+        "Sharing the devotion as images works in the installed Mathetes app, not in Expo Go."
+      );
+      return;
+    }
     setSharing(true);
     try {
       const urls: string[] = [];
