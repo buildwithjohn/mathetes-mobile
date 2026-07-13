@@ -76,9 +76,8 @@ export default function You() {
         contentContainerClassName="px-6 pb-8 pt-1"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header card with house accent stripe */}
+        {/* Header card */}
         <View className="mt-2 overflow-hidden rounded-2xl border border-rule bg-paper">
-          <View className="h-1" style={{ backgroundColor: accent }} />
           <View className="p-5">
             {isLoading ? (
               <ActivityIndicator color={colors.copper} />

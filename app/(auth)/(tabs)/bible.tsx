@@ -288,12 +288,12 @@ export default function Bible() {
             {verses.map((v) => {
               const isSelected = selected.has(v.number);
               const hColor = highlightMap.get(v.id);
-              // A highlight is a vivid fill with dark text on top (reads on
-              // light and dark). Selection is a softer copper wash.
+              // A highlight is a translucent marker wash (the ink shows through
+              // like a real highlighter). Selection is a softer copper wash.
               const verseStyle = isSelected
                 ? { backgroundColor: `${colors.copper}2E` }
                 : hColor
-                  ? { backgroundColor: highlightColors[hColor], color: "#1A1A1A" }
+                  ? { backgroundColor: `${highlightColors[hColor]}B3`, color: "#1A1A1A" }
                   : undefined;
               const highlighted = !isSelected && !!hColor;
               return (

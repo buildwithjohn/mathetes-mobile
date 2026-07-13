@@ -102,10 +102,12 @@ export type HouseSlug = keyof typeof houseColors;
 // Verse highlight palette (keys match the backend highlights.color check
 // constraint; the hexes are client-side). Vivid so they read on both light and
 // dark backgrounds — highlighted verse text is drawn dark on top (see reader).
+// Vivid highlighter tones, applied translucently in the reader so the text
+// reads through the colour like a real marker over a physical Bible.
 export const highlightColors = {
-  copper: "#FFA552", // orange
-  gold: "#FFD54A", // yellow
-  sage: "#8BD17C", // green
-  oxblood: "#F58FA8", // rose
-  blue: "#6FB7E8", // blue
+  gold: "#FCE24C", // yellow
+  sage: "#9BE870", // green
+  oxblood: "#FF8FB6", // pink
+  blue: "#74C0FC", // blue
+  copper: "#FFB454", // orange
 } as const;

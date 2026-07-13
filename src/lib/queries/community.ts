@@ -192,23 +192,70 @@ export type MessageRow = Message & {
 };
 
 // Recent messages for a chat, newest first (the thread renders inverted).
+//
+// The author profile and reactions are fetched in SEPARATE queries and joined
+// in code, rather than embedded (`user_profiles(...), message_reactions(...)`).
+// The embedded form was returning nothing for the thread (while the embed-free
+// list query worked), leaving threads blank; this mirrors the reliable list
+// query and side-steps the failing embed.
 export function useChatMessages(chatId: string) {
   const authId = useAuth((s) => s.session?.user.id ?? null);
   return useQuery({
     queryKey: communityKeys.messages(chatId),
     enabled: !!authId && !!chatId,
     queryFn: async (): Promise<MessageRow[]> => {
-      const { data, error } = await supabase
+      const { data: msgs, error } = await supabase
         .from("messages")
-        .select(
-          `*, user_profiles(${PROFILE_COLS}), message_reactions(emoji, user_id)`
-        )
+        .select("*")
         .eq("chat_id", chatId)
         .order("created_at", { ascending: false })
         .limit(100)
-        .returns<MessageRow[]>();
+        .returns<Message[]>();
       if (error) throw error;
-      return data ?? [];
+      const rows = msgs ?? [];
+      if (rows.length === 0) return [];
+
+      const messageIds = rows.map((m) => m.id);
+      const authorIds = [
+        ...new Set(rows.map((m) => m.author_id).filter((x): x is string => !!x)),
+      ];
+
+      const [reactionsRes, profilesRes] = await Promise.all([
+        supabase
+          .from("message_reactions")
+          .select("message_id, emoji, user_id")
+          .in("message_id", messageIds),
+        authorIds.length
+          ? supabase
+              .from("user_profiles")
+              .select(PROFILE_COLS)
+              .in("id", authorIds)
+              .returns<MemberProfile[]>()
+          : Promise.resolve({ data: [] as MemberProfile[], error: null }),
+      ]);
+      if (reactionsRes.error) throw reactionsRes.error;
+      if (profilesRes.error) throw profilesRes.error;
+
+      const profileById = new Map(
+        (profilesRes.data ?? []).map((p) => [p.id, p])
+      );
+      const reactionsByMessage = new Map<
+        string,
+        { emoji: ReactionEmoji; user_id: string }[]
+      >();
+      for (const r of reactionsRes.data ?? []) {
+        const list = reactionsByMessage.get(r.message_id) ?? [];
+        list.push({ emoji: r.emoji as ReactionEmoji, user_id: r.user_id });
+        reactionsByMessage.set(r.message_id, list);
+      }
+
+      return rows.map((m) => ({
+        ...m,
+        user_profiles: m.author_id
+          ? profileById.get(m.author_id) ?? null
+          : null,
+        message_reactions: reactionsByMessage.get(m.id) ?? [],
+      }));
     },
   });
 }
