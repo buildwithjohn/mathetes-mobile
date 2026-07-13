@@ -18,7 +18,6 @@ import {
   ChevronRight,
   Search,
   Copy,
-  Highlighter,
   Bookmark,
   ImageDown,
   Check,
@@ -63,7 +62,6 @@ export default function Bible() {
   const [navOpen, setNavOpen] = useState(false);
   const [transOpen, setTransOpen] = useState(false);
   const [selected, setSelected] = useState<Set<number>>(new Set());
-  const [pickerOpen, setPickerOpen] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
 
   // Remember the chosen translation across launches.
@@ -95,7 +93,6 @@ export default function Bible() {
     if (!params.book || !books) return;
     if (!books.some((b) => b.abbrev === params.book)) return;
     setSelected(new Set());
-    setPickerOpen(false);
     setAbbrev(params.book);
     setChapter(params.chapter ? Number(params.chapter) : 1);
   }, [params.book, params.chapter, books]);
@@ -135,7 +132,6 @@ export default function Bible() {
 
   const clearSelection = () => {
     setSelected(new Set());
-    setPickerOpen(false);
   };
 
   const goChapter = (next: boolean) => {
@@ -171,7 +167,6 @@ export default function Bible() {
       else next.add(n);
       return next;
     });
-    setPickerOpen(false);
   };
 
   const selectedVerses = verses.filter((v) => selected.has(v.number));
@@ -289,11 +284,23 @@ export default function Bible() {
               const isSelected = selected.has(v.number);
               const hColor = highlightMap.get(v.id);
               // A highlight is a translucent marker wash (the ink shows through
-              // like a real highlighter). Selection is a softer copper wash.
+              // like a real highlighter), under a dotted "liner". Selection is a
+              // softer copper wash with the same liner (YouVersion-style).
               const verseStyle = isSelected
-                ? { backgroundColor: `${colors.copper}2E` }
+                ? {
+                    backgroundColor: `${colors.copper}2E`,
+                    textDecorationLine: "underline" as const,
+                    textDecorationStyle: "dotted" as const,
+                    textDecorationColor: colors.inkMute,
+                  }
                 : hColor
-                  ? { backgroundColor: `${highlightColors[hColor]}B3`, color: "#1A1A1A" }
+                  ? {
+                      backgroundColor: `${highlightColors[hColor]}B3`,
+                      color: "#1A1A1A",
+                      textDecorationLine: "underline" as const,
+                      textDecorationStyle: "dotted" as const,
+                      textDecorationColor: "#00000055",
+                    }
                   : undefined;
               const highlighted = !isSelected && !!hColor;
               return (
@@ -350,66 +357,51 @@ export default function Bible() {
         </View>
       ) : null}
 
-      {/* Floating action card */}
+      {/* Action sheet (YouVersion-style): the colours are shown directly with an
+          X to remove; tapping a colour applies it and closes. */}
       {selected.size > 0 ? (
-        <View className="absolute inset-x-3 bottom-4 overflow-hidden rounded-[18px] border border-rule bg-paper shadow-lg">
-          {/* Selected reference label */}
-          {selected.size === 1 && book ? (
-            <View className="border-b border-rule-soft px-4 py-2.5">
-              <Text className="font-sans-medium text-xs text-ink-soft">
-                {book.name} {chapter}:
-                <Text className="text-ink">{[...selected][0]}</Text>
-              </Text>
-            </View>
-          ) : null}
-          {pickerOpen ? (
-            <View className="flex-row items-center justify-between border-b border-rule-soft px-4 py-3">
-              <View className="flex-row gap-3">
-                {HIGHLIGHT_KEYS.map((c) => (
-                  <Pressable
-                    key={c}
-                    onPress={() => applyHighlight(c)}
-                    className="h-8 w-8 rounded-full border border-rule"
-                    style={{ backgroundColor: highlightColors[c] }}
-                    accessibilityLabel={`Highlight ${c}`}
-                  />
-                ))}
-              </View>
-              <Pressable
-                onPress={() => applyHighlight(null)}
-                className="rounded-full border border-rule px-3 py-1.5"
-              >
-                <Text className="text-sm text-ink">Clear</Text>
-              </Pressable>
-            </View>
-          ) : null}
-          <View className="flex-row items-center justify-between px-2 py-2">
-            <View className="flex-row">
-              <ActionButton icon={Copy} label="Copy" onPress={onCopy} />
-              <ActionButton
-                icon={Highlighter}
-                label="Highlight"
-                onPress={() => setPickerOpen((p) => !p)}
-              />
-              <ActionButton
-                icon={Bookmark}
-                label="Bookmark"
-                onPress={onBookmark}
-              />
-              <ActionButton
-                icon={ImageDown}
-                label="Image"
-                onPress={onShareImage}
-                disabled={selected.size !== 1}
-              />
-            </View>
+        <View className="absolute inset-x-2 bottom-4 overflow-hidden rounded-[22px] border border-rule bg-paper shadow-lg">
+          <View className="items-center pt-3">
+            <Text className="font-sans-medium text-[12px] text-ink-soft">
+              {selected.size === 1 && book
+                ? `${book.name} ${chapter}:${[...selected][0]}`
+                : `${selected.size} verses selected`}
+            </Text>
+          </View>
+
+          {/* Colours */}
+          <View className="flex-row items-center justify-center gap-3 px-4 py-4">
             <Pressable
-              onPress={clearSelection}
-              className="h-10 w-10 items-center justify-center"
-              accessibilityLabel="Clear selection"
+              onPress={() => applyHighlight(null)}
+              className="h-9 w-9 items-center justify-center rounded-full border border-rule bg-surface2"
+              accessibilityLabel="Remove highlight"
             >
-              <X color={colors.ink} size={20} />
+              <X color={colors.inkSoft} size={17} />
             </Pressable>
+            {HIGHLIGHT_KEYS.map((c) => (
+              <Pressable
+                key={c}
+                onPress={() => applyHighlight(c)}
+                className="h-9 w-9 rounded-full"
+                style={{ backgroundColor: highlightColors[c] }}
+                accessibilityLabel={`Highlight ${c}`}
+              />
+            ))}
+          </View>
+
+          <View className="h-px bg-rule-soft" />
+
+          {/* Actions */}
+          <View className="flex-row items-center justify-around px-2 py-2">
+            <ActionButton icon={Bookmark} label="Save" onPress={onBookmark} />
+            <ActionButton icon={Copy} label="Copy" onPress={onCopy} />
+            <ActionButton
+              icon={ImageDown}
+              label="Image"
+              onPress={onShareImage}
+              disabled={selected.size !== 1}
+            />
+            <ActionButton icon={X} label="Close" onPress={clearSelection} />
           </View>
         </View>
       ) : null}

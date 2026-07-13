@@ -43,7 +43,6 @@ export default function You() {
   const { data: images } = useVerseImages();
 
   const house = houses?.find((h) => h.id === profile?.house_id) ?? null;
-  const accent = house?.color ?? colors.copper;
 
   return (
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
@@ -91,13 +90,13 @@ export default function You() {
                     size={70}
                   />
                   <View className="flex-1">
-                    <Text className="font-display text-[27px] leading-8 text-ink">
+                    <Text className="font-sans-semibold text-[26px] leading-8 text-ink">
                       {profile?.name ?? "Disciple"}
                     </Text>
                     {house ? (
                       <Text
-                        className="mt-1.5 font-sans-semibold text-[11px] uppercase"
-                        style={{ color: accent, letterSpacing: 1.76 }}
+                        className="mt-1.5 font-sans-semibold text-[11px] uppercase text-copper-deep"
+                        style={{ letterSpacing: 1.76 }}
                       >
                         {house.name}
                       </Text>
