@@ -108,7 +108,8 @@ Scripture collections; opt-in House Quests / Campus Missions; Fellowship Events
 with private RSVPs; and author-only answered-prayer markers. These are explicitly
 not a public spiritual score or leaderboard. The student Grow hub and admin
 publishing surface are live on this shared, RLS-protected contract; Collections
-and answered-prayer controls are the next student tools.
+and answered-prayer controls are live in the student app too. Gentle milestones
+are derived privately from a member's own rhythm, never exposed as a score.
 
 **Giving (V2.1):** give screen (amount/fund/recurring/anonymous) → `paystack-initialize`
 → WebView `authorization_url` → realtime-watch the donation row; recurring manage;

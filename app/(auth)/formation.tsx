@@ -153,6 +153,14 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 function RhythmGarden({ dates }: { dates: string[] }) {
   const recentDays = Array.from({ length: 7 }, (_, index) => subDays(new Date(), 6 - index));
   const active = new Set(dates);
+  const daysShown = recentDays.filter((day) => active.has(format(day, "yyyy-MM-dd"))).length;
+  const milestone = daysShown >= 7
+    ? "A full week of showing up. Keep this quiet rhythm close."
+    : daysShown >= 4
+      ? "You have returned to God on four days this week. That is a beautiful rhythm."
+      : daysShown >= 1
+        ? "Every return matters. Your next small step is waiting for you."
+        : "Begin gently today. One small moment with God is enough.";
   return <View className="rounded-2xl border border-rule bg-paper px-5 py-5">
     <View className="flex-row items-end justify-between">
       <View><Text className="font-display text-[21px] text-ink">A quiet, growing rhythm</Text><Text className="mt-1 text-[13px] text-ink-mute">Each dot is a day you showed up.</Text></View>
@@ -164,6 +172,10 @@ function RhythmGarden({ dates }: { dates: string[] }) {
         const hasActivity = active.has(key);
         return <View key={key} className="items-center gap-2"><View className={`h-8 w-8 rounded-full border ${hasActivity ? "border-copper bg-copper" : "border-rule bg-surface2"}`}>{hasActivity ? <View className="m-auto mt-[9px] h-2.5 w-2.5 rounded-full bg-parchment" /> : null}</View><Text className={`text-[10px] ${isToday(day) ? "font-sans-semibold text-ink" : "text-ink-mute"}`}>{format(day, "EEEEE")}</Text></View>;
       })}
+    </View>
+    <View className="mt-5 flex-row items-center gap-2 rounded-xl bg-surface2 px-3 py-2.5">
+      <Sparkles color={colors.copperDeep} size={15} />
+      <Text className="flex-1 text-[12px] leading-[17px] text-ink-soft">{milestone}</Text>
     </View>
   </View>;
 }

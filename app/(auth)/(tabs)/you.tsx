@@ -22,6 +22,7 @@ import {
   HandCoins,
   Library as LibraryIcon,
   Sparkles,
+  FolderHeart,
   type LucideIcon,
 } from "lucide-react-native";
 import { useAuth } from "@/lib/stores/auth";
@@ -215,6 +216,12 @@ export default function You() {
             icon={Sparkles}
             label="Grow"
             onPress={() => router.push("/formation")}
+            divider
+          />
+          <MenuRow
+            icon={FolderHeart}
+            label="Scripture collections"
+            onPress={() => router.push("/collections")}
             divider
           />
           <MenuRow

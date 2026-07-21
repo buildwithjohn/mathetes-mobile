@@ -2,14 +2,100 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/stores/auth";
 import { useProfile } from "@/lib/queries/profile";
-import type { Bookmark, Highlight, HighlightColor } from "@/lib/database.types";
+import type { Bookmark, Highlight, HighlightColor, ScriptureCollection } from "@/lib/database.types";
 
 export const libraryKeys = {
   bookmarks: ["library", "bookmarks"] as const,
   highlights: ["library", "highlights"] as const,
   entries: ["library", "entries"] as const,
   verseNote: (verseId: string) => ["library", "note", verseId] as const,
+  collections: ["library", "collections"] as const,
+  collectionCounts: ["library", "collection-counts"] as const,
 };
+
+export function useScriptureCollections() {
+  const authId = useAuth((s) => s.session?.user.id ?? null);
+  return useQuery({
+    queryKey: libraryKeys.collections,
+    enabled: !!authId,
+    queryFn: async (): Promise<ScriptureCollection[]> => {
+      const { data, error } = await supabase
+        .from("scripture_collections")
+        .select("*")
+        .order("updated_at", { ascending: false })
+        .returns<ScriptureCollection[]>();
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
+
+export function useCreateScriptureCollection() {
+  const queryClient = useQueryClient();
+  const { data: profile } = useProfile();
+  return useMutation({
+    mutationFn: async ({ title, color = "blue" }: { title: string; color?: string }) => {
+      if (!profile) throw new Error("Your profile is still loading.");
+      const { data, error } = await supabase
+        .from("scripture_collections")
+        .insert({ user_id: profile.id, title: title.trim(), color })
+        .select("*")
+        .single()
+        .returns<ScriptureCollection>();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: libraryKeys.collections }),
+  });
+}
+
+export function useCollectionVerseCounts() {
+  const authId = useAuth((s) => s.session?.user.id ?? null);
+  return useQuery({
+    queryKey: libraryKeys.collectionCounts,
+    enabled: !!authId,
+    queryFn: async (): Promise<Map<string, number>> => {
+      const { data, error } = await supabase
+        .from("scripture_collection_verses")
+        .select("collection_id");
+      if (error) throw error;
+      const counts = new Map<string, number>();
+      for (const row of data ?? []) counts.set(row.collection_id, (counts.get(row.collection_id) ?? 0) + 1);
+      return counts;
+    },
+  });
+}
+
+export function useDeleteScriptureCollection() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("scripture_collections").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: libraryKeys.collections });
+      queryClient.invalidateQueries({ queryKey: libraryKeys.collectionCounts });
+    },
+  });
+}
+
+export function useAddVerseToCollection() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ collectionId, verseId }: { collectionId: string; verseId: string }) => {
+      const { error } = await supabase.from("scripture_collection_verses").upsert(
+        { collection_id: collectionId, verse_id: verseId },
+        { onConflict: "collection_id,verse_id", ignoreDuplicates: true }
+      );
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: libraryKeys.collections });
+      queryClient.invalidateQueries({ queryKey: libraryKeys.collectionCounts });
+    },
+  });
+}
 
 export function useVerseNote(verseId: string) {
   const authId = useAuth((s) => s.session?.user.id ?? null);

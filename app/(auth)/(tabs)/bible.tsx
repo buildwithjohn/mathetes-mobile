@@ -25,6 +25,7 @@ import {
   Columns2,
   Check,
   X,
+  FolderPlus,
 } from "lucide-react-native";
 import {
   useBibleVersions,
@@ -41,6 +42,9 @@ import {
   useSetHighlight,
   useVerseNote,
   useSaveVerseNote,
+  useAddVerseToCollection,
+  useCreateScriptureCollection,
+  useScriptureCollections,
 } from "@/lib/queries/library";
 import { useProfile } from "@/lib/queries/profile";
 import { BibleNavigator } from "@/components/BibleNavigator";
@@ -72,6 +76,8 @@ export default function Bible() {
   const [noteBody, setNoteBody] = useState("");
   const [compareOpen, setCompareOpen] = useState(false);
   const [compareVersion, setCompareVersion] = useState<string | null>(null);
+  const [collectionOpen, setCollectionOpen] = useState(false);
+  const [collectionTitle, setCollectionTitle] = useState("");
 
   // Remember the chosen translation across launches.
   useEffect(() => {
@@ -192,6 +198,9 @@ export default function Bible() {
   const comparedVerse = compareChapter?.verses.find((v) => v.number === selectedVerse?.number) ?? null;
   const verseNote = useVerseNote(selectedVerse?.id ?? "");
   const saveVerseNote = useSaveVerseNote();
+  const { data: collections } = useScriptureCollections();
+  const createCollection = useCreateScriptureCollection();
+  const addToCollection = useAddVerseToCollection();
 
   const onCopy = async () => {
     if (selectedVerses.length === 0) return;
@@ -242,6 +251,34 @@ export default function Bible() {
     const alternative = versions?.find((version) => version.code !== versionCode)?.code ?? null;
     setCompareVersion(alternative);
     setCompareOpen(true);
+  };
+
+  const onAddToCollection = async (collectionId: string) => {
+    if (!selectedVerse) return;
+    try {
+      await addToCollection.mutateAsync({ collectionId, verseId: selectedVerse.id });
+      setCollectionOpen(false);
+      clearSelection();
+      setFlash("Added to collection");
+      setTimeout(() => setFlash(null), 1600);
+    } catch {
+      setFlash("Could not save verse");
+    }
+  };
+
+  const onCreateCollection = async () => {
+    if (!collectionTitle.trim() || !selectedVerse) return;
+    try {
+      const collection = await createCollection.mutateAsync({ title: collectionTitle });
+      await addToCollection.mutateAsync({ collectionId: collection.id, verseId: selectedVerse.id });
+      setCollectionTitle("");
+      setCollectionOpen(false);
+      clearSelection();
+      setFlash("Collection created");
+      setTimeout(() => setFlash(null), 1600);
+    } catch {
+      setFlash("Could not create collection");
+    }
   };
 
   const onSaveNote = () => {
@@ -459,6 +496,12 @@ export default function Bible() {
               disabled={selected.size !== 1}
             />
             <ActionButton
+              icon={FolderPlus}
+              label="Collect"
+              onPress={() => setCollectionOpen(true)}
+              disabled={selected.size !== 1}
+            />
+            <ActionButton
               icon={Columns2}
               label="Compare"
               onPress={onOpenCompare}
@@ -637,6 +680,34 @@ export default function Bible() {
                 </Text>
               </Pressable>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={collectionOpen}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setCollectionOpen(false)}
+      >
+        <View className="flex-1 justify-end bg-ink/35">
+          <View className="rounded-t-3xl bg-surface1 px-6 pb-10 pt-4">
+            <View className="mb-3 h-1 w-10 self-center rounded-full bg-rule" />
+            <View className="flex-row items-center justify-between">
+              <View className="flex-1 pr-3">
+                <Text className="font-display text-xl text-ink">Add to collection</Text>
+                <Text className="mt-1 text-sm text-ink-mute">Keep verses together for the season you are in.</Text>
+              </View>
+              <Pressable onPress={() => setCollectionOpen(false)} className="h-10 w-10 items-center justify-center"><X color={colors.inkSoft} size={21} /></Pressable>
+            </View>
+            <View className="mt-5 flex-row gap-2">
+              <TextInput value={collectionTitle} onChangeText={setCollectionTitle} placeholder="New collection, e.g. Courage" placeholderTextColor={colors.inkMute} className="flex-1 rounded-xl border border-rule bg-paper px-3.5 py-3 text-[15px] text-ink" onSubmitEditing={() => void onCreateCollection()} />
+              <Pressable onPress={() => void onCreateCollection()} disabled={!collectionTitle.trim() || createCollection.isPending || addToCollection.isPending} className="items-center justify-center rounded-xl bg-ink px-4 disabled:opacity-45"><Text className="font-sans-semibold text-sm text-parchment">Create</Text></Pressable>
+            </View>
+            <ScrollView className="mt-4" contentContainerClassName="gap-2">
+              {(collections ?? []).map((collection) => <Pressable key={collection.id} onPress={() => void onAddToCollection(collection.id)} disabled={addToCollection.isPending} className="flex-row items-center rounded-xl border border-rule bg-paper px-4 py-3.5 active:opacity-70"><View className="h-8 w-8 rounded-full" style={{ backgroundColor: collection.color === "sage" ? "#9BE870" : collection.color === "rose" ? "#FF8FB6" : collection.color === "amber" ? "#FFB454" : collection.color === "violet" ? "#BDA7FF" : "#74C0FC" }} /><Text className="ml-3 flex-1 font-sans-semibold text-[15px] text-ink">{collection.title}</Text><FolderPlus color={colors.inkMute} size={18} /></Pressable>)}
+              {(collections ?? []).length === 0 ? <Text className="py-4 text-center text-[13px] text-ink-mute">Create your first shelf above.</Text> : null}
+            </ScrollView>
           </View>
         </View>
       </Modal>

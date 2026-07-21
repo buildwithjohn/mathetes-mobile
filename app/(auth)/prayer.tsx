@@ -16,11 +16,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { formatDistanceToNowStrict } from "date-fns";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { ChevronLeft, Plus, HandHeart, X, Check } from "lucide-react-native";
+import { ChevronLeft, Plus, HandHeart, X, Check, CircleCheck } from "lucide-react-native";
 import {
   usePrayerRequests,
   useCreatePrayer,
   useTogglePray,
+  useMarkPrayerAnswered,
   type PrayerEntry,
 } from "@/lib/queries/prayer";
 import { useProfile } from "@/lib/queries/profile";
@@ -35,7 +36,9 @@ export default function PrayerWall() {
   const { data: requests, isLoading, refetch, isRefetching } =
     usePrayerRequests();
   const togglePray = useTogglePray();
+  const markAnswered = useMarkPrayerAnswered();
   const [composing, setComposing] = useState(false);
+  const [answering, setAnswering] = useState<PrayerEntry | null>(null);
 
   const myHouse = profile?.house_id ?? null;
 
@@ -91,6 +94,8 @@ export default function PrayerWall() {
                   on: !item.prayedByMe,
                 })
               }
+              canMarkAnswered={item.authorId === profile?.id && !item.answeredAt}
+              onMarkAnswered={() => setAnswering(item)}
             />
           )}
           ListEmptyComponent={
@@ -116,6 +121,21 @@ export default function PrayerWall() {
         hasHouse={!!myHouse}
         houseId={myHouse}
       />
+      <AnsweredModal
+        entry={answering}
+        saving={markAnswered.isPending}
+        onClose={() => setAnswering(null)}
+        onSave={(answerNote) => {
+          if (!answering) return;
+          markAnswered.mutate(
+            { requestId: answering.id, answerNote },
+            {
+              onSuccess: () => { setAnswering(null); Alert.alert("Praise God", "Your answered prayer has been saved privately."); },
+              onError: (error) => Alert.alert("Could not save", error instanceof Error ? error.message : "Please try again."),
+            }
+          );
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -124,10 +144,14 @@ function PrayerCard({
   entry,
   viewerHouseId,
   onPray,
+  canMarkAnswered,
+  onMarkAnswered,
 }: {
   entry: PrayerEntry;
   viewerHouseId: string | null;
   onPray: () => void;
+  canMarkAnswered: boolean;
+  onMarkAnswered: () => void;
 }) {
   return (
     <Animated.View
@@ -173,6 +197,13 @@ function PrayerCard({
         {entry.body}
       </Text>
 
+      {entry.answeredAt ? (
+        <View className="mt-3 rounded-xl border border-success/30 bg-success/10 px-3 py-2.5">
+          <View className="flex-row items-center gap-1.5"><CircleCheck color={colors.success} size={16} /><Text className="font-sans-semibold text-[12px] text-success">Answered prayer</Text></View>
+          {entry.answerNote ? <Text className="mt-1.5 text-[13px] leading-[18px] text-ink-soft">{entry.answerNote}</Text> : null}
+        </View>
+      ) : null}
+
       <View className="mt-3 flex-row items-center gap-3">
         <Pressable
           onPress={onPray}
@@ -200,9 +231,21 @@ function PrayerCard({
             You prayed
           </Text>
         ) : null}
+        {canMarkAnswered ? (
+          <Pressable onPress={onMarkAnswered} className="ml-auto flex-row items-center gap-1.5 rounded-full px-2 py-1 active:opacity-70">
+            <CircleCheck color={colors.success} size={16} />
+            <Text className="font-sans-medium text-[11.5px] text-success">Answered</Text>
+          </Pressable>
+        ) : null}
       </View>
     </Animated.View>
   );
+}
+
+function AnsweredModal({ entry, saving, onClose, onSave }: { entry: PrayerEntry | null; saving: boolean; onClose: () => void; onSave: (note: string) => void }) {
+  const [note, setNote] = useState("");
+  if (!entry) return null;
+  return <Modal visible transparent animationType="slide" onRequestClose={onClose} onShow={() => setNote("")}><KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} className="flex-1 justify-end"><Pressable className="flex-1" onPress={onClose} /><View className="rounded-t-3xl bg-surface1 px-6 pb-10 pt-4"><View className="mb-3 h-1 w-10 self-center rounded-full bg-rule" /><View className="flex-row items-center justify-between"><Text className="font-display text-xl text-ink">Praise report</Text><Pressable onPress={onClose} className="p-1"><X color={colors.ink} size={22} /></Pressable></View><Text className="mt-1 text-[13px] leading-[19px] text-ink-mute">Mark this prayer as answered. Add a short note if you would like to remember what God did.</Text><TextInput value={note} onChangeText={setNote} multiline placeholder="What happened? (optional)" placeholderTextColor={colors.inkMute} className="mt-5 min-h-24 rounded-2xl border border-rule bg-parchment px-4 py-3 text-base text-ink" textAlignVertical="top" /><Pressable onPress={() => onSave(note)} disabled={saving} className="mt-5 h-13 items-center justify-center rounded-full bg-ink py-3.5 active:opacity-90 disabled:opacity-50"><Text className="font-sans-semibold text-base text-parchment">{saving ? "Saving…" : "Save praise report"}</Text></Pressable></View></KeyboardAvoidingView></Modal>;
 }
 
 function Badge({

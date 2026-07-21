@@ -20,6 +20,7 @@ type PrayerRow = PrayerRequest & {
 
 export type PrayerEntry = {
   id: string;
+  authorId: string;
   body: string;
   anonymous: boolean;
   urgent: boolean;
@@ -29,6 +30,8 @@ export type PrayerEntry = {
   author: PrayAuthor | null;
   prayedCount: number;
   prayedByMe: boolean;
+  answeredAt: string | null;
+  answerNote: string | null;
 };
 
 // Prayer requests visible to the member (parish-wide + their house). Archived
@@ -53,6 +56,7 @@ export function usePrayerRequests() {
 
       return (data ?? []).map((r) => ({
         id: r.id,
+        authorId: r.author_id,
         body: r.body,
         anonymous: r.anonymous,
         urgent: r.urgent,
@@ -62,8 +66,26 @@ export function usePrayerRequests() {
         author: r.anonymous ? null : r.user_profiles,
         prayedCount: r.prayer_pray.length,
         prayedByMe: r.prayer_pray.some((p) => p.user_id === me),
+        answeredAt: r.answered_at,
+        answerNote: r.answer_note,
       }));
     },
+  });
+}
+
+/** An answered prayer is an author-only pastoral marker, written through the
+ * security-definer RPC so a member cannot mark somebody else's request. */
+export function useMarkPrayerAnswered() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ requestId, answerNote }: { requestId: string; answerNote: string }) => {
+      const { error } = await supabase.rpc("mark_prayer_answered", {
+        p_request: requestId,
+        p_answer_note: answerNote.trim() || undefined,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: prayerKeys.requests }),
   });
 }
 
