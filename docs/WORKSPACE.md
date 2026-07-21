@@ -106,8 +106,9 @@ continuation rhythm rather than pressure language.
 **Formation foundation (backend 0038, LIVE):** private rhythm activity + named
 Scripture collections; opt-in House Quests / Campus Missions; Fellowship Events
 with private RSVPs; and author-only answered-prayer markers. These are explicitly
-not a public spiritual score or leaderboard. Student and admin surfaces are being
-built on this shared, RLS-protected contract.
+not a public spiritual score or leaderboard. The student Grow hub and admin
+publishing surface are live on this shared, RLS-protected contract; Collections
+and answered-prayer controls are the next student tools.
 
 **Giving (V2.1):** give screen (amount/fund/recurring/anonymous) → `paystack-initialize`
 → WebView `authorization_url` → realtime-watch the donation row; recurring manage;
