@@ -22,6 +22,7 @@ import {
   Bookmark,
   NotebookPen,
   Share2,
+  Columns2,
   Check,
   X,
 } from "lucide-react-native";
@@ -69,6 +70,8 @@ export default function Bible() {
   const [flash, setFlash] = useState<string | null>(null);
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteBody, setNoteBody] = useState("");
+  const [compareOpen, setCompareOpen] = useState(false);
+  const [compareVersion, setCompareVersion] = useState<string | null>(null);
 
   // Remember the chosen translation across launches.
   useEffect(() => {
@@ -112,6 +115,15 @@ export default function Bible() {
     abbrev ? chapter : null
   );
   const { data: bookChapters } = useBookChapters(book?.id ?? null);
+  const { data: compareBooks } = useBibleBooks(compareVersion ?? undefined);
+  const compareBook = useMemo(
+    () => compareBooks?.find((candidate) => candidate.abbrev === abbrev) ?? null,
+    [compareBooks, abbrev]
+  );
+  const { data: compareChapter } = useChapterVerses(
+    compareBook?.id ?? null,
+    compareBook ? chapter : null
+  );
   const maxChapter = bookChapters?.[bookChapters.length - 1] ?? null;
 
   // Persist reading position when the location resolves.
@@ -177,6 +189,7 @@ export default function Bible() {
 
   const selectedVerses = verses.filter((v) => selected.has(v.number));
   const selectedVerse = selectedVerses.length === 1 ? selectedVerses[0] : null;
+  const comparedVerse = compareChapter?.verses.find((v) => v.number === selectedVerse?.number) ?? null;
   const verseNote = useVerseNote(selectedVerse?.id ?? "");
   const saveVerseNote = useSaveVerseNote();
 
@@ -222,6 +235,13 @@ export default function Bible() {
     if (!selectedVerse) return;
     setNoteBody(verseNote.data?.body ?? "");
     setNoteOpen(true);
+  };
+
+  const onOpenCompare = () => {
+    if (!selectedVerse) return;
+    const alternative = versions?.find((version) => version.code !== versionCode)?.code ?? null;
+    setCompareVersion(alternative);
+    setCompareOpen(true);
   };
 
   const onSaveNote = () => {
@@ -438,6 +458,12 @@ export default function Bible() {
               onPress={onOpenNote}
               disabled={selected.size !== 1}
             />
+            <ActionButton
+              icon={Columns2}
+              label="Compare"
+              onPress={onOpenCompare}
+              disabled={selected.size !== 1 || (versions?.length ?? 0) < 2}
+            />
             <ActionButton icon={X} label="Close" onPress={clearSelection} />
           </View>
         </View>
@@ -510,6 +536,66 @@ export default function Bible() {
             ) : null}
           </View>
         </Pressable>
+      </Modal>
+
+      <Modal
+        visible={compareOpen}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setCompareOpen(false)}
+      >
+        <View className="flex-1 justify-end bg-ink/35">
+          <View className="rounded-t-3xl bg-surface1 px-6 pb-10 pt-4">
+            <View className="mb-3 h-1 w-10 self-center rounded-full bg-rule" />
+            <View className="flex-row items-center justify-between">
+              <View>
+                <Text className="font-display text-xl text-ink">Compare</Text>
+                {selectedVerse && book ? (
+                  <Text className="mt-1 text-sm text-ink-mute">
+                    {book.name} {chapter}:{selectedVerse.number}
+                  </Text>
+                ) : null}
+              </View>
+              <Pressable onPress={() => setCompareOpen(false)} className="h-10 w-10 items-center justify-center">
+                <X color={colors.inkSoft} size={21} />
+              </Pressable>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-5">
+              <View className="flex-row gap-2">
+                {(versions ?? []).filter((version) => version.code !== versionCode).map((version) => {
+                  const active = version.code === compareVersion;
+                  return (
+                    <Pressable
+                      key={version.id}
+                      onPress={() => setCompareVersion(version.code)}
+                      className={`rounded-full border px-4 py-2 ${active ? "border-ink bg-ink" : "border-rule bg-paper"}`}
+                    >
+                      <Text className={`font-sans-semibold text-xs ${active ? "text-parchment" : "text-ink-soft"}`}>
+                        {version.code}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </ScrollView>
+            <View className="mt-6 rounded-2xl bg-paper p-5">
+              <Text className="font-sans-semibold text-xs uppercase text-copper-deep" style={{ letterSpacing: 1.4 }}>
+                {versionCode}
+              </Text>
+              <Text className="mt-2 font-scripture text-[17px] leading-7 text-ink">
+                {selectedVerse?.text}
+              </Text>
+            </View>
+            <View className="mt-3 rounded-2xl border border-rule bg-surface1 p-5">
+              <Text className="font-sans-semibold text-xs uppercase text-copper-deep" style={{ letterSpacing: 1.4 }}>
+                {compareVersion ?? "Translation"}
+              </Text>
+              <Text className="mt-2 font-scripture text-[17px] leading-7 text-ink">
+                {comparedVerse?.text ?? "Loading this translation…"}
+              </Text>
+            </View>
+          </View>
+        </View>
       </Modal>
 
       <Modal
