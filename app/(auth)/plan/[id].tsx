@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, ActivityIndicator, Alert } from "react-native";
+import { View, Text, Pressable, ScrollView, ActivityIndicator, Alert, ImageBackground } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
@@ -87,16 +87,24 @@ export default function PlanDetail() {
       >
         {/* Cover */}
         <View className="mx-5 h-36 overflow-hidden rounded-2xl">
-          <Svg width="100%" height={144} style={{ position: "absolute" }}>
-            <Defs>
-              <LinearGradient id="pd-cover" x1="0" y1="0" x2="1" y2="1">
-                <Stop offset="0" stopColor={colors.copper} />
-                <Stop offset="1" stopColor={colors.oxblood} />
-              </LinearGradient>
-            </Defs>
-            <Rect width="100%" height={144} fill="url(#pd-cover)" />
-          </Svg>
-          <View className="flex-1 justify-end p-5">
+          {plan.cover_image_url ? (
+            <ImageBackground
+              source={{ uri: plan.cover_image_url }}
+              className="absolute inset-0"
+              resizeMode="cover"
+            />
+          ) : (
+            <Svg width="100%" height={144} style={{ position: "absolute" }}>
+              <Defs>
+                <LinearGradient id="pd-cover" x1="0" y1="0" x2="1" y2="1">
+                  <Stop offset="0" stopColor={colors.copper} />
+                  <Stop offset="1" stopColor={colors.oxblood} />
+                </LinearGradient>
+              </Defs>
+              <Rect width="100%" height={144} fill="url(#pd-cover)" />
+            </Svg>
+          )}
+          <View className="flex-1 justify-end bg-ink/35 p-5">
             <Text className="font-display text-[26px] leading-[30px] text-white">
               {plan.title}
             </Text>

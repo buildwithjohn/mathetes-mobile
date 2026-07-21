@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, ScrollView, ActivityIndicator, ImageBackground } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
@@ -54,6 +54,20 @@ export default function Plans() {
         >
           {active.length > 0 ? (
             <>
+              <View className="mt-4 rounded-2xl border border-rule bg-paper-raised px-5 py-5">
+                <Text
+                  className="font-sans-semibold text-[10px] uppercase text-copper-deep"
+                  style={{ letterSpacing: 1.7 }}
+                >
+                  Your quiet rhythm
+                </Text>
+                <Text className="mt-1.5 font-display text-[21px] leading-[26px] text-ink">
+                  Pick up one small, faithful step today.
+                </Text>
+                <Text className="mt-2 text-[13px] leading-[19px] text-ink-soft">
+                  There is no race here. Your next day is ready when you are.
+                </Text>
+              </View>
               <SectionEyebrow>Continue</SectionEyebrow>
               <View className="gap-2.5">
                 {active.map((s) => (
@@ -67,7 +81,24 @@ export default function Plans() {
             </>
           ) : null}
 
-          <SectionEyebrow>{active.length > 0 ? "More plans" : "Plans"}</SectionEyebrow>
+          {active.length === 0 ? (
+            <View className="mt-4 rounded-2xl bg-ink px-5 py-6">
+              <Text
+                className="font-sans-semibold text-[10px] uppercase text-parchment/65"
+                style={{ letterSpacing: 1.7 }}
+              >
+                Begin where you are
+              </Text>
+              <Text className="mt-1.5 font-display text-[22px] leading-[27px] text-parchment">
+                A few minutes in the Word can reshape a whole day.
+              </Text>
+              <Text className="mt-2 text-[13px] leading-[19px] text-parchment/70">
+                Choose a path below. You can pause anytime and return without losing your place.
+              </Text>
+            </View>
+          ) : null}
+
+          <SectionEyebrow>{active.length > 0 ? "Explore another path" : "Choose a path"}</SectionEyebrow>
           {(plans ?? []).length === 0 ? (
             <EmptyState
               icon={BookOpen}
@@ -127,7 +158,7 @@ function ContinueCard({
           {plan.title}
         </Text>
         <Text className="mt-0.5 text-[12.5px] text-ink-mute">
-          {sub.paused ? "Paused · " : ""}Day {sub.current_day} of {total}
+          {sub.paused ? "Paused · " : ""}Day {Math.min(sub.current_day, total)} of {total} · one small step
         </Text>
       </View>
       <ChevronRight color={colors.inkMute} size={18} strokeWidth={1.5} />
@@ -141,19 +172,26 @@ function PlanCard({ plan, onPress }: { plan: ReadingPlan; onPress: () => void })
       onPress={onPress}
       className="overflow-hidden rounded-2xl border border-rule bg-paper active:opacity-90"
     >
-      {/* Cover (gradient placeholder when no image). TODO: render
-          cover_image_url when present once images are uploaded. */}
+      {/* Covers are pastor-uploaded from the admin plan editor. */}
       <View className="h-28 w-full">
-        <Svg width="100%" height={112} style={{ position: "absolute" }}>
-          <Defs>
-            <LinearGradient id={`pc-${plan.id}`} x1="0" y1="0" x2="1" y2="1">
-              <Stop offset="0" stopColor={colors.copper} />
-              <Stop offset="1" stopColor={colors.oxblood} />
-            </LinearGradient>
-          </Defs>
-          <Rect width="100%" height={112} fill={`url(#pc-${plan.id})`} />
-        </Svg>
-        <View className="flex-1 justify-end p-4">
+        {plan.cover_image_url ? (
+          <ImageBackground
+            source={{ uri: plan.cover_image_url }}
+            className="absolute inset-0"
+            resizeMode="cover"
+          />
+        ) : (
+          <Svg width="100%" height={112} style={{ position: "absolute" }}>
+            <Defs>
+              <LinearGradient id={`pc-${plan.id}`} x1="0" y1="0" x2="1" y2="1">
+                <Stop offset="0" stopColor={colors.copper} />
+                <Stop offset="1" stopColor={colors.oxblood} />
+              </LinearGradient>
+            </Defs>
+            <Rect width="100%" height={112} fill={`url(#pc-${plan.id})`} />
+          </Svg>
+        )}
+        <View className="flex-1 justify-end bg-ink/35 p-4">
           <Text className="font-display text-[20px] text-white" numberOfLines={2}>
             {plan.title}
           </Text>
