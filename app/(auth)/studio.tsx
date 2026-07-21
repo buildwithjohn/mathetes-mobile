@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   ImageBackground,
+  Image,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -44,7 +45,12 @@ export default function Studio() {
   const text = (params.text ?? "").trim();
   const reference = (params.reference ?? "").trim();
   const label = (params.label ?? "Mathetes").trim();
-  const [backgroundUri, setBackgroundUri] = useState(params.backgroundUrl ?? null);
+  const [backgroundUri, setBackgroundUri] = useState<string | number | null>(params.backgroundUrl ?? null);
+  const curatedBackgrounds = [
+    { key: "dawn", label: "Dawn", source: require("../../assets/images/devotional-fallback-v1.png") },
+    { key: "study", label: "Study", source: require("../../assets/images/share-study-v1.png") },
+    { key: "house", label: "Together", source: require("../../assets/images/share-house-v1.png") },
+  ];
 
   // Brand themes, plus the member's house color when known.
   const themes = useMemo<VerseTheme[]>(() => {
@@ -166,7 +172,7 @@ export default function Studio() {
               style={{ aspectRatio: 4 / 5, backgroundColor: theme.bg }}
             >
               {backgroundUri ? (
-                <ImageBackground source={{ uri: backgroundUri }} className="absolute inset-0" resizeMode="cover" />
+                <ImageBackground source={typeof backgroundUri === "string" ? { uri: backgroundUri } : backgroundUri} className="absolute inset-0" resizeMode="cover" />
               ) : null}
               <View className={`flex-1 justify-between p-8 ${backgroundUri ? "bg-ink/55" : ""}`}>
                 <Text
@@ -229,6 +235,17 @@ export default function Studio() {
               >
                 <ImagePlus color={colors.ink} size={18} />
               </Pressable>
+              {curatedBackgrounds.map((background) => (
+                <Pressable
+                  key={background.key}
+                  onPress={() => setBackgroundUri(background.source)}
+                  className="h-10 w-10 overflow-hidden rounded-full border-2"
+                  style={{ borderColor: backgroundUri === background.source ? colors.copper : colors.border }}
+                  accessibilityLabel={`${background.label} background`}
+                >
+                  <Image source={background.source} className="h-full w-full" resizeMode="cover" />
+                </Pressable>
+              ))}
               {backgroundUri ? (
                 <Pressable onPress={() => setBackgroundUri(null)} className="rounded-full border border-rule px-3 py-2">
                   <Text className="text-xs text-ink-soft">Use colours</Text>
