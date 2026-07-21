@@ -1,7 +1,6 @@
-import { View, Text, ScrollView, Pressable, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, Pressable, ActivityIndicator, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
-import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 import { useRouter } from "expo-router";
 import { format } from "date-fns";
 import { ChevronRight, BookOpen, Share2 } from "lucide-react-native";
@@ -165,25 +164,18 @@ export default function Today() {
                 <ActivityIndicator className="self-start" color={colors.copper} />
               ) : devotional.data ? (
                 <View className="flex-row gap-3.5">
-                  {/* Gradient thumb (copper -> oxblood) with series initial + day */}
+                  {/* Original Mathetes editorial artwork gives the daily content
+                      the visual presence of a real published devotional. */}
                   <View
                     className="overflow-hidden rounded-lg"
                     style={{ width: 64, height: 80 }}
                   >
-                    <Svg width={64} height={80} style={{ position: "absolute" }}>
-                      <Defs>
-                        <LinearGradient id="devo" x1="0" y1="0" x2="1" y2="1">
-                          <Stop offset="0" stopColor={colors.copper} />
-                          <Stop offset="1" stopColor={colors.oxblood} />
-                        </LinearGradient>
-                      </Defs>
-                      <Rect width={64} height={80} fill="url(#devo)" />
-                    </Svg>
-                    <View className="flex-1 items-center justify-center">
-                      <Text className="font-display-italic text-[22px] text-white opacity-90">
-                        {devotional.data.title.trim().slice(0, 1).toUpperCase() || "M"}
-                      </Text>
-                    </View>
+                    <Image
+                      source={require("../../../assets/images/devotional-fallback-v1.png")}
+                      resizeMode="cover"
+                      className="h-full w-full"
+                    />
+                    <View className="absolute inset-0 bg-ink/10" />
                     {devotional.data.day_in_series ? (
                       <Text
                         className="absolute bottom-1.5 left-1.5 text-[9px] text-white opacity-75"
