@@ -6,6 +6,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Modal,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -19,7 +20,8 @@ import {
   Search,
   Copy,
   Bookmark,
-  ImageDown,
+  NotebookPen,
+  Share2,
   Check,
   X,
 } from "lucide-react-native";
@@ -36,6 +38,8 @@ import {
   useHighlights,
   useToggleBookmark,
   useSetHighlight,
+  useVerseNote,
+  useSaveVerseNote,
 } from "@/lib/queries/library";
 import { useProfile } from "@/lib/queries/profile";
 import { BibleNavigator } from "@/components/BibleNavigator";
@@ -63,6 +67,8 @@ export default function Bible() {
   const [transOpen, setTransOpen] = useState(false);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [flash, setFlash] = useState<string | null>(null);
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteBody, setNoteBody] = useState("");
 
   // Remember the chosen translation across launches.
   useEffect(() => {
@@ -170,6 +176,9 @@ export default function Bible() {
   };
 
   const selectedVerses = verses.filter((v) => selected.has(v.number));
+  const selectedVerse = selectedVerses.length === 1 ? selectedVerses[0] : null;
+  const verseNote = useVerseNote(selectedVerse?.id ?? "");
+  const saveVerseNote = useSaveVerseNote();
 
   const onCopy = async () => {
     if (selectedVerses.length === 0) return;
@@ -207,6 +216,28 @@ export default function Bible() {
       },
     });
     clearSelection();
+  };
+
+  const onOpenNote = () => {
+    if (!selectedVerse) return;
+    setNoteBody(verseNote.data?.body ?? "");
+    setNoteOpen(true);
+  };
+
+  const onSaveNote = () => {
+    if (!selectedVerse) return;
+    saveVerseNote.mutate(
+      { verseId: selectedVerse.id, body: noteBody },
+      {
+        onSuccess: () => {
+          setNoteOpen(false);
+          clearSelection();
+          setFlash(noteBody.trim() ? "Note saved" : "Note removed");
+          setTimeout(() => setFlash(null), 1600);
+        },
+        onError: () => setFlash("Could not save note"),
+      }
+    );
   };
 
   return (
@@ -396,9 +427,15 @@ export default function Bible() {
             <ActionButton icon={Bookmark} label="Save" onPress={onBookmark} />
             <ActionButton icon={Copy} label="Copy" onPress={onCopy} />
             <ActionButton
-              icon={ImageDown}
-              label="Image"
+              icon={Share2}
+              label="Share"
               onPress={onShareImage}
+              disabled={selected.size !== 1}
+            />
+            <ActionButton
+              icon={NotebookPen}
+              label="Note"
+              onPress={onOpenNote}
               disabled={selected.size !== 1}
             />
             <ActionButton icon={X} label="Close" onPress={clearSelection} />
@@ -474,6 +511,49 @@ export default function Bible() {
           </View>
         </Pressable>
       </Modal>
+
+      <Modal
+        visible={noteOpen}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setNoteOpen(false)}
+      >
+        <View className="flex-1 justify-end bg-ink/35">
+          <View className="rounded-t-3xl bg-surface1 px-6 pb-10 pt-4">
+            <View className="mb-3 h-1 w-10 self-center rounded-full bg-rule" />
+            <Text className="font-display text-xl text-ink">Your note</Text>
+            {selectedVerse && book ? (
+              <Text className="mt-1 text-sm text-ink-mute">
+                {book.name} {chapter}:{selectedVerse.number}
+              </Text>
+            ) : null}
+            <TextInput
+              value={noteBody}
+              onChangeText={setNoteBody}
+              multiline
+              autoFocus
+              placeholder="What is God showing you here?"
+              placeholderTextColor={colors.inkMute}
+              className="mt-5 min-h-32 rounded-2xl border border-rule bg-paper p-4 text-[16px] leading-6 text-ink"
+              textAlignVertical="top"
+            />
+            <View className="mt-4 flex-row justify-end gap-3">
+              <Pressable onPress={() => setNoteOpen(false)} className="rounded-full px-4 py-3">
+                <Text className="font-sans-medium text-ink-soft">Cancel</Text>
+              </Pressable>
+              <Pressable
+                onPress={onSaveNote}
+                disabled={saveVerseNote.isPending}
+                className="rounded-full bg-ink px-5 py-3 active:opacity-80"
+              >
+                <Text className="font-sans-semibold text-parchment">
+                  {saveVerseNote.isPending ? "Saving…" : "Save note"}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -494,7 +574,7 @@ function ActionButton({
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      className={`w-[72px] items-center gap-1 py-2 ${
+      className={`flex-1 items-center gap-1 py-2 ${
         disabled ? "opacity-30" : "active:opacity-60"
       }`}
     >

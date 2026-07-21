@@ -8,7 +8,54 @@ export const libraryKeys = {
   bookmarks: ["library", "bookmarks"] as const,
   highlights: ["library", "highlights"] as const,
   entries: ["library", "entries"] as const,
+  verseNote: (verseId: string) => ["library", "note", verseId] as const,
 };
+
+export function useVerseNote(verseId: string) {
+  const authId = useAuth((s) => s.session?.user.id ?? null);
+  return useQuery({
+    queryKey: libraryKeys.verseNote(verseId),
+    enabled: !!authId && !!verseId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("notes")
+        .select("id, body")
+        .eq("verse_id", verseId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useSaveVerseNote() {
+  const queryClient = useQueryClient();
+  const { data: profile } = useProfile();
+  return useMutation({
+    mutationFn: async ({ verseId, body }: { verseId: string; body: string }) => {
+      if (!profile) throw new Error("No profile.");
+      const { data: existing, error: readError } = await supabase
+        .from("notes")
+        .select("id")
+        .eq("verse_id", verseId)
+        .maybeSingle();
+      if (readError) throw readError;
+      if (!body.trim() && existing) {
+        const { error } = await supabase.from("notes").delete().eq("id", existing.id);
+        if (error) throw error;
+        return;
+      }
+      if (!body.trim()) return;
+      const { error } = existing
+        ? await supabase.from("notes").update({ body: body.trim() }).eq("id", existing.id)
+        : await supabase.from("notes").insert({ user_id: profile.id, verse_id: verseId, body: body.trim() });
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: libraryKeys.verseNote(variables.verseId) });
+    },
+  });
+}
 
 // The user's bookmarks. Per-user and small for the pilot, so we load all and
 // look up by verse_id in the reader.
