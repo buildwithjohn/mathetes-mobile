@@ -19,6 +19,7 @@ import {
   HeartHandshake,
   MessageCircleQuestion,
   Hash,
+  Compass,
   type LucideIcon,
 } from "lucide-react-native";
 import { useChats, type ChatSummary } from "@/lib/queries/community";
@@ -167,6 +168,13 @@ export default function Community() {
               title="Members"
               preview="Find someone in the parish directory"
               onPress={() => router.push("/members")}
+            />
+            <EntryRow
+              icon={Compass}
+              tone={colors.copper}
+              title="Grow together"
+              preview="House practices, events, and your quiet rhythm"
+              onPress={() => router.push("/formation")}
             />
           </>
         ) : null}

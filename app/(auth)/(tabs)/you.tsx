@@ -21,6 +21,7 @@ import {
   Layers,
   HandCoins,
   Library as LibraryIcon,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react-native";
 import { useAuth } from "@/lib/stores/auth";
@@ -208,6 +209,12 @@ export default function You() {
             icon={BookOpen}
             label="Reading plans"
             onPress={() => router.push("/plans")}
+            divider
+          />
+          <MenuRow
+            icon={Sparkles}
+            label="Grow"
+            onPress={() => router.push("/formation")}
             divider
           />
           <MenuRow
