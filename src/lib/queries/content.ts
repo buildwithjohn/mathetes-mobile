@@ -24,6 +24,7 @@ export const contentKeys = {
   wordArchive: ["word_of_day", "archive"] as const,
   devotionalBookmark: (id: string) => ["devotional", id, "bookmark"] as const,
   savedDevotionals: ["devotional", "saved"] as const,
+  wordNote: (id: string) => ["word_of_day", id, "note"] as const,
 };
 
 // The Word of the Day for a given date. RLS limits this to the user's parish
@@ -250,5 +251,41 @@ export function useSavedDevotionals() {
         return devotional ? [{ ...devotional, saved_at: save.created_at }] : [];
       });
     },
+  });
+}
+
+export function useWordNote(wordId: string) {
+  const authId = useAuth((s) => s.session?.user.id ?? null);
+  return useQuery({
+    queryKey: contentKeys.wordNote(wordId),
+    enabled: !!authId && !!wordId,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("word_notes").select("id, body").eq("word_of_day_id", wordId).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useSaveWordNote(wordId: string) {
+  const queryClient = useQueryClient();
+  const { data: profile } = useProfile();
+  return useMutation({
+    mutationFn: async (body: string) => {
+      if (!profile) throw new Error("No profile.");
+      const { data: existing, error: readError } = await supabase.from("word_notes").select("id").eq("word_of_day_id", wordId).maybeSingle();
+      if (readError) throw readError;
+      if (!body.trim() && existing) {
+        const { error } = await supabase.from("word_notes").delete().eq("id", existing.id);
+        if (error) throw error;
+        return;
+      }
+      if (!body.trim()) return;
+      const { error } = existing
+        ? await supabase.from("word_notes").update({ body: body.trim() }).eq("id", existing.id)
+        : await supabase.from("word_notes").insert({ user_id: profile.id, word_of_day_id: wordId, body: body.trim() });
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: contentKeys.wordNote(wordId) }),
   });
 }

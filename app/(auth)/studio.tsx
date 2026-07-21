@@ -6,13 +6,15 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  ImageBackground,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { captureRef } from "react-native-view-shot";
 import * as Sharing from "expo-sharing";
 import * as MediaLibrary from "expo-media-library";
-import { X, Download, Share2, Check } from "lucide-react-native";
+import * as ImagePicker from "expo-image-picker";
+import { X, Download, Share2, Check, ImagePlus } from "lucide-react-native";
 import { useProfile, useHouses } from "@/lib/queries/profile";
 import {
   verseThemes,
@@ -32,6 +34,7 @@ export default function Studio() {
     text?: string;
     reference?: string;
     label?: string;
+    backgroundUrl?: string;
   }>();
 
   const { data: profile } = useProfile();
@@ -41,6 +44,7 @@ export default function Studio() {
   const text = (params.text ?? "").trim();
   const reference = (params.reference ?? "").trim();
   const label = (params.label ?? "Mathetes").trim();
+  const [backgroundUri, setBackgroundUri] = useState(params.backgroundUrl ?? null);
 
   // Brand themes, plus the member's house color when known.
   const themes = useMemo<VerseTheme[]>(() => {
@@ -120,6 +124,16 @@ export default function Studio() {
     }
   };
 
+  const chooseBackground = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      quality: 0.9,
+      allowsEditing: true,
+      aspect: [4, 5],
+    });
+    if (!result.canceled) setBackgroundUri(result.assets[0]?.uri ?? null);
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
       {/* Header */}
@@ -151,10 +165,13 @@ export default function Studio() {
               className="w-full overflow-hidden rounded-3xl"
               style={{ aspectRatio: 4 / 5, backgroundColor: theme.bg }}
             >
-              <View className="flex-1 justify-between p-8">
+              {backgroundUri ? (
+                <ImageBackground source={{ uri: backgroundUri }} className="absolute inset-0" resizeMode="cover" />
+              ) : null}
+              <View className={`flex-1 justify-between p-8 ${backgroundUri ? "bg-ink/55" : ""}`}>
                 <Text
                   className="font-sans-medium"
-                  style={{ color: theme.accent, fontSize: 11, letterSpacing: 3 }}
+                  style={{ color: backgroundUri ? "#FFFFFF" : theme.accent, fontSize: 11, letterSpacing: 3 }}
                 >
                   {label.toUpperCase()}
                 </Text>
@@ -163,7 +180,7 @@ export default function Studio() {
                   <Text
                     className="font-scripture"
                     style={{
-                      color: theme.text,
+                      color: backgroundUri ? "#FFFFFF" : theme.text,
                       fontSize: scale.fontSize,
                       lineHeight: scale.lineHeight,
                     }}
@@ -172,11 +189,11 @@ export default function Studio() {
                   </Text>
                   <View
                     className="mt-5 rounded-full"
-                    style={{ height: 2, width: 32, backgroundColor: theme.accent }}
+                    style={{ height: 2, width: 32, backgroundColor: backgroundUri ? "#FFFFFF" : theme.accent }}
                   />
                   <Text
                     className="mt-4 font-sans-semibold"
-                    style={{ color: theme.accent, fontSize: 15, letterSpacing: 0.5 }}
+                    style={{ color: backgroundUri ? "#FFFFFF" : theme.accent, fontSize: 15, letterSpacing: 0.5 }}
                   >
                     {reference}
                   </Text>
@@ -185,14 +202,14 @@ export default function Studio() {
                 <View className="flex-row items-end justify-between">
                   <Text
                     className="font-display"
-                    style={{ color: theme.text, fontSize: 18, opacity: 0.92 }}
+                    style={{ color: backgroundUri ? "#FFFFFF" : theme.text, fontSize: 18, opacity: 0.92 }}
                   >
                     Mathetes
                   </Text>
                   <Text
                     className="font-sans-medium"
                     style={{
-                      color: theme.text,
+                      color: backgroundUri ? "#FFFFFF" : theme.text,
                       opacity: 0.5,
                       fontSize: 10,
                       letterSpacing: 2,
@@ -204,6 +221,20 @@ export default function Studio() {
               </View>
             </View>
 
+            <View className="mt-7 flex-row items-center justify-center gap-3">
+              <Pressable
+                onPress={chooseBackground}
+                className="h-10 w-10 items-center justify-center rounded-full border-2 border-rule bg-paper"
+                accessibilityLabel="Choose a photo background"
+              >
+                <ImagePlus color={colors.ink} size={18} />
+              </Pressable>
+              {backgroundUri ? (
+                <Pressable onPress={() => setBackgroundUri(null)} className="rounded-full border border-rule px-3 py-2">
+                  <Text className="text-xs text-ink-soft">Use colours</Text>
+                </Pressable>
+              ) : null}
+            </View>
             {/* Theme swatches */}
             <ScrollView
               horizontal

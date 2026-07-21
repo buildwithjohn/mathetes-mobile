@@ -1,10 +1,11 @@
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert, ImageBackground } from "react-native";
+import { useState } from "react";
+import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert, ImageBackground, Modal, TextInput } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 import { format, parseISO } from "date-fns";
 import { X, CalendarDays, Bookmark, NotebookPen, ImageDown } from "lucide-react-native";
-import { useWordOfDay } from "@/lib/queries/content";
+import { useWordOfDay, useWordNote, useSaveWordNote } from "@/lib/queries/content";
 import { sentences } from "@/utils/text";
 import { Markdown } from "@/components/Markdown";
 import { colors } from "@/theme/colors";
@@ -13,6 +14,10 @@ export default function WordExpanded() {
   const router = useRouter();
   const { date } = useLocalSearchParams<{ date: string }>();
   const { data: word, isLoading, isError } = useWordOfDay(date ?? "");
+  const wordNote = useWordNote(word?.id ?? "");
+  const saveWordNote = useSaveWordNote(word?.id ?? "");
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteBody, setNoteBody] = useState("");
 
   const prettyDate = (() => {
     try {
@@ -30,14 +35,14 @@ export default function WordExpanded() {
         text: word.verse_text,
         reference: word.verse_ref,
         label: "Word of the Day",
+        backgroundUrl: word.cover_image_url ?? undefined,
       },
     });
   };
-  const onNote = () =>
-    Alert.alert(
-      "Add a note",
-      "Personal notes arrive with your library in a later phase."
-    );
+  const onNote = () => {
+    setNoteBody(wordNote.data?.body ?? "");
+    setNoteOpen(true);
+  };
   // TODO(backend): no word_of_day bookmark table exists; saving a Word is not
   // yet supported. Surface a gentle placeholder rather than a half-wired save.
   const onSave = () =>
@@ -204,6 +209,19 @@ export default function WordExpanded() {
           </View>
         </>
       )}
+      <Modal visible={noteOpen} transparent animationType="slide" onRequestClose={() => setNoteOpen(false)}>
+        <View className="flex-1 justify-end bg-ink/35">
+          <View className="rounded-t-3xl bg-surface1 px-6 pb-10 pt-4">
+            <View className="mb-3 h-1 w-10 self-center rounded-full bg-rule" />
+            <Text className="font-display text-xl text-ink">Your reflection</Text>
+            <TextInput value={noteBody} onChangeText={setNoteBody} multiline autoFocus placeholder="What is God showing you today?" placeholderTextColor={colors.inkMute} textAlignVertical="top" className="mt-5 min-h-32 rounded-2xl border border-rule bg-paper p-4 text-[16px] leading-6 text-ink" />
+            <View className="mt-4 flex-row justify-end gap-3">
+              <Pressable onPress={() => setNoteOpen(false)} className="rounded-full px-4 py-3"><Text className="font-sans-medium text-ink-soft">Cancel</Text></Pressable>
+              <Pressable onPress={() => saveWordNote.mutate(noteBody, { onSuccess: () => setNoteOpen(false), onError: () => Alert.alert("Could not save", "Please try again.") })} className="rounded-full bg-ink px-5 py-3"><Text className="font-sans-semibold text-parchment">{saveWordNote.isPending ? "Saving…" : "Save reflection"}</Text></Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
