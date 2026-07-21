@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { captureRef } from "react-native-view-shot";
 import * as Sharing from "expo-sharing";
 import * as MediaLibrary from "expo-media-library";
 import * as ImagePicker from "expo-image-picker";
+import Constants, { ExecutionEnvironment } from "expo-constants";
 import { X, Download, Share2, Check, ImagePlus } from "lucide-react-native";
 import { useProfile, useHouses } from "@/lib/queries/profile";
 import {
@@ -26,6 +27,46 @@ import {
 } from "@/lib/verseImage";
 import { useSaveVerseImage } from "@/lib/queries/verseImages";
 import { colors } from "@/theme/colors";
+
+type ImageContrast = {
+  text: string;
+  accent: string;
+  labelSurface: string;
+  readingSurface: string;
+  footerSurface: string;
+};
+
+const lightImageContrast: ImageContrast = {
+  text: "#17242E",
+  accent: "#9B2C36",
+  labelSurface: "rgba(255,255,255,0.84)",
+  readingSurface: "rgba(255,255,255,0.90)",
+  footerSurface: "rgba(255,255,255,0.76)",
+};
+
+const darkImageContrast: ImageContrast = {
+  text: "#FFFFFF",
+  accent: "#FFB4BB",
+  labelSurface: "rgba(11,24,35,0.70)",
+  readingSurface: "rgba(11,24,35,0.82)",
+  footerSurface: "rgba(11,24,35,0.68)",
+};
+
+function luminance(hex: string) {
+  const match = hex.trim().match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+  if (!match) return 0;
+  const channel = (value: string) => {
+    const normalized = parseInt(value, 16) / 255;
+    return normalized <= 0.03928
+      ? normalized / 12.92
+      : ((normalized + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(match[1]) + 0.7152 * channel(match[2]) + 0.0722 * channel(match[3]);
+}
+
+function contrastForImage(color: string): ImageContrast {
+  return luminance(color) > 0.36 ? lightImageContrast : darkImageContrast;
+}
 
 // Renders a verse onto a branded, shareable card and saves or shares it as a
 // PNG. Entry points pass the verse via route params (Word of the Day, Bible).
@@ -46,6 +87,7 @@ export default function Studio() {
   const reference = (params.reference ?? "").trim();
   const label = (params.label ?? "Mathetes").trim();
   const [backgroundUri, setBackgroundUri] = useState<string | number | null>(params.backgroundUrl ?? null);
+  const [imageContrast, setImageContrast] = useState<ImageContrast>(darkImageContrast);
   const curatedBackgrounds = [
     { key: "dawn", label: "Dawn", source: require("../../assets/images/devotional-fallback-v1.png") },
     { key: "study", label: "Study", source: require("../../assets/images/share-study-v1.png") },
@@ -62,6 +104,42 @@ export default function Studio() {
   const [themeIndex, setThemeIndex] = useState(0);
   const theme = themes[themeIndex] ?? verseThemes[0];
   const scale = verseTypeScale(text.length);
+
+  // Image palettes are available in installed builds. Expo Go deliberately
+  // falls back to the high-contrast dark reading surface because it does not
+  // include this small native palette module.
+  useEffect(() => {
+    let cancelled = false;
+    if (!backgroundUri) return;
+
+    if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
+      setImageContrast(darkImageContrast);
+      return;
+    }
+
+    const uri = typeof backgroundUri === "string"
+      ? backgroundUri
+      : Image.resolveAssetSource(backgroundUri).uri;
+
+    void import("react-native-image-colors")
+      .then(({ getColors }) => getColors(uri, { fallback: "#17242E", cache: true, key: uri }))
+      .then((palette) => {
+        if (cancelled) return;
+        const sampledColor = palette.platform === "ios"
+          ? palette.background
+          : palette.platform === "android"
+            ? palette.average || palette.dominant
+            : palette.dominant;
+        setImageContrast(contrastForImage(sampledColor));
+      })
+      .catch(() => {
+        if (!cancelled) setImageContrast(darkImageContrast);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [backgroundUri]);
 
   const cardRef = useRef<View>(null);
   const saveToGallery = useSaveVerseImage();
@@ -140,6 +218,10 @@ export default function Studio() {
     if (!result.canceled) setBackgroundUri(result.assets[0]?.uri ?? null);
   };
 
+  const hasImageBackground = backgroundUri !== null;
+  const cardText = hasImageBackground ? imageContrast.text : theme.text;
+  const cardAccent = hasImageBackground ? imageContrast.accent : theme.accent;
+
   return (
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
       {/* Header */}
@@ -174,19 +256,27 @@ export default function Studio() {
               {backgroundUri ? (
                 <ImageBackground source={typeof backgroundUri === "string" ? { uri: backgroundUri } : backgroundUri} className="absolute inset-0" resizeMode="cover" />
               ) : null}
-              <View className={`flex-1 justify-between p-8 ${backgroundUri ? "bg-ink/55" : ""}`}>
-                <Text
-                  className="font-sans-medium"
-                  style={{ color: backgroundUri ? "#FFFFFF" : theme.accent, fontSize: 11, letterSpacing: 3 }}
+              <View className="flex-1 justify-between p-7">
+                <View
+                  className={hasImageBackground ? "self-start rounded-full px-3 py-2" : ""}
+                  style={hasImageBackground ? { backgroundColor: imageContrast.labelSurface } : undefined}
                 >
-                  {label.toUpperCase()}
-                </Text>
+                  <Text
+                    className="font-sans-semibold"
+                    style={{ color: hasImageBackground ? cardText : theme.accent, fontSize: 10, letterSpacing: 2.5 }}
+                  >
+                    {label.toUpperCase()}
+                  </Text>
+                </View>
 
-                <View>
+                <View
+                  className={hasImageBackground ? "rounded-[28px] px-5 py-6" : ""}
+                  style={hasImageBackground ? { backgroundColor: imageContrast.readingSurface } : undefined}
+                >
                   <Text
                     className="font-scripture"
                     style={{
-                      color: backgroundUri ? "#FFFFFF" : theme.text,
+                      color: cardText,
                       fontSize: scale.fontSize,
                       lineHeight: scale.lineHeight,
                     }}
@@ -195,27 +285,30 @@ export default function Studio() {
                   </Text>
                   <View
                     className="mt-5 rounded-full"
-                    style={{ height: 2, width: 32, backgroundColor: backgroundUri ? "#FFFFFF" : theme.accent }}
+                    style={{ height: 2, width: 32, backgroundColor: cardAccent }}
                   />
                   <Text
                     className="mt-4 font-sans-semibold"
-                    style={{ color: backgroundUri ? "#FFFFFF" : theme.accent, fontSize: 15, letterSpacing: 0.5 }}
+                    style={{ color: cardAccent, fontSize: 15, letterSpacing: 0.5 }}
                   >
                     {reference}
                   </Text>
                 </View>
 
-                <View className="flex-row items-end justify-between">
+                <View
+                  className={`flex-row items-end justify-between ${hasImageBackground ? "rounded-2xl px-4 py-3" : ""}`}
+                  style={hasImageBackground ? { backgroundColor: imageContrast.footerSurface } : undefined}
+                >
                   <Text
                     className="font-display"
-                    style={{ color: backgroundUri ? "#FFFFFF" : theme.text, fontSize: 18, opacity: 0.92 }}
+                    style={{ color: cardText, fontSize: 18, opacity: 0.92 }}
                   >
                     Mathetes
                   </Text>
                   <Text
                     className="font-sans-medium"
                     style={{
-                      color: backgroundUri ? "#FFFFFF" : theme.text,
+                      color: cardText,
                       opacity: 0.5,
                       fontSize: 10,
                       letterSpacing: 2,
@@ -252,6 +345,11 @@ export default function Studio() {
                 </Pressable>
               ) : null}
             </View>
+            {hasImageBackground ? (
+              <Text className="mt-3 text-center text-xs text-ink-soft">
+                Auto contrast keeps the verse clear on this image.
+              </Text>
+            ) : null}
             {/* Theme swatches */}
             <ScrollView
               horizontal
