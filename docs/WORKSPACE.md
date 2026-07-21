@@ -169,6 +169,20 @@ Tables `giving_funds / donations / giving_recurring / paystack_events` (amounts 
 **Open decision:** `donations_select_admin` currently lets pastor+admin read
 individual gifts — decide finance-only vs keep. Mobile member view is own-only.
 
+### 4.5 Content saves, scheduling, and push (0035)
+
+- Devotional bookmarks are persisted per member in `devotional_bookmarks`; they
+  survive app restarts and are private under RLS. Verse bookmarks remain in the
+  existing `bookmarks` table.
+- Due scheduled content is available on its publish date even if the external
+  publisher cron is late; future content stays hidden. The publisher uses the
+  Africa/Lagos date.
+- Chat message inserts create in-app notification rows. Installed EAS builds
+  register Expo push tokens and handle foreground, background, and cold-start
+  taps. Production remote push also requires the Supabase Database Webhook
+  (`notifications` INSERT → `send-push`) and valid Android FCM credentials;
+  Expo Go cannot validate remote Android push.
+
 ---
 
 ## 5. OUTSTANDING cross-repo work

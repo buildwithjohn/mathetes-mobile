@@ -17,7 +17,11 @@ import {
   NotebookPen,
   Share2,
 } from "lucide-react-native";
-import { useDevotional } from "@/lib/queries/content";
+import {
+  useDevotional,
+  useDevotionalBookmark,
+  useToggleDevotionalBookmark,
+} from "@/lib/queries/content";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { Markdown } from "@/components/Markdown";
 import { buildDevotionCards, type DevotionCard } from "@/utils/devotionCards";
@@ -28,9 +32,15 @@ export default function DevotionalScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: dev, isLoading, isError } = useDevotional(id ?? "");
 
-  // The bookmarks table is verse-scoped, so devotional bookmarks have no home
-  // in the schema yet; this stays a local affordance until one lands.
-  const [bookmarked, setBookmarked] = useState(false);
+  const { data: bookmarkId } = useDevotionalBookmark(id ?? "");
+  const bookmarkMutation = useToggleDevotionalBookmark(id ?? "");
+  const bookmarked = !!bookmarkId;
+
+  const onToggleBookmark = () => {
+    bookmarkMutation.mutate(undefined, {
+      onError: () => Alert.alert("Could not save", "Please try again."),
+    });
+  };
 
   // Reading progress thread.
   const progress = useSharedValue(0);
@@ -119,7 +129,8 @@ export default function DevotionalScreen() {
               )}
             </Pressable>
             <Pressable
-              onPress={() => setBookmarked((b) => !b)}
+              onPress={onToggleBookmark}
+              disabled={bookmarkMutation.isPending}
               className="h-11 w-11 items-center justify-center"
               accessibilityLabel={bookmarked ? "Remove bookmark" : "Bookmark"}
             >

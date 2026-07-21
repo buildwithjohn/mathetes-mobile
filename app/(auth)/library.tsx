@@ -3,6 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { ChevronLeft, Bookmark, Highlighter, BookOpen } from "lucide-react-native";
 import { useLibraryEntries } from "@/lib/queries/library";
+import { useSavedDevotionals } from "@/lib/queries/content";
 import { EmptyState } from "@/components/EmptyState";
 import { colors, highlightColors } from "@/theme/colors";
 
@@ -11,6 +12,12 @@ import { colors, highlightColors } from "@/theme/colors";
 export default function Library() {
   const router = useRouter();
   const { data: entries, isLoading, isError, refetch } = useLibraryEntries();
+  const {
+    data: savedDevotionals,
+    isLoading: devotionalsLoading,
+    isError: devotionalsError,
+    refetch: refetchDevotionals,
+  } = useSavedDevotionals();
 
   const openInBible = (bookAbbrev: string, chapter: number) =>
     router.push({
@@ -31,28 +38,32 @@ export default function Library() {
         <Text className="font-display text-xl text-ink">Your library</Text>
       </View>
 
-      {isLoading ? (
+      {isLoading || devotionalsLoading ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator color={colors.copper} />
         </View>
-      ) : isError ? (
+      ) : isError || devotionalsError ? (
         <View className="flex-1 items-center justify-center px-6">
           <Text className="text-center text-ink/60">
             We could not load your library.
           </Text>
           <Pressable
-            onPress={() => refetch()}
+            onPress={() => {
+              refetch();
+              refetchDevotionals();
+            }}
             className="mt-4 rounded-full border border-border px-6 py-3 active:opacity-70"
           >
             <Text className="font-sans-medium text-ink">Try again</Text>
           </Pressable>
         </View>
-      ) : !entries || entries.length === 0 ? (
+      ) : (!entries || entries.length === 0) &&
+        (!savedDevotionals || savedDevotionals.length === 0) ? (
         <View className="flex-1 items-center justify-center">
           <EmptyState
             icon={BookOpen}
             title="Nothing saved yet"
-            body="Bookmark or highlight a verse while you read and it will gather here."
+            body="Save a devotional, or bookmark and highlight a verse, and it will gather here."
           />
         </View>
       ) : (
@@ -61,7 +72,36 @@ export default function Library() {
           contentContainerClassName="px-6 pb-16 pt-2 gap-3"
           showsVerticalScrollIndicator={false}
         >
-          {entries.map((e) => (
+          {savedDevotionals && savedDevotionals.length > 0 ? (
+            <>
+              <Text className="mb-1 font-sans-semibold text-xs uppercase tracking-widest text-ink-mute">
+                Saved devotionals
+              </Text>
+              {savedDevotionals.map((devotional) => (
+                <Pressable
+                  key={devotional.id}
+                  onPress={() => router.push(`/devotional/${devotional.id}`)}
+                  className="rounded-2xl border border-border bg-surface1 p-4 active:opacity-90"
+                >
+                  <Text className="font-display text-xl text-ink">
+                    {devotional.title}
+                  </Text>
+                  <Text className="mt-1 text-xs text-ink-mute">
+                    {devotional.reading_time_minutes
+                      ? `${devotional.reading_time_minutes} min read`
+                      : "Devotional"}
+                  </Text>
+                </Pressable>
+              ))}
+            </>
+          ) : null}
+
+          {entries && entries.length > 0 ? (
+            <Text className="mb-1 mt-4 font-sans-semibold text-xs uppercase tracking-widest text-ink-mute">
+              Saved scripture
+            </Text>
+          ) : null}
+          {(entries ?? []).map((e) => (
             <Pressable
               key={e.key}
               onPress={() => openInBible(e.bookAbbrev, e.chapter)}

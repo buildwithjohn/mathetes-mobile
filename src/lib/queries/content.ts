@@ -1,7 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/stores/auth";
+import { useProfile } from "@/lib/queries/profile";
 import type {
   Devotional,
   DevotionalSeries,
@@ -21,6 +22,8 @@ export const contentKeys = {
   seriesDevotionals: (id: string) => ["devotional_series", id] as const,
   devotionalArchive: ["devotional", "archive"] as const,
   wordArchive: ["word_of_day", "archive"] as const,
+  devotionalBookmark: (id: string) => ["devotional", id, "bookmark"] as const,
+  savedDevotionals: ["devotional", "saved"] as const,
 };
 
 // The Word of the Day for a given date. RLS limits this to the user's parish
@@ -36,7 +39,7 @@ export function useWordOfDay(date: string) {
         .from("word_of_day")
         .select("*")
         .eq("publish_date", date)
-        .eq("status", "published")
+        .in("status", ["published", "scheduled"])
         .maybeSingle();
       if (error) throw error;
       return data;
@@ -61,7 +64,7 @@ export function useTodaysDevotional() {
         .from("devotionals")
         .select("*")
         .eq("publish_date", date)
-        .eq("status", "published")
+        .in("status", ["published", "scheduled"])
         .maybeSingle();
       if (error) throw error;
       return data;
@@ -134,7 +137,8 @@ export function useDevotionalArchive() {
       const { data, error } = await supabase
         .from("devotionals")
         .select("*")
-        .eq("status", "published")
+        .in("status", ["published", "scheduled"])
+        .lte("publish_date", todayKey())
         .order("publish_date", { ascending: false, nullsFirst: false })
         .limit(60);
       if (error) throw error;
@@ -153,11 +157,98 @@ export function useWordArchive() {
       const { data, error } = await supabase
         .from("word_of_day")
         .select("*")
-        .eq("status", "published")
+        .in("status", ["published", "scheduled"])
+        .lte("publish_date", todayKey())
         .order("publish_date", { ascending: false, nullsFirst: false })
         .limit(60);
       if (error) throw error;
       return data ?? [];
+    },
+  });
+}
+
+export function useDevotionalBookmark(devotionalId: string) {
+  const authId = useAuth((s) => s.session?.user.id ?? null);
+  return useQuery({
+    queryKey: contentKeys.devotionalBookmark(devotionalId),
+    enabled: !!authId && !!devotionalId,
+    queryFn: async (): Promise<string | null> => {
+      const { data, error } = await supabase
+        .from("devotional_bookmarks")
+        .select("id")
+        .eq("devotional_id", devotionalId)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.id ?? null;
+    },
+  });
+}
+
+export function useToggleDevotionalBookmark(devotionalId: string) {
+  const queryClient = useQueryClient();
+  const { data: profile } = useProfile();
+  return useMutation({
+    mutationFn: async (): Promise<boolean> => {
+      if (!profile) throw new Error("Sign in to save this devotional.");
+
+      const { data: existing, error: readError } = await supabase
+        .from("devotional_bookmarks")
+        .select("id")
+        .eq("devotional_id", devotionalId)
+        .maybeSingle();
+      if (readError) throw readError;
+
+      if (existing) {
+        const { error } = await supabase
+          .from("devotional_bookmarks")
+          .delete()
+          .eq("id", existing.id);
+        if (error) throw error;
+        return false;
+      }
+      const { error } = await supabase.from("devotional_bookmarks").insert({
+        user_id: profile.id,
+        devotional_id: devotionalId,
+      });
+      if (error) throw error;
+      return true;
+    },
+    onSuccess: (saved) => {
+      queryClient.setQueryData(
+        contentKeys.devotionalBookmark(devotionalId),
+        saved ? "saved" : null
+      );
+      queryClient.invalidateQueries({ queryKey: contentKeys.savedDevotionals });
+    },
+  });
+}
+
+export type SavedDevotional = Devotional & { saved_at: string };
+
+export function useSavedDevotionals() {
+  const authId = useAuth((s) => s.session?.user.id ?? null);
+  return useQuery({
+    queryKey: contentKeys.savedDevotionals,
+    enabled: !!authId,
+    queryFn: async (): Promise<SavedDevotional[]> => {
+      const { data: saves, error: saveError } = await supabase
+        .from("devotional_bookmarks")
+        .select("devotional_id, created_at")
+        .order("created_at", { ascending: false });
+      if (saveError) throw saveError;
+      if (!saves?.length) return [];
+
+      const { data: devotionals, error: devotionalError } = await supabase
+        .from("devotionals")
+        .select("*")
+        .in("id", saves.map((save) => save.devotional_id));
+      if (devotionalError) throw devotionalError;
+
+      const byId = new Map((devotionals ?? []).map((devotional) => [devotional.id, devotional]));
+      return saves.flatMap((save) => {
+        const devotional = byId.get(save.devotional_id);
+        return devotional ? [{ ...devotional, saved_at: save.created_at }] : [];
+      });
     },
   });
 }

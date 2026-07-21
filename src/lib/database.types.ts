@@ -474,6 +474,24 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["bookmarks"]["Insert"]>;
         Relationships: [];
       };
+      devotional_bookmarks: {
+        Row: {
+          id: string;
+          user_id: string;
+          devotional_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          devotional_id: string;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["devotional_bookmarks"]["Insert"]
+        >;
+        Relationships: [];
+      };
       highlights: {
         Row: {
           id: string;
@@ -1425,6 +1443,8 @@ export type BibleChapter =
   Database["public"]["Tables"]["bible_chapters"]["Row"];
 export type BibleVerse = Database["public"]["Tables"]["bible_verses"]["Row"];
 export type Bookmark = Database["public"]["Tables"]["bookmarks"]["Row"];
+export type DevotionalBookmark =
+  Database["public"]["Tables"]["devotional_bookmarks"]["Row"];
 export type Highlight = Database["public"]["Tables"]["highlights"]["Row"];
 export type Note = Database["public"]["Tables"]["notes"]["Row"];
 export type ReadingPosition =
