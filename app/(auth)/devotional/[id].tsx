@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { View, Text, Pressable, ActivityIndicator, Alert } from "react-native";
+import { View, Text, Pressable, ActivityIndicator, Alert, ImageBackground } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, {
@@ -165,9 +165,28 @@ export default function DevotionalScreen() {
           onScroll={onScroll}
           scrollEventThrottle={16}
         >
+          {dev.cover_image_url ? (
+            <ImageBackground
+              source={{ uri: dev.cover_image_url }}
+              resizeMode="cover"
+              className="mb-7 overflow-hidden rounded-3xl"
+              imageStyle={{ borderRadius: 24 }}
+            >
+              <View className="min-h-56 justify-end bg-ink/40 p-6">
+                {dev.day_in_series ? (
+                  <Text className="font-sans-semibold text-[11px] uppercase text-white" style={{ letterSpacing: 1.8 }}>
+                    Day {dev.day_in_series}
+                  </Text>
+                ) : null}
+                <Text className="mt-2 font-display text-[30px] leading-9 text-white">
+                  {dev.title}
+                </Text>
+              </View>
+            </ImageBackground>
+          ) : null}
           {/* TODO(backend): series_id is stored but not the series name; show
               the day index until a joined series title is available. */}
-          {dev.day_in_series ? (
+          {dev.day_in_series && !dev.cover_image_url ? (
             <Text
               className="font-sans-medium text-[11px] uppercase text-ink-mute"
               style={{ letterSpacing: 1.76 }}
@@ -175,9 +194,11 @@ export default function DevotionalScreen() {
               Day {dev.day_in_series}
             </Text>
           ) : null}
-          <Text className="mb-3.5 mt-3 font-display text-[34px] leading-[37px] text-ink">
-            {dev.title}
-          </Text>
+          {!dev.cover_image_url ? (
+            <Text className="mb-3.5 mt-3 font-display text-[34px] leading-[37px] text-ink">
+              {dev.title}
+            </Text>
+          ) : null}
           {/* TODO(backend): author_id only (no joined name); show reading time. */}
           <Text className="text-[12.5px] text-ink-soft">
             {dev.reading_time_minutes
