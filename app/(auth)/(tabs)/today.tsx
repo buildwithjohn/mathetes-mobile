@@ -171,7 +171,11 @@ export default function Today() {
                     style={{ width: 64, height: 80 }}
                   >
                     <Image
-                      source={require("../../../assets/images/devotional-fallback-v1.png")}
+                      source={
+                        devotional.data.cover_image_url
+                          ? { uri: devotional.data.cover_image_url }
+                          : require("../../../assets/images/devotional-fallback-v1.png")
+                      }
                       resizeMode="cover"
                       className="h-full w-full"
                     />

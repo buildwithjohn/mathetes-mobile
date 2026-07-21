@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert } from "react-native";
+import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert, ImageBackground } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
@@ -92,6 +92,20 @@ export default function WordExpanded() {
             contentContainerClassName="px-7 pb-8 pt-2"
             showsVerticalScrollIndicator={false}
           >
+            {word.cover_image_url ? (
+              <ImageBackground
+                source={{ uri: word.cover_image_url }}
+                resizeMode="cover"
+                className="mb-7 overflow-hidden rounded-3xl"
+                imageStyle={{ borderRadius: 24 }}
+              >
+                <View className="min-h-48 justify-end bg-ink/45 p-6">
+                  <Text className="font-display text-[28px] leading-9 text-white">
+                    {word.verse_ref}
+                  </Text>
+                </View>
+              </ImageBackground>
+            ) : null}
             <Text
               className="mb-[18px] font-sans-medium text-[11px] uppercase text-copper-deep"
               style={{ letterSpacing: 1.76 }}

@@ -272,6 +272,7 @@ export interface Database {
           reading_time_minutes: number | null;
           audio_url: string | null;
           video_url: string | null;
+          cover_image_url: string | null;
           author_id: string | null;
           publish_date: string | null;
           status: ContentStatus;
@@ -289,6 +290,7 @@ export interface Database {
           reading_time_minutes?: number | null;
           audio_url?: string | null;
           video_url?: string | null;
+          cover_image_url?: string | null;
           author_id?: string | null;
           publish_date?: string | null;
           status?: ContentStatus;
@@ -309,6 +311,7 @@ export interface Database {
           reflection_md: string | null;
           prompt: string | null;
           prayer_md: string | null;
+          cover_image_url: string | null;
           author_id: string | null;
           publish_date: string | null;
           status: ContentStatus;
@@ -322,6 +325,7 @@ export interface Database {
           reflection_md?: string | null;
           prompt?: string | null;
           prayer_md?: string | null;
+          cover_image_url?: string | null;
           author_id?: string | null;
           publish_date?: string | null;
           status?: ContentStatus;
