@@ -52,16 +52,18 @@ export default function EditProfile() {
 
   const house = houses?.find((h) => h.id === profile?.house_id) ?? null;
 
-  const [gender, setGender] = useState<Gender | null>(profile?.gender ?? null);
+  const [gender, setGender] = useState<Gender | null>(
+    (profile?.gender as Gender | null | undefined) ?? null
+  );
   const [visibility, setVisibility] = useState<PhotoVisibility>(
-    profile?.photo_visibility ?? "parish"
+    (profile?.photo_visibility as PhotoVisibility | undefined) ?? "parish"
   );
 
   // Profile is cached when arriving here, but resync if it loads or changes.
   useEffect(() => {
     if (profile) {
-      setGender(profile.gender ?? null);
-      setVisibility(profile.photo_visibility);
+      setGender((profile.gender as Gender | null) ?? null);
+      setVisibility(profile.photo_visibility as PhotoVisibility);
     }
   }, [profile]);
 

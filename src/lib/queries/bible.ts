@@ -99,7 +99,7 @@ export function useBibleChapter(
         chapter_number: chapterNumber!,
       });
       if (error) throw error;
-      return data;
+      return data as ChapterPayload;
     },
   });
 }

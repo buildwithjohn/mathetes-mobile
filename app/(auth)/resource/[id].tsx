@@ -83,7 +83,7 @@ export default function ResourceDetail() {
             </Svg>
             <View className="flex-1 items-center justify-center">
               {(() => {
-                const Icon = KIND_ICON[item.kind];
+                const Icon = KIND_ICON[item.kind as LibraryItemKind] ?? BookText;
                 return <Icon color="#fff" size={40} strokeWidth={1.5} />;
               })()}
             </View>
@@ -93,7 +93,7 @@ export default function ResourceDetail() {
             className="mt-5 text-center font-sans-medium text-[11px] uppercase text-copper-deep"
             style={{ letterSpacing: 1.2 }}
           >
-            {KIND_LABEL[item.kind]}
+            {KIND_LABEL[item.kind as LibraryItemKind] ?? "Resource"}
             {item.category ? ` · ${item.category}` : ""}
           </Text>
           <Text className="mt-1.5 text-center font-display text-[26px] leading-[31px] text-ink">

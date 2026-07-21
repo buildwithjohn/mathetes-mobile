@@ -100,7 +100,14 @@ pastor = answer only; discipler/house-leader = view-only. Owner badge via `is_ow
 **Reading plans (V2.0):** browse / plan detail (subscribe, pause, day path with
 sequence-lock) / day reader (scripture, markdown, **private** reflection + opt-in
 discipler share, mark complete). RPCs: `subscribe_to_plan`, `complete_plan_day`,
-`toggle_plan_pause`.
+`toggle_plan_pause`. Plan cards use pastor-uploaded covers and a gentle daily
+continuation rhythm rather than pressure language.
+
+**Formation foundation (backend 0038, LIVE):** private rhythm activity + named
+Scripture collections; opt-in House Quests / Campus Missions; Fellowship Events
+with private RSVPs; and author-only answered-prayer markers. These are explicitly
+not a public spiritual score or leaderboard. Student and admin surfaces are being
+built on this shared, RLS-protected contract.
 
 **Giving (V2.1):** give screen (amount/fund/recurring/anonymous) → `paystack-initialize`
 → WebView `authorization_url` → realtime-watch the donation row; recurring manage;
@@ -160,6 +167,16 @@ pull-to-refresh, animations, tests + CI (20 Jest tests, typecheck clean).
 Tables `reading_plans / _days / _subscriptions / _progress`. Guardrails:
 reflections private; discipler-share opt-in; no leaderboards. `day.scripture_reference`
 is a single string; `day.devotional_id` optionally deep-links a devotional.
+
+### 4.3a Formation practices (V2.3) — backend 0038 (LIVE foundation)
+- **Private by default:** each member's rhythm, Scripture collections, completed
+  quests/missions, RSVPs, and prayer-answer notes have no peer, leader, or public
+  browse path.
+- **Shared invitation, not performance:** leaders author published House Quests,
+  Campus Missions, and Fellowship Events only for the relevant parish/house/campus.
+  Students opt in or complete privately; there is no completion leaderboard.
+- **Reading Plans remain the core daily path.** The formation system gives that
+  path social and pastoral life without turning it into a score.
 
 ### 4.4 Giving (V2.1) — backend 0023/0024 (schema LIVE; Paystack NOT deployed)
 Tables `giving_funds / donations / giving_recurring / paystack_events` (amounts in

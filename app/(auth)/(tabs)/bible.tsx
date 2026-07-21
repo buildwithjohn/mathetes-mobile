@@ -141,7 +141,7 @@ export default function Bible() {
   // Map verse id -> highlight color for quick lookups while rendering.
   const highlightMap = useMemo(() => {
     const m = new Map<string, HighlightColor>();
-    (highlights ?? []).forEach((h) => m.set(h.verse_id, h.color));
+    (highlights ?? []).forEach((h) => m.set(h.verse_id, h.color as HighlightColor));
     return m;
   }, [highlights]);
 

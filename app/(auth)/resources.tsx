@@ -130,7 +130,8 @@ function ResourceCard({
   item: LibraryItem;
   onPress: () => void;
 }) {
-  const Icon = KIND_ICON[item.kind];
+  const kind = item.kind as LibraryItemKind;
+  const Icon = KIND_ICON[kind] ?? LibraryIcon;
   const dur = durationLabel(item.duration_seconds);
   return (
     <Pressable
@@ -157,7 +158,7 @@ function ResourceCard({
           className="font-sans-medium text-[11px] uppercase text-copper-deep"
           style={{ letterSpacing: 1 }}
         >
-          {KIND_LABEL[item.kind]}
+          {KIND_LABEL[kind] ?? "Resource"}
           {item.category ? ` · ${item.category}` : ""}
         </Text>
         <Text className="mt-1 font-display text-[18px] leading-[22px] text-ink" numberOfLines={2}>

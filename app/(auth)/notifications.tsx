@@ -107,7 +107,7 @@ export default function Notifications() {
             />
           }
           renderItem={({ item }) => {
-            const Icon = ICON[item.type] ?? Bell;
+            const Icon = ICON[item.type as NotificationType] ?? Bell;
             const unread = item.read_at === null;
             return (
               <Pressable

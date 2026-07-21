@@ -2,7 +2,9 @@ import type { PhotoVisibility } from "@/lib/database.types";
 
 type Viewable = {
   photo_url: string | null;
-  photo_visibility: PhotoVisibility;
+  // The database generator represents check-constrained values as strings.
+  // Unknown future values intentionally fall through to hidden below.
+  photo_visibility: PhotoVisibility | string;
   house_id: string | null;
 };
 

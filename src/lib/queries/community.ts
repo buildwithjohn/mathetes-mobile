@@ -74,6 +74,7 @@ function titleFor(
     case "dm":
       return other ? other.name : "Direct message";
   }
+  return "Community";
 }
 
 // All chats the member can see (their house group, the announcements channel,
@@ -133,7 +134,7 @@ export function useChats() {
           ).length;
           return {
             id: chat.id,
-            kind: chat.kind,
+            kind: chat.kind as ChatKind,
             houseId: chat.house_id,
             title: titleFor(chat, other),
             accent: chat.houses?.color ?? null,
