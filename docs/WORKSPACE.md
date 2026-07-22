@@ -201,8 +201,10 @@ individual gifts — decide finance-only vs keep. Mobile member view is own-only
   shows a foreground banner; it is not mounted only when Community is open.
   The database-owned `pg_net` trigger (0041) securely calls `send-push` for
   every new row. Installed EAS builds register Expo push tokens and handle
-  foreground, background, and cold-start taps. Android remote push still needs
-  valid Expo/FCM credentials; Expo Go cannot validate remote Android push.
+  foreground, background, and cold-start taps. Android is wired to the Firebase
+  project through the committed `google-services.json`; upload the Firebase FCM
+  v1 service-account key to EAS Credentials before making the next Android
+  build. Expo Go cannot validate remote Android push.
 
 ---
 

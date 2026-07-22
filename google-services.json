@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1069014001775",
+    "project_id": "mathetes-64883",
+    "storage_bucket": "mathetes-64883.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1069014001775:android:c3f9f36d4fdc4b104d059a",
+        "android_client_info": {
+          "package_name": "app.mathetes.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAw-Ds1_k9oJJboz9ujzR5T_0IS_PDgUvk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

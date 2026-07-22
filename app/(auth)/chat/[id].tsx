@@ -396,76 +396,79 @@ export default function ChatScreen() {
         </Pressable>
       </View>
 
-      {/* Oversight banner (read-only viewing for pastoral care) */}
-      {isOversight ? (
-        <View
-          className="flex-row items-center gap-2 border-b border-rule-soft px-4 py-2.5"
-          style={{ backgroundColor: `${colors.copper}12` }}
-        >
-          <Eye color={colors.copperDeep} size={13} strokeWidth={1.6} />
-          <Text className="flex-1 text-[11px] text-ink-mute">
-            You are viewing this for pastoral care. Read only.
-          </Text>
-        </View>
-      ) : null}
+      {/* Keep the entire conversation (including its composer) above the keyboard. */}
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+      >
+        {/* Oversight banner (read-only viewing for pastoral care) */}
+        {isOversight ? (
+          <View
+            className="flex-row items-center gap-2 border-b border-rule-soft px-4 py-2.5"
+            style={{ backgroundColor: `${colors.copper}12` }}
+          >
+            <Eye color={colors.copperDeep} size={13} strokeWidth={1.6} />
+            <Text className="flex-1 text-[11px] text-ink-mute">
+              You are viewing this for pastoral care. Read only.
+            </Text>
+          </View>
+        ) : null}
 
-      {chatLoading || msgsLoading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color={colors.copper} />
-        </View>
-      ) : (
-        <FlatList
-          data={messages ?? []}
-          inverted
-          keyExtractor={(m) => m.id}
-          contentContainerStyle={{ padding: 16, gap: 2 }}
-          keyboardDismissMode="interactive"
-          renderItem={({ item }) => (
-            <MessageBubble
-              message={item}
-              mine={item.author_id === me}
-              showAuthor={isGroup}
-              meId={me}
-              viewerHouseId={profile?.house_id ?? null}
-              onLongPress={() => setSelected(item)}
-              onOpenImage={(uri) => setViewerUri(uri)}
-            />
-          )}
-          ListEmptyComponent={
-            <View className="items-center py-20">
-              <Text className="text-sm text-ink/50">
-                No messages yet. Say hello.
-              </Text>
-            </View>
-          }
-        />
-      )}
+        {chatLoading || msgsLoading ? (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator color={colors.copper} />
+          </View>
+        ) : (
+          <FlatList
+            data={messages ?? []}
+            inverted
+            keyExtractor={(m) => m.id}
+            contentContainerStyle={{ padding: 16, gap: 2 }}
+            keyboardDismissMode="interactive"
+            renderItem={({ item }) => (
+              <MessageBubble
+                message={item}
+                mine={item.author_id === me}
+                showAuthor={isGroup}
+                meId={me}
+                viewerHouseId={profile?.house_id ?? null}
+                onLongPress={() => setSelected(item)}
+                onOpenImage={(uri) => setViewerUri(uri)}
+              />
+            )}
+            ListEmptyComponent={
+              <View className="items-center py-20">
+                <Text className="text-sm text-ink/50">
+                  No messages yet. Say hello.
+                </Text>
+              </View>
+            }
+          />
+        )}
 
-      {/* Pastoral visibility note (DM/discipler threads you can post in) */}
-      {canPost && (isDm || chat?.kind === "discipler") ? (
-        <View className="flex-row items-center justify-center gap-1.5 px-4 py-1.5">
-          <Eye color={colors.inkFaint} size={11} strokeWidth={1.6} />
-          <Text className="text-center text-[10.5px] text-ink-faint">
-            {chat?.kind === "discipler"
-              ? "Your discipler conversation is visible to your pastor for care."
-              : "Direct messages are visible to your house leader for pastoral care."}
-          </Text>
-        </View>
-      ) : null}
+        {/* Pastoral visibility note (DM/discipler threads you can post in) */}
+        {canPost && (isDm || chat?.kind === "discipler") ? (
+          <View className="flex-row items-center justify-center gap-1.5 px-4 py-1.5">
+            <Eye color={colors.inkFaint} size={11} strokeWidth={1.6} />
+            <Text className="text-center text-[10.5px] text-ink-faint">
+              {chat?.kind === "discipler"
+                ? "Your discipler conversation is visible to your pastor for care."
+                : "Direct messages are visible to your house leader for pastoral care."}
+            </Text>
+          </View>
+        ) : null}
 
-      {/* Composer */}
-      {canPost ? (
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
-        >
-          {sendMedia.isPending ? (
+        {/* Composer */}
+        {canPost ? (
+          <>
+            {sendMedia.isPending ? (
             <View className="flex-row items-center justify-center gap-2 bg-copper/10 py-1.5">
               <ActivityIndicator color={colors.copper} size="small" />
               <Text className="text-xs text-copper">Sending…</Text>
             </View>
-          ) : null}
-          {recording ? (
+            ) : null}
+            {recording ? (
             <View
               className="flex-row items-center gap-3 border-t border-border bg-parchment px-4 pt-2"
               style={{ paddingBottom: insets.bottom + 6 }}
@@ -491,7 +494,7 @@ export default function ChatScreen() {
                 <Send color={colors.parchment} size={18} />
               </Pressable>
             </View>
-          ) : (
+            ) : (
             <View
               className="flex-row items-end gap-2 border-t border-rule-soft bg-parchment px-3 pt-2.5"
               style={{ paddingBottom: insets.bottom + 6 }}
@@ -532,20 +535,21 @@ export default function ChatScreen() {
                 </Pressable>
               )}
             </View>
-          )}
-        </KeyboardAvoidingView>
-      ) : !isOversight ? (
-        <View
-          className="border-t border-border bg-parchment px-6 pt-3"
-          style={{ paddingBottom: insets.bottom + 12 }}
-        >
-          <Text className="text-center text-xs text-ink/50">
-            {chat?.kind === "announcements"
-              ? "Only parish leaders can post here."
-              : "You cannot post in this conversation."}
-          </Text>
-        </View>
-      ) : null}
+            )}
+          </>
+        ) : !isOversight ? (
+          <View
+            className="border-t border-border bg-parchment px-6 pt-3"
+            style={{ paddingBottom: insets.bottom + 12 }}
+          >
+            <Text className="text-center text-xs text-ink/50">
+              {chat?.kind === "announcements"
+                ? "Only parish leaders can post here."
+                : "You cannot post in this conversation."}
+            </Text>
+          </View>
+        ) : null}
+      </KeyboardAvoidingView>
 
       {/* Message action bar */}
       {selected ? (

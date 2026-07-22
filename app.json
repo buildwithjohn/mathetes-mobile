@@ -20,6 +20,8 @@
     },
     "android": {
       "package": "app.mathetes.mobile",
+      "googleServicesFile": "./google-services.json",
+      "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#F7F7F8"
@@ -46,7 +48,7 @@
       [
         "expo-notifications",
         {
-          "color": "#B87333"
+          "color": "#F33A49"
         }
       ],
       [
