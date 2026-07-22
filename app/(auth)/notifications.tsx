@@ -16,6 +16,7 @@ import {
   MessageCircleQuestion,
   HeartHandshake,
   Bell,
+  BookOpen,
 } from "lucide-react-native";
 import {
   useNotifications,
@@ -29,6 +30,7 @@ import type { Notification, NotificationType } from "@/lib/database.types";
 const ICON: Record<NotificationType, typeof Bell> = {
   message: MessageCircle,
   announcement: Megaphone,
+  devotional: BookOpen,
   ask_answered: MessageCircleQuestion,
   mention: MessageCircle,
   daily_prompt: MessageCircle,

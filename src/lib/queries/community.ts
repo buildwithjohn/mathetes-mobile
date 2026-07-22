@@ -3,6 +3,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { uploadToBucket } from "@/lib/storage";
 import { useAuth } from "@/lib/stores/auth";
@@ -21,6 +22,42 @@ export const communityKeys = {
   messages: (id: string) => ["community", "messages", id] as const,
   members: ["community", "members"] as const,
 };
+
+// Community must stay fresh even while a member is reading Today or the Bible.
+// The old listener existed only on the Community screen, so incoming messages
+// did not invalidate the inbox until the user manually opened that tab.
+export function useCommunityRealtime() {
+  const { data: profile } = useProfile();
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (!profile?.id) return;
+    const channel = supabase
+      .channel(`community-feed-${profile.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "messages" },
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: communityKeys.chats });
+          const chatId =
+            "chat_id" in payload.new && typeof payload.new.chat_id === "string"
+              ? payload.new.chat_id
+              : null;
+          if (chatId) {
+            queryClient.invalidateQueries({ queryKey: communityKeys.messages(chatId) });
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "chat_members" },
+        () => queryClient.invalidateQueries({ queryKey: communityKeys.chats })
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.id, queryClient]);
+}
 
 // A profile as embedded in chat/message/member rows.
 export type MemberProfile = Pick<

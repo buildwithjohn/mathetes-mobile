@@ -177,7 +177,9 @@ export const NOTIFICATION_TYPES: { type: string; label: string }[] = [
   { type: "message", label: "Messages" },
   { type: "mention", label: "Mentions" },
   { type: "announcement", label: "Announcements" },
+  { type: "devotional", label: "Devotionals" },
   { type: "prayer", label: "Prayer wall" },
   { type: "ask_answered", label: "Ask Pastor replies" },
   { type: "daily_prompt", label: "Daily Word" },
+  { type: "system", label: "Word of the Day" },
 ];

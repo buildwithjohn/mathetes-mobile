@@ -6,6 +6,7 @@ import {
   Switch,
   ActivityIndicator,
 } from "react-native";
+import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { ChevronLeft, Check } from "lucide-react-native";
@@ -19,6 +20,8 @@ import {
   NOTIFICATION_TYPES,
   DM_WHO_OPTIONS,
 } from "@/lib/queries/settings";
+import { registerPushToken, type PushRegistration } from "@/lib/push";
+import { useProfile } from "@/lib/queries/profile";
 import { colors } from "@/theme/colors";
 import type { DmWho, NotificationChannel } from "@/lib/database.types";
 
@@ -30,6 +33,16 @@ export default function Settings() {
   const updatePrivacy = useUpdatePrivacy();
   const { data: prefs } = useNotificationPrefs();
   const setPref = useSetNotificationPref();
+  const { data: profile } = useProfile();
+  const [pushStatus, setPushStatus] = useState<PushRegistration | null>(null);
+  const [registeringPush, setRegisteringPush] = useState(false);
+
+  const enablePushOnThisPhone = async () => {
+    if (!profile?.id) return;
+    setRegisteringPush(true);
+    setPushStatus(await registerPushToken(profile.id));
+    setRegisteringPush(false);
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
@@ -69,9 +82,17 @@ export default function Settings() {
           Notifications
         </Text>
         <Text className="mb-3 text-xs leading-5 text-ink-mute">
-          In-app alerts show on the bell. Push delivery reaches your phone once
-          the installed app is set up.
+          Messages and updates can reach this phone even when Mathetes is closed.
         </Text>
+
+        <Pressable
+          onPress={enablePushOnThisPhone}
+          disabled={registeringPush || !profile?.id}
+          className="mb-3 flex-row items-center justify-between rounded-2xl border border-rule bg-paper px-4 py-3.5 active:opacity-75 disabled:opacity-50"
+        >
+          <View className="flex-1 pr-3"><Text className="font-sans-semibold text-[14px] text-ink">Enable notifications on this phone</Text><Text className="mt-0.5 text-[12px] leading-[17px] text-ink-mute">{pushStatus ? pushStatusMessage(pushStatus) : "Registers this installed app for message and devotional alerts."}</Text></View>
+          {registeringPush ? <ActivityIndicator color={colors.copper} /> : <Check color={pushStatus?.state === "registered" ? colors.success : colors.copper} size={20} />}
+        </Pressable>
 
         <View className="rounded-2xl border border-rule bg-paper px-4 py-1">
           <View className="flex-row items-center border-b border-rule-soft py-2">
@@ -191,6 +212,17 @@ export default function Settings() {
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+function pushStatusMessage(status: PushRegistration) {
+  switch (status.state) {
+    case "registered": return "This phone is registered for push notifications.";
+    case "permission_denied": return "Notifications are blocked in your phone settings. Allow Mathetes notifications, then try again.";
+    case "expo_go": return "Install the Mathetes test build from Google Play or EAS—Expo Go cannot receive Android remote push.";
+    case "simulator": return "Use a physical phone to receive push notifications.";
+    case "missing_project": return "This build is missing its EAS project configuration. Install the latest Mathetes build.";
+    case "failed": return status.message;
+  }
 }
 
 const THEME_OPTIONS: { key: ThemeMode; label: string }[] = [

@@ -1,16 +1,21 @@
-import { useEffect, useRef } from "react";
-import { Platform } from "react-native";
+import { useCallback, useEffect, useRef } from "react";
+import { AppState, Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
-import Constants from "expo-constants";
+import Constants, { ExecutionEnvironment } from "expo-constants";
 import { useRouter, type Router } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/lib/queries/profile";
+import { useCommunityRealtime } from "@/lib/queries/community";
+import { useNotificationsRealtime } from "@/lib/queries/notifications";
+import type { Notification } from "@/lib/database.types";
 
-// Show a banner while the app is foregrounded.
+// Background notifications are shown by the OS. In the foreground, our live
+// Supabase listener schedules the banner below; hiding the remote copy here
+// prevents a duplicate banner when push delivery is healthy.
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowBanner: true,
+    shouldShowBanner: AppState.currentState !== "active",
     shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
@@ -48,11 +53,19 @@ function route(router: Router, data: PushData) {
   }
 }
 
-// Request permission and register this device's Expo push token. Remote push is
-// unavailable in Expo Go and without an EAS project id, so token retrieval is
-// best-effort: failures are swallowed and the rest of the app is unaffected.
-async function registerToken(profileId: string): Promise<void> {
-  if (!Device.isDevice) return;
+export type PushRegistration =
+  | { state: "registered"; token: string }
+  | { state: "simulator" | "expo_go" | "permission_denied" | "missing_project" }
+  | { state: "failed"; message: string };
+
+// Request permission and register this device's Expo push token. Exported so
+// Settings can give a member an explicit repair button instead of failing
+// silently when permission/token registration did not succeed on first launch.
+export async function registerPushToken(profileId: string): Promise<PushRegistration> {
+  if (!Device.isDevice) return { state: "simulator" };
+  if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
+    return { state: "expo_go" };
+  }
 
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("default", {
@@ -67,18 +80,19 @@ async function registerToken(profileId: string): Promise<void> {
   if (!granted && existing.canAskAgain) {
     granted = (await Notifications.requestPermissionsAsync()).granted;
   }
-  if (!granted) return;
+  if (!granted) return { state: "permission_denied" };
 
   const projectId =
+    Constants.easConfig?.projectId ??
     (Constants.expoConfig?.extra?.eas?.projectId as string | undefined) ??
     undefined;
-  if (!projectId) return; // needs a dev build with an EAS project
+  if (!projectId) return { state: "missing_project" };
 
   let token: string;
   try {
     token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-  } catch {
-    return;
+  } catch (error) {
+    return { state: "failed", message: error instanceof Error ? error.message : "Could not get this device's push token." };
   }
 
   const platform = Platform.OS === "ios" ? "ios" : "android";
@@ -88,7 +102,23 @@ async function registerToken(profileId: string): Promise<void> {
       { user_id: profileId, expo_token: token, platform },
       { onConflict: "expo_token" }
     );
-  if (error) throw error;
+  if (error) return { state: "failed", message: error.message };
+  return { state: "registered", token };
+}
+
+function toLocalContent(notification: Notification) {
+  return {
+    title: notification.title,
+    body: notification.preview ?? "",
+    data: {
+      notificationId: notification.id,
+      type: notification.type,
+      target_id: notification.target_id ?? undefined,
+      target_url: notification.target_url ?? undefined,
+    },
+    sound: "default" as const,
+    ...(Platform.OS === "android" ? { channelId: "default" } : {}),
+  };
 }
 
 // Registers for push (once a profile is known) and wires notification taps to
@@ -99,8 +129,23 @@ export function usePushNotifications(): void {
   const handledResponse = useRef<string | null>(null);
 
   useEffect(() => {
-    if (profile?.id) registerToken(profile.id).catch(() => {});
+    if (profile?.id) registerPushToken(profile.id).catch(() => {});
   }, [profile?.id]);
+
+  const handleNotificationInsert = useCallback((notification: Notification) => {
+    // When the app is already open, a realtime insert is more reliable and
+    // immediate than waiting for the remote push round-trip. Background/killed
+    // apps remain the job of Expo/FCM remote push.
+    if (AppState.currentState === "active") {
+      Notifications.scheduleNotificationAsync({
+        content: toLocalContent(notification),
+        trigger: null,
+      }).catch(() => {});
+    }
+  }, []);
+
+  useCommunityRealtime();
+  useNotificationsRealtime(handleNotificationInsert);
 
   useEffect(() => {
     Notifications.getLastNotificationResponseAsync().then((response) => {

@@ -196,11 +196,13 @@ individual gifts — decide finance-only vs keep. Mobile member view is own-only
 - Due scheduled content is available on its publish date even if the external
   publisher cron is late; future content stays hidden. The publisher uses the
   Africa/Lagos date.
-- Chat message inserts create in-app notification rows. Installed EAS builds
-  register Expo push tokens and handle foreground, background, and cold-start
-  taps. Production remote push also requires the Supabase Database Webhook
-  (`notifications` INSERT → `send-push`) and valid Android FCM credentials;
-  Expo Go cannot validate remote Android push.
+- Chat message inserts create in-app notification rows. A global authenticated
+  realtime listener refreshes Community and notifications from every screen and
+  shows a foreground banner; it is not mounted only when Community is open.
+  The database-owned `pg_net` trigger (0041) securely calls `send-push` for
+  every new row. Installed EAS builds register Expo push tokens and handle
+  foreground, background, and cold-start taps. Android remote push still needs
+  valid Expo/FCM credentials; Expo Go cannot validate remote Android push.
 
 ---
 

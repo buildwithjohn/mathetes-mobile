@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/stores/auth";
+import { useProfile } from "@/lib/queries/profile";
 import type { Notification } from "@/lib/database.types";
 
 export const notificationKeys = {
@@ -9,24 +10,35 @@ export const notificationKeys = {
 };
 
 // Keep the in-app bell live: refetch the feed when notification rows change.
-export function useNotificationsRealtime() {
-  const authId = useAuth((s) => s.session?.user.id ?? null);
+export function useNotificationsRealtime(
+  onInsert?: (notification: Notification) => void
+) {
+  const { data: profile } = useProfile();
   const queryClient = useQueryClient();
   useEffect(() => {
-    if (!authId) return;
+    if (!profile?.id) return;
     const channel = supabase
-      .channel("notifications-feed")
+      .channel(`notifications-feed-${profile.id}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "notifications" },
-        () =>
-          queryClient.invalidateQueries({ queryKey: notificationKeys.list })
+        {
+          event: "*",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${profile.id}`,
+        },
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: notificationKeys.list });
+          if (payload.eventType === "INSERT") {
+            onInsert?.(payload.new as Notification);
+          }
+        }
       )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [authId, queryClient]);
+  }, [profile?.id, queryClient, onInsert]);
 }
 
 // The member's in-app notification feed, newest first. Rows are created by

@@ -26,7 +26,6 @@ import { useChats, type ChatSummary } from "@/lib/queries/community";
 import { useProfile } from "@/lib/queries/profile";
 import {
   useUnreadCount,
-  useNotificationsRealtime,
 } from "@/lib/queries/notifications";
 import { Avatar } from "@/components/Avatar";
 import { visiblePhotoUrl } from "@/utils/profile";
@@ -40,7 +39,6 @@ export default function Community() {
   const { data: profile } = useProfile();
   const { data: chats, isLoading, refetch, isRefetching } = useChats();
   const unread = useUnreadCount();
-  useNotificationsRealtime();
 
   const [filter, setFilter] = useState<Filter>("All");
 
