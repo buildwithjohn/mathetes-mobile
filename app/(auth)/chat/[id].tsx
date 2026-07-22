@@ -9,10 +9,9 @@ import {
   ActivityIndicator,
   Modal,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { format } from "date-fns";
 import * as Clipboard from "expo-clipboard";
@@ -399,8 +398,7 @@ export default function ChatScreen() {
       {/* Keep the entire conversation (including its composer) above the keyboard. */}
       <KeyboardAvoidingView
         className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+        behavior="padding"
       >
         {/* Oversight banner (read-only viewing for pastoral care) */}
         {isOversight ? (

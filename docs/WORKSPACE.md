@@ -205,6 +205,11 @@ individual gifts — decide finance-only vs keep. Mobile member view is own-only
   project through the committed `google-services.json`; upload the Firebase FCM
   v1 service-account key to EAS Credentials before making the next Android
   build. Expo Go cannot validate remote Android push.
+- **Android chat keyboard:** the chat composer uses
+  `react-native-keyboard-controller` rather than React Native's stock
+  `KeyboardAvoidingView`; this gives Samsung and iOS the same native keyboard
+  movement. It requires a new native build whenever the package is introduced
+  or upgraded.
 
 ---
 
