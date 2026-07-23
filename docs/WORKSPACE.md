@@ -255,6 +255,26 @@ individual gifts — decide finance-only vs keep. Mobile member view is own-only
   community context, not a public feed, follower system, or searchable status
   history.
 
+### 4.8 Daily encouragement and private library (0048–0049)
+
+- Home, Word, and devotional screens show a live, parish-scoped **Amen** and
+  **Share** total. We never show the people behind a count, a feed, ranking, or
+  streak comparison; an Amen can be removed and each share is counted once per
+  member/item.
+- Sharing uses the native system sheet. The Word can also be rendered in Studio
+  as an image; image sharing records the same private, de-duplicated signal.
+- A saved Word, devotional, Scripture bookmark/highlight, and personal notes
+  belong in **Your library**. Word and devotional reflections remain strictly
+  private and are not visible to leaders or other members.
+
+### 4.9 Private formation milestones (0050)
+
+- **Grow** turns real private practices into gentle milestones (for example,
+  first Word, a plan day, prayer, reflection, sharing hope, and seven distinct
+  days of returning). Badges are visible only to the student who earned them.
+  Never build a parish feed, leaderboard, completion percentage, or leader
+  dashboard from this data.
+
 ---
 
 ## 5. OUTSTANDING cross-repo work

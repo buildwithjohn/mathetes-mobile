@@ -3,8 +3,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import { format } from "date-fns";
-import { ChevronRight, BookOpen, Share2 } from "lucide-react-native";
+import { ChevronRight, BookOpen } from "lucide-react-native";
 import { AnimatedFlame } from "@/components/AnimatedFlame";
+import { ContentSignalBar } from "@/components/ContentSignalBar";
 import { Ring } from "@/components/Ring";
 import {
   useTodaysWordOfDay,
@@ -15,6 +16,7 @@ import { useProfile } from "@/lib/queries/profile";
 import { useStreak } from "@/lib/queries/engagement";
 import { useReadingPosition, useBibleBooks } from "@/lib/queries/bible";
 import { greeting } from "@/utils/text";
+import { shareContentText } from "@/utils/shareContent";
 import { colors } from "@/theme/colors";
 
 // Plain-text first line of a markdown body, for the devotional preview snippet.
@@ -56,6 +58,28 @@ export default function Today() {
       ? books?.find((b) => b.id === position.book_id) ?? null
       : null;
 
+  const shareWord = async () => {
+    if (!word.data) return false;
+    return shareContentText({
+      title: `Word of the Day · ${word.data.verse_ref}`,
+      message: `“${word.data.verse_text}”\n\n${word.data.verse_ref} · KJV\n\nShared from Mathetes`,
+    });
+  };
+
+  const shareDevotional = async () => {
+    if (!devotional.data) return false;
+    const reference = devotional.data.scripture_refs[0]
+      ? `\n${devotional.data.scripture_refs[0]}`
+      : "";
+    return shareContentText({
+      title: devotional.data.title,
+      message: `${devotional.data.title}${reference}\n\n${previewFromMarkdown(
+        devotional.data.body_md,
+        220
+      )}\n\nRead today's reflection in Mathetes.`,
+    });
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
       <Animated.View entering={FadeIn.duration(380)} className="flex-1">
@@ -90,12 +114,15 @@ export default function Today() {
 
           {/* Word of the Day — immersive verse hero (YouVersion-style) */}
           <View className="px-5 pt-4">
-            <Pressable
-              onPress={() => router.push(`/word/${todayKey()}`)}
-              disabled={!word.data}
-              className="overflow-hidden rounded-[28px] active:opacity-95"
+            <View
+              className="overflow-hidden rounded-[28px]"
               style={{ backgroundColor: "#17242E" }}
             >
+              <Pressable
+                onPress={() => router.push(`/word/${todayKey()}`)}
+                disabled={!word.data}
+                className="active:opacity-95"
+              >
               <View className="px-6 pb-6 pt-7">
                 <Text
                   className="font-sans-medium text-[11px] uppercase"
@@ -125,7 +152,7 @@ export default function Today() {
                       >
                         {word.data.verse_ref}
                       </Text>
-                      <Share2 color="#7EA8CD" size={17} strokeWidth={1.6} />
+                      <ChevronRight color="#7EA8CD" size={18} strokeWidth={1.6} />
                     </View>
                   </>
                 ) : (
@@ -134,7 +161,21 @@ export default function Today() {
                   </Text>
                 )}
               </View>
-            </Pressable>
+              </Pressable>
+              {word.data ? (
+                <View
+                  className="border-t px-3 py-1"
+                  style={{ borderColor: "rgba(220,232,242,0.17)" }}
+                >
+                  <ContentSignalBar
+                    kind="word"
+                    contentId={word.data.id}
+                    onShare={shareWord}
+                    dark
+                  />
+                </View>
+              ) : null}
+            </View>
           </View>
 
           {/* Section: today's reflection */}
@@ -153,17 +194,18 @@ export default function Today() {
           </View>
 
           <View className="px-5">
-            <Pressable
-              onPress={() =>
-                devotional.data && router.push(`/devotional/${devotional.data.id}`)
-              }
-              disabled={!devotional.data}
-              className="rounded-2xl border border-rule bg-paper p-5 active:opacity-90"
-            >
-              {devotional.isLoading ? (
-                <ActivityIndicator className="self-start" color={colors.copper} />
-              ) : devotional.data ? (
-                <View className="flex-row gap-3.5">
+            <View className="overflow-hidden rounded-2xl border border-rule bg-paper">
+              <Pressable
+                onPress={() =>
+                  devotional.data && router.push(`/devotional/${devotional.data.id}`)
+                }
+                disabled={!devotional.data}
+                className="p-5 active:opacity-90"
+              >
+                {devotional.isLoading ? (
+                  <ActivityIndicator className="self-start" color={colors.copper} />
+                ) : devotional.data ? (
+                  <View className="flex-row gap-3.5">
                   {/* Original Mathetes editorial artwork gives the daily content
                       the visual presence of a real published devotional. */}
                   <View
@@ -208,13 +250,23 @@ export default function Today() {
                       {previewFromMarkdown(devotional.data.body_md)}
                     </Text>
                   </View>
+                  </View>
+                ) : (
+                  <Text className="text-sm text-ink-mute">
+                    No devotional posted yet today.
+                  </Text>
+                )}
+              </Pressable>
+              {devotional.data ? (
+                <View className="border-t border-rule-soft px-3 py-1">
+                  <ContentSignalBar
+                    kind="devotional"
+                    contentId={devotional.data.id}
+                    onShare={shareDevotional}
+                  />
                 </View>
-              ) : (
-                <Text className="text-sm text-ink-mute">
-                  No devotional posted yet today.
-                </Text>
-              )}
-            </Pressable>
+              ) : null}
+            </View>
           </View>
 
           {/* Section: continue reading */}

@@ -24,7 +24,10 @@ export const contentKeys = {
   wordArchive: ["word_of_day", "archive"] as const,
   devotionalBookmark: (id: string) => ["devotional", id, "bookmark"] as const,
   savedDevotionals: ["devotional", "saved"] as const,
+  wordBookmark: (id: string) => ["word_of_day", id, "bookmark"] as const,
+  savedWords: ["word_of_day", "saved"] as const,
   wordNote: (id: string) => ["word_of_day", id, "note"] as const,
+  devotionalNote: (id: string) => ["devotional", id, "note"] as const,
 };
 
 // The Word of the Day for a given date. RLS limits this to the user's parish
@@ -254,6 +257,85 @@ export function useSavedDevotionals() {
   });
 }
 
+export function useWordBookmark(wordId: string) {
+  const authId = useAuth((s) => s.session?.user.id ?? null);
+  return useQuery({
+    queryKey: contentKeys.wordBookmark(wordId),
+    enabled: !!authId && !!wordId,
+    queryFn: async (): Promise<string | null> => {
+      const { data, error } = await supabase
+        .from("word_bookmarks")
+        .select("id")
+        .eq("word_of_day_id", wordId)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.id ?? null;
+    },
+  });
+}
+
+export function useToggleWordBookmark(wordId: string) {
+  const queryClient = useQueryClient();
+  const { data: profile } = useProfile();
+  return useMutation({
+    mutationFn: async (): Promise<boolean> => {
+      if (!profile) throw new Error("Sign in to save this Word.");
+      const { data: existing, error: readError } = await supabase
+        .from("word_bookmarks")
+        .select("id")
+        .eq("word_of_day_id", wordId)
+        .maybeSingle();
+      if (readError) throw readError;
+
+      if (existing) {
+        const { error } = await supabase.from("word_bookmarks").delete().eq("id", existing.id);
+        if (error) throw error;
+        return false;
+      }
+      const { error } = await supabase.from("word_bookmarks").insert({
+        user_id: profile.id,
+        word_of_day_id: wordId,
+      });
+      if (error) throw error;
+      return true;
+    },
+    onSuccess: (saved) => {
+      queryClient.setQueryData(contentKeys.wordBookmark(wordId), saved ? "saved" : null);
+      queryClient.invalidateQueries({ queryKey: contentKeys.savedWords });
+    },
+  });
+}
+
+export type SavedWord = WordOfDay & { saved_at: string };
+
+export function useSavedWords() {
+  const authId = useAuth((s) => s.session?.user.id ?? null);
+  return useQuery({
+    queryKey: contentKeys.savedWords,
+    enabled: !!authId,
+    queryFn: async (): Promise<SavedWord[]> => {
+      const { data: saves, error: saveError } = await supabase
+        .from("word_bookmarks")
+        .select("word_of_day_id, created_at")
+        .order("created_at", { ascending: false });
+      if (saveError) throw saveError;
+      if (!saves?.length) return [];
+
+      const { data: words, error: wordError } = await supabase
+        .from("word_of_day")
+        .select("*")
+        .in("id", saves.map((save) => save.word_of_day_id));
+      if (wordError) throw wordError;
+
+      const byId = new Map((words ?? []).map((word) => [word.id, word]));
+      return saves.flatMap((save) => {
+        const word = byId.get(save.word_of_day_id);
+        return word ? [{ ...word, saved_at: save.created_at }] : [];
+      });
+    },
+  });
+}
+
 export function useWordNote(wordId: string) {
   const authId = useAuth((s) => s.session?.user.id ?? null);
   return useQuery({
@@ -287,5 +369,60 @@ export function useSaveWordNote(wordId: string) {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: contentKeys.wordNote(wordId) }),
+  });
+}
+
+export function useDevotionalNote(devotionalId: string) {
+  const authId = useAuth((s) => s.session?.user.id ?? null);
+  return useQuery({
+    queryKey: contentKeys.devotionalNote(devotionalId),
+    enabled: !!authId && !!devotionalId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("devotional_notes")
+        .select("id, body")
+        .eq("devotional_id", devotionalId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useSaveDevotionalNote(devotionalId: string) {
+  const queryClient = useQueryClient();
+  const { data: profile } = useProfile();
+  return useMutation({
+    mutationFn: async (body: string) => {
+      if (!profile) throw new Error("No profile.");
+      const { data: existing, error: readError } = await supabase
+        .from("devotional_notes")
+        .select("id")
+        .eq("devotional_id", devotionalId)
+        .maybeSingle();
+      if (readError) throw readError;
+      if (!body.trim() && existing) {
+        const { error } = await supabase
+          .from("devotional_notes")
+          .delete()
+          .eq("id", existing.id);
+        if (error) throw error;
+        return;
+      }
+      if (!body.trim()) return;
+      const { error } = existing
+        ? await supabase
+            .from("devotional_notes")
+            .update({ body: body.trim() })
+            .eq("id", existing.id)
+        : await supabase.from("devotional_notes").insert({
+            user_id: profile.id,
+            devotional_id: devotionalId,
+            body: body.trim(),
+          });
+      if (error) throw error;
+    },
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: contentKeys.devotionalNote(devotionalId) }),
   });
 }

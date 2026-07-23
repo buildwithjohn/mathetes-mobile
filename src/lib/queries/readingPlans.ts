@@ -174,10 +174,14 @@ export function useCompletePlanDay(planId: string) {
       if (error) throw error;
       return data as string;
     },
-    onSuccess: () => {
+    onSuccess: (_progressId, args) => {
       queryClient.invalidateQueries({ queryKey: planKeys.sub(planId) });
       queryClient.invalidateQueries({ queryKey: planKeys.mySubs });
       queryClient.invalidateQueries({ queryKey: ["reading_plans", "progress"] });
+      void supabase.rpc("record_formation_activity", {
+        p_kind: "plan_day_complete",
+        p_target_key: args.dayId,
+      });
     },
   });
 }

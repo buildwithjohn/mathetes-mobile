@@ -16,7 +16,71 @@ export const formationKeys = {
   completions: (campaignIds: string[]) => ["formation", "completions", ...campaignIds] as const,
   events: ["formation", "events"] as const,
   rsvps: (eventIds: string[]) => ["formation", "rsvps", ...eventIds] as const,
+  badges: ["formation", "badges"] as const,
 };
+
+export type EarnedFormationBadge = {
+  key: string;
+  title: string;
+  description: string;
+  icon: string;
+  earned_at: string;
+};
+
+export function useMyFormationBadges() {
+  const authId = useAuth((s) => s.session?.user.id ?? null);
+  return useQuery({
+    queryKey: formationKeys.badges,
+    enabled: !!authId,
+    queryFn: async (): Promise<EarnedFormationBadge[]> => {
+      const { data: earned, error: earnedError } = await supabase
+        .from("member_badges")
+        .select("badge_key, earned_at");
+      if (earnedError) throw earnedError;
+      if (!earned?.length) return [];
+
+      const { data: definitions, error: definitionsError } = await supabase
+        .from("formation_badges")
+        .select("key, title, description, icon")
+        .in("key", earned.map((item) => item.badge_key));
+      if (definitionsError) throw definitionsError;
+
+      const byKey = new Map((definitions ?? []).map((item) => [item.key, item]));
+      return earned.flatMap((item) => {
+        const definition = byKey.get(item.badge_key);
+        return definition ? [{ ...definition, earned_at: item.earned_at }] : [];
+      });
+    },
+  });
+}
+
+export function useRecordFormationActivity() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: {
+      kind:
+        | "word_read"
+        | "devotional_read"
+        | "plan_day_complete"
+        | "reflection_saved"
+        | "prayer_offered"
+        | "verse_shared"
+        | "quest_complete"
+        | "mission_complete";
+      targetKey?: string;
+    }) => {
+      const { error } = await supabase.rpc("record_formation_activity", {
+        p_kind: args.kind,
+        p_target_key: args.targetKey ?? "",
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: formationKeys.rhythm });
+      queryClient.invalidateQueries({ queryKey: formationKeys.badges });
+    },
+  });
+}
 
 export function useFormationRhythm() {
   const authId = useAuth((s) => s.session?.user.id ?? null);

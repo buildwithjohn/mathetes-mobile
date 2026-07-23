@@ -26,6 +26,10 @@ import {
   type VerseTheme,
 } from "@/lib/verseImage";
 import { useSaveVerseImage } from "@/lib/queries/verseImages";
+import {
+  type ContentSignalKind,
+  useRecordContentShare,
+} from "@/lib/queries/contentSignals";
 import { colors } from "@/theme/colors";
 
 type ImageContrast = {
@@ -77,6 +81,8 @@ export default function Studio() {
     reference?: string;
     label?: string;
     backgroundUrl?: string;
+    signalKind?: ContentSignalKind;
+    signalContentId?: string;
   }>();
 
   const { data: profile } = useProfile();
@@ -143,6 +149,7 @@ export default function Studio() {
 
   const cardRef = useRef<View>(null);
   const saveToGallery = useSaveVerseImage();
+  const recordContentShare = useRecordContentShare();
   const [busy, setBusy] = useState<null | "save" | "share">(null);
   const [flash, setFlash] = useState<string | null>(null);
   const insets = useSafeAreaInsets();
@@ -195,6 +202,12 @@ export default function Studio() {
           mimeType: "image/png",
           dialogTitle: "Share this verse",
         });
+        if (params.signalKind && params.signalContentId) {
+          recordContentShare.mutate({
+            kind: params.signalKind,
+            contentId: params.signalContentId,
+          });
+        }
       } else {
         Alert.alert(
           "Sharing unavailable",

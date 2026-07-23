@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import { format, isToday, subDays } from "date-fns";
 import {
   ArrowRight,
+  BadgeCheck,
   CalendarDays,
   Check,
   ChevronLeft,
@@ -19,15 +20,18 @@ import {
   useFellowshipEvents,
   useFormationCampaigns,
   useFormationRhythm,
+  useMyFormationBadges,
   useMyCampaignCompletions,
   useMyEventRsvps,
   useSetEventRsvp,
 } from "@/lib/queries/formation";
+import type { EarnedFormationBadge } from "@/lib/queries/formation";
 import { colors } from "@/theme/colors";
 
 export default function Formation() {
   const router = useRouter();
   const { data: rhythm, isLoading: rhythmLoading } = useFormationRhythm();
+  const { data: badges, isLoading: badgesLoading } = useMyFormationBadges();
   const { data: campaigns, isLoading: campaignsLoading } = useFormationCampaigns();
   const { data: events, isLoading: eventsLoading } = useFellowshipEvents();
   const activeCampaigns = useMemo(() => {
@@ -42,7 +46,7 @@ export default function Formation() {
   const setRsvp = useSetEventRsvp();
   const completed = new Set((completions ?? []).map((item) => item.campaign_id));
   const rsvpByEvent = new Map((rsvps ?? []).map((item) => [item.event_id, item.response]));
-  const busy = rhythmLoading || campaignsLoading || eventsLoading;
+  const busy = rhythmLoading || badgesLoading || campaignsLoading || eventsLoading;
 
   const onCompleteCampaign = (id: string) => {
     completeCampaign.mutate(id, {
@@ -78,6 +82,9 @@ export default function Formation() {
         {busy ? <ActivityIndicator className="mt-10" color={colors.copper} /> : <>
           <SectionLabel>Your rhythm</SectionLabel>
           <RhythmGarden dates={(rhythm ?? []).map((activity) => activity.occurred_on)} />
+
+          <SectionLabel>Your milestones</SectionLabel>
+          <BadgeShelf badges={badges ?? []} />
 
           <SectionLabel>Practice together</SectionLabel>
           {activeCampaigns.length === 0 ? (
@@ -143,6 +150,46 @@ export default function Formation() {
         </>}
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function BadgeShelf({ badges }: { badges: EarnedFormationBadge[] }) {
+  if (badges.length === 0) {
+    return (
+      <View className="rounded-2xl border border-rule bg-paper px-5 py-5">
+        <BadgeCheck color={colors.inkMute} size={21} strokeWidth={1.5} />
+        <Text className="mt-3 font-display text-[20px] text-ink">Your first milestone is waiting</Text>
+        <Text className="mt-1.5 text-[13px] leading-[19px] text-ink-mute">
+          Spend a few minutes with today&apos;s Word, then let the quiet rhythm grow.
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <View className="rounded-2xl border border-rule bg-paper p-3">
+      <View className="flex-row flex-wrap gap-2.5">
+        {badges.map((badge) => (
+          <View
+            key={badge.key}
+            className="min-w-[46%] flex-1 rounded-xl bg-surface2 px-3.5 py-3"
+          >
+            <View className="flex-row items-center gap-1.5">
+              <BadgeCheck color={colors.copperDeep} size={16} strokeWidth={1.8} />
+              <Text className="flex-1 font-sans-semibold text-[12px] text-ink" numberOfLines={1}>
+                {badge.title}
+              </Text>
+            </View>
+            <Text className="mt-1 text-[11px] leading-4 text-ink-mute" numberOfLines={2}>
+              {badge.description}
+            </Text>
+          </View>
+        ))}
+      </View>
+      <Text className="px-1 pb-1 pt-3 text-[11px] leading-4 text-ink-mute">
+        These are yours alone—celebrate the return, not the comparison.
+      </Text>
+    </View>
   );
 }
 

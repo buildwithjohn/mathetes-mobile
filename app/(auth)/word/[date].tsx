@@ -1,12 +1,21 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert, ImageBackground, Modal, TextInput } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 import { format, parseISO } from "date-fns";
-import { X, CalendarDays, Bookmark, NotebookPen, ImageDown } from "lucide-react-native";
-import { useWordOfDay, useWordNote, useSaveWordNote } from "@/lib/queries/content";
+import { X, CalendarDays, Bookmark, BookmarkCheck, NotebookPen, ImageDown } from "lucide-react-native";
+import {
+  useWordOfDay,
+  useWordNote,
+  useSaveWordNote,
+  useToggleWordBookmark,
+  useWordBookmark,
+} from "@/lib/queries/content";
+import { ContentSignalBar } from "@/components/ContentSignalBar";
+import { useRecordFormationActivity } from "@/lib/queries/formation";
 import { sentences } from "@/utils/text";
+import { shareContentText } from "@/utils/shareContent";
 import { Markdown } from "@/components/Markdown";
 import { colors } from "@/theme/colors";
 
@@ -16,8 +25,19 @@ export default function WordExpanded() {
   const { data: word, isLoading, isError } = useWordOfDay(date ?? "");
   const wordNote = useWordNote(word?.id ?? "");
   const saveWordNote = useSaveWordNote(word?.id ?? "");
+  const wordBookmark = useWordBookmark(word?.id ?? "");
+  const bookmarkMutation = useToggleWordBookmark(word?.id ?? "");
+  const recordActivity = useRecordFormationActivity();
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteBody, setNoteBody] = useState("");
+  const loggedWordId = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (word?.id && loggedWordId.current !== word.id) {
+      loggedWordId.current = word.id;
+      recordActivity.mutate({ kind: "word_read", targetKey: word.id });
+    }
+  }, [recordActivity, word?.id]);
 
   const prettyDate = (() => {
     try {
@@ -36,17 +56,39 @@ export default function WordExpanded() {
         reference: word.verse_ref,
         label: "Word of the Day",
         backgroundUrl: word.cover_image_url ?? undefined,
+        signalKind: "word",
+        signalContentId: word.id,
       },
+    });
+  };
+  const onShareText = () => {
+    if (!word) return Promise.resolve(false);
+    return shareContentText({
+      title: `Word of the Day · ${word.verse_ref}`,
+      message: `“${word.verse_text}”\n\n${word.verse_ref} · KJV\n\nShared from Mathetes`,
     });
   };
   const onNote = () => {
     setNoteBody(wordNote.data?.body ?? "");
     setNoteOpen(true);
   };
-  // TODO(backend): no word_of_day bookmark table exists; saving a Word is not
-  // yet supported. Surface a gentle placeholder rather than a half-wired save.
+  const onSaveNote = () =>
+    saveWordNote.mutate(noteBody, {
+      onSuccess: () => {
+        if (noteBody.trim()) {
+          recordActivity.mutate({
+            kind: "reflection_saved",
+            targetKey: `word:${word?.id ?? ""}`,
+          });
+        }
+        setNoteOpen(false);
+      },
+      onError: () => Alert.alert("Could not save", "Please try again."),
+    });
   const onSave = () =>
-    Alert.alert("Save", "Saving the Word for later is coming soon.");
+    bookmarkMutation.mutate(undefined, {
+      onError: () => Alert.alert("Could not save", "Please try again."),
+    });
 
   const insets = useSafeAreaInsets();
   const verseLines = word ? sentences(word.verse_text) : [];
@@ -72,10 +114,15 @@ export default function WordExpanded() {
           </Pressable>
           <Pressable
             onPress={onSave}
+            disabled={bookmarkMutation.isPending}
             className="h-11 w-11 items-center justify-center"
-            accessibilityLabel="Save"
+            accessibilityLabel={wordBookmark.data ? "Remove saved Word" : "Save Word"}
           >
-            <Bookmark color={colors.inkSoft} size={22} strokeWidth={1.6} />
+            {wordBookmark.data ? (
+              <BookmarkCheck color={colors.copper} size={22} />
+            ) : (
+              <Bookmark color={colors.inkSoft} size={22} strokeWidth={1.6} />
+            )}
           </Pressable>
         </View>
       </View>
@@ -183,6 +230,13 @@ export default function WordExpanded() {
                 <Markdown body={word.prayer_md} />
               </View>
             ) : null}
+
+            <ContentSignalBar
+              kind="word"
+              contentId={word.id}
+              onShare={onShareText}
+              className="mt-8 border-t border-rule-soft pt-4"
+            />
           </ScrollView>
 
           {/* Sticky share footer */}
@@ -217,7 +271,7 @@ export default function WordExpanded() {
             <TextInput value={noteBody} onChangeText={setNoteBody} multiline autoFocus placeholder="What is God showing you today?" placeholderTextColor={colors.inkMute} textAlignVertical="top" className="mt-5 min-h-32 rounded-2xl border border-rule bg-paper p-4 text-[16px] leading-6 text-ink" />
             <View className="mt-4 flex-row justify-end gap-3">
               <Pressable onPress={() => setNoteOpen(false)} className="rounded-full px-4 py-3"><Text className="font-sans-medium text-ink-soft">Cancel</Text></Pressable>
-              <Pressable onPress={() => saveWordNote.mutate(noteBody, { onSuccess: () => setNoteOpen(false), onError: () => Alert.alert("Could not save", "Please try again.") })} className="rounded-full bg-ink px-5 py-3"><Text className="font-sans-semibold text-parchment">{saveWordNote.isPending ? "Saving…" : "Save reflection"}</Text></Pressable>
+              <Pressable onPress={onSaveNote} className="rounded-full bg-ink px-5 py-3"><Text className="font-sans-semibold text-parchment">{saveWordNote.isPending ? "Saving…" : "Save reflection"}</Text></Pressable>
             </View>
           </View>
         </View>

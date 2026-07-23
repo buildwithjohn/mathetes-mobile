@@ -1,5 +1,5 @@
-import { useMemo, useRef, useState } from "react";
-import { View, Text, Pressable, ActivityIndicator, Alert, ImageBackground } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { View, Text, Pressable, ActivityIndicator, Alert, ImageBackground, Modal, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, {
@@ -20,12 +20,18 @@ import {
 import {
   useDevotional,
   useDevotionalBookmark,
+  useDevotionalNote,
+  useSaveDevotionalNote,
   useToggleDevotionalBookmark,
 } from "@/lib/queries/content";
+import { ContentSignalBar } from "@/components/ContentSignalBar";
+import { useRecordContentShare } from "@/lib/queries/contentSignals";
+import { useRecordFormationActivity } from "@/lib/queries/formation";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { Markdown } from "@/components/Markdown";
 import { buildDevotionCards, type DevotionCard } from "@/utils/devotionCards";
 import { colors } from "@/theme/colors";
+import { shareContentText } from "@/utils/shareContent";
 
 export default function DevotionalScreen() {
   const router = useRouter();
@@ -35,6 +41,20 @@ export default function DevotionalScreen() {
   const { data: bookmarkId } = useDevotionalBookmark(id ?? "");
   const bookmarkMutation = useToggleDevotionalBookmark(id ?? "");
   const bookmarked = !!bookmarkId;
+  const recordContentShare = useRecordContentShare();
+  const recordActivity = useRecordFormationActivity();
+  const devotionalNote = useDevotionalNote(id ?? "");
+  const saveDevotionalNote = useSaveDevotionalNote(id ?? "");
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteBody, setNoteBody] = useState("");
+  const loggedDevotionalId = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (dev?.id && loggedDevotionalId.current !== dev.id) {
+      loggedDevotionalId.current = dev.id;
+      recordActivity.mutate({ kind: "devotional_read", targetKey: dev.id });
+    }
+  }, [dev?.id, recordActivity]);
 
   const onToggleBookmark = () => {
     bookmarkMutation.mutate(undefined, {
@@ -90,6 +110,7 @@ export default function DevotionalScreen() {
         title: dev.title,
         failOnCancel: false,
       });
+      recordContentShare.mutate({ kind: "devotional", contentId: dev.id });
     } catch {
       // Expo Go (no native module), user cancelled, or share unavailable: no-op.
     } finally {
@@ -97,11 +118,24 @@ export default function DevotionalScreen() {
     }
   };
 
-  const onWriteReflection = () =>
-    Alert.alert(
-      "Write your reflection",
-      "Personal notes arrive with your library in a later phase."
-    );
+  const onShareText = () => {
+    if (!dev) return Promise.resolve(false);
+    const reference = dev.scripture_refs[0] ? `\n${dev.scripture_refs[0]}` : "";
+    const preview = dev.body_md
+      .replace(/[#>*_`~-]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 220);
+    return shareContentText({
+      title: dev.title,
+      message: `${dev.title}${reference}\n\n${preview}${preview.length === 220 ? "…" : ""}\n\nRead today's reflection in Mathetes.`,
+    });
+  };
+
+  const onWriteReflection = () => {
+    setNoteBody(devotionalNote.data?.body ?? "");
+    setNoteOpen(true);
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
@@ -231,6 +265,13 @@ export default function DevotionalScreen() {
             <Markdown body={dev.body_md} />
           </View>
 
+          <ContentSignalBar
+            kind="devotional"
+            contentId={dev.id}
+            onShare={onShareText}
+            className="mt-8 border-t border-rule-soft pt-4"
+          />
+
           {/* Reflection prompt */}
           <View className="mt-9 rounded-2xl bg-paper-raised px-[22px] py-5">
             <Text
@@ -293,6 +334,55 @@ export default function DevotionalScreen() {
           ))}
         </View>
       ) : null}
+
+      <Modal visible={noteOpen} transparent animationType="slide" onRequestClose={() => setNoteOpen(false)}>
+        <View className="flex-1 justify-end bg-ink/35">
+          <View className="rounded-t-3xl bg-surface1 px-6 pb-10 pt-4">
+            <View className="mb-3 h-1 w-10 self-center rounded-full bg-rule" />
+            <Text className="font-display text-xl text-ink">Your reflection</Text>
+            <Text className="mt-1 text-sm leading-5 text-ink-soft">
+              Keep a private record of what God is teaching you.
+            </Text>
+            <TextInput
+              value={noteBody}
+              onChangeText={setNoteBody}
+              multiline
+              autoFocus
+              placeholder="What is God showing you today?"
+              placeholderTextColor={colors.inkMute}
+              textAlignVertical="top"
+              className="mt-5 min-h-32 rounded-2xl border border-rule bg-paper p-4 text-[16px] leading-6 text-ink"
+            />
+            <View className="mt-4 flex-row justify-end gap-3">
+              <Pressable onPress={() => setNoteOpen(false)} className="rounded-full px-4 py-3">
+                <Text className="font-sans-medium text-ink-soft">Cancel</Text>
+              </Pressable>
+              <Pressable
+                onPress={() =>
+                  saveDevotionalNote.mutate(noteBody, {
+                    onSuccess: () => {
+                      if (noteBody.trim()) {
+                        recordActivity.mutate({
+                          kind: "reflection_saved",
+                          targetKey: `devotional:${dev?.id ?? ""}`,
+                        });
+                      }
+                      setNoteOpen(false);
+                    },
+                    onError: () => Alert.alert("Could not save", "Please try again."),
+                  })
+                }
+                disabled={saveDevotionalNote.isPending}
+                className="rounded-full bg-ink px-5 py-3 disabled:opacity-60"
+              >
+                <Text className="font-sans-semibold text-parchment">
+                  {saveDevotionalNote.isPending ? "Saving…" : "Save reflection"}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

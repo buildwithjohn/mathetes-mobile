@@ -113,9 +113,7 @@ export function useCreatePrayer() {
       });
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: prayerKeys.requests });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: prayerKeys.requests }),
   });
 }
 
@@ -143,8 +141,14 @@ export function useTogglePray() {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (_result, args) => {
       queryClient.invalidateQueries({ queryKey: prayerKeys.requests });
+      if (args.on) {
+        void supabase.rpc("record_formation_activity", {
+          p_kind: "prayer_offered",
+          p_target_key: args.requestId,
+        });
+      }
     },
   });
 }

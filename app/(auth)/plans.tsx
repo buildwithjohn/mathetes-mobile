@@ -1,7 +1,7 @@
 import { View, Text, Pressable, ScrollView, ActivityIndicator, ImageBackground } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
+import Svg, { Defs, LinearGradient, Stop, Rect, Circle } from "react-native-svg";
 import { ChevronLeft, ChevronRight, BookOpen } from "lucide-react-native";
 import {
   useReadingPlans,
@@ -167,6 +167,7 @@ function ContinueCard({
 }
 
 function PlanCard({ plan, onPress }: { plan: ReadingPlan; onPress: () => void }) {
+  const cover = planCover(plan.slug);
   return (
     <Pressable
       onPress={onPress}
@@ -181,17 +182,15 @@ function PlanCard({ plan, onPress }: { plan: ReadingPlan; onPress: () => void })
             resizeMode="cover"
           />
         ) : (
-          <Svg width="100%" height={112} style={{ position: "absolute" }}>
-            <Defs>
-              <LinearGradient id={`pc-${plan.id}`} x1="0" y1="0" x2="1" y2="1">
-                <Stop offset="0" stopColor={colors.copper} />
-                <Stop offset="1" stopColor={colors.oxblood} />
-              </LinearGradient>
-            </Defs>
-            <Rect width="100%" height={112} fill={`url(#pc-${plan.id})`} />
-          </Svg>
+          <PlanCover planId={plan.id} colors={cover.colors} />
         )}
         <View className="flex-1 justify-end bg-ink/35 p-4">
+          <Text
+            className="mb-1 font-sans-semibold text-[10px] uppercase text-white/75"
+            style={{ letterSpacing: 1.45 }}
+          >
+            {cover.label}
+          </Text>
           <Text className="font-display text-[20px] text-white" numberOfLines={2}>
             {plan.title}
           </Text>
@@ -216,5 +215,37 @@ function PlanCard({ plan, onPress }: { plan: ReadingPlan; onPress: () => void })
         </View>
       </View>
     </Pressable>
+  );
+}
+
+function planCover(slug: string) {
+  switch (slug) {
+    case "story-of-the-old-testament":
+      return { label: "Bible overview · Old Testament", colors: ["#17242E", "#3D647A"] };
+    case "jesus-and-the-new-testament":
+      return { label: "Bible overview · New Testament", colors: ["#2A3645", "#577E72"] };
+    case "wisdom-for-campus-life":
+      return { label: "Topical · Campus life", colors: ["#403A62", "#786B9E"] };
+    case "a-life-of-prayer":
+      return { label: "Topical · Prayer", colors: ["#4A2F3A", "#A56371"] };
+    default:
+      return { label: "Reading plan", colors: ["#17242E", "#526D82"] };
+  }
+}
+
+function PlanCover({ planId, colors: coverColors }: { planId: string; colors: string[] }) {
+  return (
+    <Svg width="100%" height={112} style={{ position: "absolute" }}>
+      <Defs>
+        <LinearGradient id={`pc-${planId}`} x1="0" y1="0" x2="1" y2="1">
+          <Stop offset="0" stopColor={coverColors[0]} />
+          <Stop offset="1" stopColor={coverColors[1]} />
+        </LinearGradient>
+      </Defs>
+      <Rect width="100%" height={112} fill={`url(#pc-${planId})`} />
+      <Circle cx="88%" cy="22" r="48" fill="rgba(255,255,255,0.10)" />
+      <Circle cx="80%" cy="104" r="62" fill="rgba(255,255,255,0.07)" />
+      <Circle cx="16%" cy="-12" r="30" fill="rgba(255,255,255,0.06)" />
+    </Svg>
   );
 }
