@@ -83,7 +83,10 @@ prayer-guide section), devotional reader (markdown), reading streak.
 **Bible:** flowing reader, centered chapter header, **translation switcher**
 (reads `bible_versions`, persisted), **vivid highlights** (dark text on bright
 fill, YouVersion-style), bookmarks/highlights, **search follows the selected
-translation**, verse-image **studio** (many color themes + 7 house colors) + gallery.
+translation**, device **listen mode** (verse-by-verse text-to-speech, speed and
+installed-voice picker), verse-image **studio** (many color themes + 7 house
+colors) + gallery. This is accessible device narration, not a licensed recorded
+Audio Bible; the latter requires a provider agreement.
 
 **Community:** inbox (filter chips, pinned, sections), parish/house/discipler
 chats + DMs with **optimistic send** + media (image/voice) + reactions +
@@ -196,7 +199,8 @@ individual gifts — decide finance-only vs keep. Mobile member view is own-only
 - Due scheduled content is available on its publish date even if the external
   publisher cron is late; future content stays hidden. The publisher uses the
   Africa/Lagos date.
-- Chat message inserts create in-app notification rows. A global authenticated
+- Chat message inserts create in-app notification rows with the sender's display
+  name. A global authenticated
   realtime listener refreshes Community and notifications from every screen and
   shows a foreground banner; it is not mounted only when Community is open.
   The database-owned `pg_net` trigger (0041) securely calls `send-push` for

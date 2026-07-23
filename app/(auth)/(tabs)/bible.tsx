@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Clipboard from "expo-clipboard";
+import * as Speech from "expo-speech";
 import {
   ChevronDown,
   ChevronLeft,
@@ -26,6 +27,8 @@ import {
   Check,
   X,
   FolderPlus,
+  Volume2,
+  Square,
 } from "lucide-react-native";
 import {
   useBibleVersions,
@@ -78,6 +81,14 @@ export default function Bible() {
   const [compareVersion, setCompareVersion] = useState<string | null>(null);
   const [collectionOpen, setCollectionOpen] = useState(false);
   const [collectionTitle, setCollectionTitle] = useState("");
+  const [narratingVerse, setNarratingVerse] = useState<number | null>(null);
+  const [speechRate, setSpeechRate] = useState(1);
+  const [speechVoice, setSpeechVoice] = useState<string | null>(null);
+  const [availableVoices, setAvailableVoices] = useState<Speech.Voice[]>([]);
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  const speechRunRef = useRef(0);
+  const speechRateRef = useRef(1);
+  const speechVoiceRef = useRef<string | null>(null);
 
   // Remember the chosen translation across launches.
   useEffect(() => {
@@ -85,7 +96,35 @@ export default function Bible() {
       if (v) setVersionCode(v);
     });
   }, []);
+
+  // Device narration is deliberately a separate accessibility layer from
+  // licensed Audio Bibles: students can listen immediately using the voices
+  // installed on their own phone, without pretending that TTS is a recording.
+  useEffect(() => {
+    AsyncStorage.getItem("bible.speech.voice").then((voice) => {
+      if (voice) {
+        setSpeechVoice(voice);
+        speechVoiceRef.current = voice;
+      }
+    });
+    Speech.getAvailableVoicesAsync()
+      .then((voices) =>
+        setAvailableVoices(
+          voices.filter((voice) => voice.language.toLowerCase().startsWith("en"))
+        )
+      )
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      speechRunRef.current += 1;
+      void Speech.stop();
+    };
+  }, []);
+
   const pickVersion = (code: string) => {
+    void stopNarration();
     setVersionCode(code);
     setTransOpen(false);
     AsyncStorage.setItem("bible.version", code).catch(() => {});
@@ -159,6 +198,7 @@ export default function Bible() {
   };
 
   const goChapter = (next: boolean) => {
+    void stopNarration();
     clearSelection();
     if (!books || !book) return;
     if (next) {
@@ -201,6 +241,62 @@ export default function Bible() {
   const { data: collections } = useScriptureCollections();
   const createCollection = useCreateScriptureCollection();
   const addToCollection = useAddVerseToCollection();
+
+  const stopNarration = async () => {
+    speechRunRef.current += 1;
+    setNarratingVerse(null);
+    await Speech.stop();
+  };
+
+  const readVerse = (index: number, run: number) => {
+    const verse = verses[index];
+    if (!verse || run !== speechRunRef.current) {
+      if (run === speechRunRef.current) setNarratingVerse(null);
+      return;
+    }
+
+    const text = `Verse ${verse.number}. ${verse.text.replace(/\s+/g, " ").trim()}`;
+    Speech.speak(text, {
+      language: "en-US",
+      rate: speechRateRef.current,
+      voice: speechVoiceRef.current ?? undefined,
+      onStart: () => {
+        if (run === speechRunRef.current) setNarratingVerse(verse.number);
+      },
+      onDone: () => readVerse(index + 1, run),
+      onError: () => {
+        if (run === speechRunRef.current) setNarratingVerse(null);
+      },
+    });
+  };
+
+  const startNarration = async (fromVerseNumber?: number) => {
+    if (verses.length === 0) return;
+    const startAt = fromVerseNumber
+      ? Math.max(0, verses.findIndex((verse) => verse.number === fromVerseNumber))
+      : 0;
+    const run = speechRunRef.current + 1;
+    speechRunRef.current = run;
+    await Speech.stop();
+    if (run === speechRunRef.current) readVerse(startAt, run);
+  };
+
+  const setNarrationRate = (rate: number) => {
+    speechRateRef.current = rate;
+    setSpeechRate(rate);
+  };
+
+  const pickVoice = (voice: Speech.Voice | null) => {
+    const identifier = voice?.identifier ?? null;
+    speechVoiceRef.current = identifier;
+    setSpeechVoice(identifier);
+    AsyncStorage.setItem("bible.speech.voice", identifier ?? "").catch(() => {});
+    setVoiceOpen(false);
+  };
+
+  const selectedVoice = availableVoices.find(
+    (voice) => voice.identifier === speechVoice
+  );
 
   const onCopy = async () => {
     if (selectedVerses.length === 0) return;
@@ -325,6 +421,23 @@ export default function Bible() {
             <ChevronDown color={colors.inkMute} size={12} strokeWidth={2} />
           </Pressable>
           <Pressable
+            onPress={() =>
+              narratingVerse != null
+                ? void stopNarration()
+                : void startNarration(selectedVerse?.number)
+            }
+            className="h-10 w-10 items-center justify-center"
+            accessibilityLabel={
+              narratingVerse != null ? "Stop Bible narration" : "Listen to this chapter"
+            }
+          >
+            {narratingVerse != null ? (
+              <Square color={colors.copper} size={18} fill={colors.copper} />
+            ) : (
+              <Volume2 color={colors.ink} size={21} />
+            )}
+          </Pressable>
+          <Pressable
             onPress={() => router.push("/bible/search")}
             className="h-10 w-10 items-center justify-center"
             accessibilityLabel="Search the Bible"
@@ -365,11 +478,84 @@ export default function Bible() {
           </Text>
           <View className="mx-auto mb-6 h-px w-[60px] bg-copper opacity-50" />
 
+          <View className="mb-6 flex-row items-center justify-center gap-2">
+            <Pressable
+              onPress={() => void startNarration(selectedVerse?.number)}
+              className="flex-row items-center gap-2 rounded-full border border-rule bg-paper-raised px-4 py-2 active:opacity-70"
+              accessibilityLabel="Listen to this chapter"
+            >
+              <Volume2 color={colors.copper} size={16} />
+              <Text className="font-sans-medium text-sm text-ink">
+                {narratingVerse != null ? "Restart listening" : "Listen to this chapter"}
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setVoiceOpen(true)}
+              className="rounded-full border border-rule bg-paper-raised px-3 py-2 active:opacity-70"
+              accessibilityLabel="Choose narration voice"
+            >
+              <Text className="max-w-[92px]" numberOfLines={1}>
+                <Text className="font-sans-medium text-xs text-ink-soft">
+                  {selectedVoice?.name ?? "Voice"}
+                </Text>
+              </Text>
+            </Pressable>
+          </View>
+
+          {narratingVerse != null ? (
+            <View className="mb-6 rounded-2xl border border-rule bg-paper-raised px-4 py-3">
+              <View className="flex-row items-center justify-between gap-3">
+                <View className="min-w-0 flex-1">
+                  <Text className="font-sans-medium text-sm text-ink">
+                    Listening · verse {narratingVerse}
+                  </Text>
+                  <Text className="mt-0.5 text-xs text-ink-mute">
+                    Device narration · {speechRate}×
+                  </Text>
+                </View>
+                <Pressable
+                  onPress={() => void stopNarration()}
+                  className="h-9 w-9 items-center justify-center rounded-full bg-copper active:opacity-80"
+                  accessibilityLabel="Stop narration"
+                >
+                  <Square color={colors.parchment} size={14} fill={colors.parchment} />
+                </Pressable>
+              </View>
+              <View className="mt-3 flex-row items-center gap-1.5">
+                {[0.8, 1, 1.25].map((rate) => {
+                  const active = speechRate === rate;
+                  return (
+                    <Pressable
+                      key={rate}
+                      onPress={() => setNarrationRate(rate)}
+                      className={`rounded-full px-3 py-1.5 ${
+                        active ? "bg-ink" : "bg-surface2"
+                      }`}
+                      accessibilityLabel={`Read at ${rate} times speed`}
+                    >
+                      <Text
+                        className={`font-sans-medium text-xs ${
+                          active ? "text-parchment" : "text-ink-soft"
+                        }`}
+                      >
+                        {rate}×
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+                <Text className="ml-1 text-xs text-ink-mute">
+                  Speed changes from the next verse
+                </Text>
+              </View>
+            </View>
+          ) : null}
+
           {/* Flowing reader: verses inline, tap to select. Highlight and
               selection tint the verse's text background. */}
           <Text className="font-scripture text-ink" style={{ fontSize: 18, lineHeight: 30 }}>
             {verses.map((v) => {
               const isSelected = selected.has(v.number);
+              const isNarrating = narratingVerse === v.number;
               const hColor = highlightMap.get(v.id);
               // A highlight is a translucent marker wash (the ink shows through
               // like a real highlighter), under a dotted "liner". Selection is a
@@ -381,7 +567,14 @@ export default function Bible() {
                     textDecorationStyle: "dotted" as const,
                     textDecorationColor: colors.inkMute,
                   }
-                : hColor
+                : isNarrating
+                  ? {
+                      backgroundColor: `${colors.copper}22`,
+                      textDecorationLine: "underline" as const,
+                      textDecorationStyle: "solid" as const,
+                      textDecorationColor: colors.copper,
+                    }
+                  : hColor
                   ? {
                       backgroundColor: `${highlightColors[hColor]}B3`,
                       color: "#1A1A1A",
@@ -390,7 +583,7 @@ export default function Bible() {
                       textDecorationColor: "#00000055",
                     }
                   : undefined;
-              const highlighted = !isSelected && !!hColor;
+              const highlighted = !isSelected && !isNarrating && !!hColor;
               return (
                 <Text
                   key={v.id}
@@ -405,6 +598,8 @@ export default function Bible() {
                         ? "#1A1A1A"
                         : isSelected
                           ? colors.oxblood
+                          : isNarrating
+                            ? colors.copper
                           : colors.copperDeep,
                     }}
                   >
@@ -578,6 +773,76 @@ export default function Bible() {
               </Text>
             ) : null}
           </View>
+        </Pressable>
+      </Modal>
+
+      <Modal
+        visible={voiceOpen}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setVoiceOpen(false)}
+      >
+        <Pressable
+          className="flex-1 justify-end bg-ink/30"
+          onPress={() => setVoiceOpen(false)}
+        >
+          <Pressable className="rounded-t-3xl bg-surface1 px-5 pb-10 pt-3" onPress={() => {}}>
+            <View className="mb-2 h-1 w-10 self-center rounded-full bg-rule" />
+            <View className="mb-3 flex-row items-center justify-between">
+              <View>
+                <Text className="font-display text-xl text-ink">Narration voice</Text>
+                <Text className="mt-1 text-xs text-ink-mute">
+                  Voices installed on this phone
+                </Text>
+              </View>
+              <Pressable onPress={() => setVoiceOpen(false)} className="p-2">
+                <X color={colors.inkSoft} size={20} />
+              </Pressable>
+            </View>
+
+            <Pressable
+              onPress={() => pickVoice(null)}
+              className="flex-row items-center gap-3 border-b border-rule-soft py-3.5"
+            >
+              <View className="h-9 w-9 items-center justify-center rounded-full bg-paper-raised">
+                <Volume2 color={colors.inkSoft} size={16} />
+              </View>
+              <View className="flex-1">
+                <Text className="text-[14.5px] text-ink">Phone default</Text>
+                <Text className="mt-0.5 text-[11.5px] text-ink-mute">
+                  Uses your device’s default English voice
+                </Text>
+              </View>
+              {speechVoice == null ? <Check color={colors.copper} size={18} /> : null}
+            </Pressable>
+
+            {availableVoices.map((voice) => {
+              const active = voice.identifier === speechVoice;
+              return (
+                <Pressable
+                  key={voice.identifier}
+                  onPress={() => pickVoice(voice)}
+                  className="flex-row items-center gap-3 border-b border-rule-soft py-3.5"
+                >
+                  <View className="h-9 w-9 items-center justify-center rounded-full bg-paper-raised">
+                    <Volume2 color={colors.inkSoft} size={16} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-[14.5px] text-ink">{voice.name}</Text>
+                    <Text className="mt-0.5 text-[11.5px] text-ink-mute">
+                      {voice.language} · {voice.quality}
+                    </Text>
+                  </View>
+                  {active ? <Check color={colors.copper} size={18} /> : null}
+                </Pressable>
+              );
+            })}
+            {availableVoices.length === 0 ? (
+              <Text className="py-4 text-sm text-ink-mute">
+                No additional English voices are installed on this phone yet.
+              </Text>
+            ) : null}
+          </Pressable>
         </Pressable>
       </Modal>
 
