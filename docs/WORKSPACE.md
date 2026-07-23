@@ -232,7 +232,15 @@ individual gifts — decide finance-only vs keep. Mobile member view is own-only
 - Meeting access is never decided by the client: the app requests a short-lived
   LiveKit token from Supabase only after the Edge Function confirms active
   parish status, the meeting being live, and Circle membership. Tokens are room
-  scoped and expire after 15 minutes. Recording is not enabled.
+  scoped and expire after 15 minutes.
+- **Teaching recordings (0046):** a Circle owner or admin may explicitly start
+  and stop recording a live Circle meeting. A clear red recording state appears
+  to everyone in the room and members receive a notice; there is no covert or
+  automatic recording. LiveKit writes the media to a private Cloudflare R2
+  bucket. Mathetes stores only audit/status metadata; a fresh 15-minute signed
+  playback URL is issued only after the Edge Function re-checks active Circle
+  membership. Finished teachings appear in that Circle's private library and
+  are unavailable immediately to members removed from the Circle.
 - The meeting SDK needs native WebRTC. It works in an EAS development or store
   build, **not Expo Go**; every Circle/call release therefore requires a new
   Android build. The app intentionally uses no social discovery, public rooms,

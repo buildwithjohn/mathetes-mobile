@@ -23,6 +23,8 @@ export const communityKeys = {
   members: ["community", "members"] as const,
   meeting: (id: string) => ["community", "meeting", id] as const,
   liveMeeting: (chatId: string) => ["community", "live-meeting", chatId] as const,
+  recordings: (chatId: string) => ["community", "recordings", chatId] as const,
+  meetingRecordings: (meetingId: string) => ["community", "recordings", "meeting", meetingId] as const,
 };
 
 // Community must stay fresh even while a member is reading Today or the Bible.
@@ -58,6 +60,24 @@ export function useCommunityRealtime() {
         "postgres_changes",
         { event: "*", schema: "public", table: "circle_meetings" },
         () => queryClient.invalidateQueries({ queryKey: communityKeys.chats })
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "circle_recordings" },
+        (payload) => {
+          const chatId = "chat_id" in payload.new && typeof payload.new.chat_id === "string"
+            ? payload.new.chat_id
+            : "chat_id" in payload.old && typeof payload.old.chat_id === "string"
+              ? payload.old.chat_id
+              : null;
+          const meetingId = "meeting_id" in payload.new && typeof payload.new.meeting_id === "string"
+            ? payload.new.meeting_id
+            : "meeting_id" in payload.old && typeof payload.old.meeting_id === "string"
+              ? payload.old.meeting_id
+              : null;
+          if (chatId) queryClient.invalidateQueries({ queryKey: communityKeys.recordings(chatId) });
+          if (meetingId) queryClient.invalidateQueries({ queryKey: communityKeys.meetingRecordings(meetingId) });
+        }
       )
       .subscribe();
     return () => {
@@ -589,6 +609,21 @@ export function useCreateCircleMeeting(chatId: string) {
   });
 }
 
+export function useEndCircleMeeting() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (meetingId: string) => {
+      const { error } = await supabase.rpc("end_circle_meeting", { p_meeting: meetingId });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: communityKeys.chats });
+      queryClient.invalidateQueries({ queryKey: ["community", "meeting"] });
+      queryClient.invalidateQueries({ queryKey: ["community", "live-meeting"] });
+    },
+  });
+}
+
 export type CircleMeetingRow = {
   id: string;
   chat_id: string;
@@ -598,6 +633,84 @@ export type CircleMeetingRow = {
   started_at: string;
   ended_at: string | null;
 };
+
+export type CircleRecordingRow = {
+  id: string;
+  meeting_id: string;
+  chat_id: string;
+  title: string;
+  media_kind: "audio" | "video";
+  status: "recording" | "processing" | "ready" | "failed" | "deleted";
+  duration_seconds: number | null;
+  size_bytes: number | null;
+  started_at: string;
+  stopped_at: string | null;
+  ready_at: string | null;
+  failure_reason: string | null;
+};
+
+const RECORDING_COLS = "id, meeting_id, chat_id, title, media_kind, status, duration_seconds, size_bytes, started_at, stopped_at, ready_at, failure_reason";
+
+function shouldPollRecordings(rows: CircleRecordingRow[] | undefined): number | false {
+  return rows?.some((recording) => recording.status === "recording" || recording.status === "processing") ? 8_000 : false;
+}
+
+export function useCircleRecordings(chatId: string) {
+  return useQuery({
+    queryKey: communityKeys.recordings(chatId),
+    enabled: !!chatId,
+    refetchInterval: (query) => shouldPollRecordings(query.state.data),
+    queryFn: async (): Promise<CircleRecordingRow[]> => {
+      const { data, error } = await supabase
+        .from("circle_recordings")
+        .select(RECORDING_COLS)
+        .eq("chat_id", chatId)
+        .neq("status", "deleted")
+        .order("started_at", { ascending: false })
+        .returns<CircleRecordingRow[]>();
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
+
+export function useMeetingRecordings(meetingId: string) {
+  return useQuery({
+    queryKey: communityKeys.meetingRecordings(meetingId),
+    enabled: !!meetingId,
+    refetchInterval: (query) => shouldPollRecordings(query.state.data),
+    queryFn: async (): Promise<CircleRecordingRow[]> => {
+      const { data, error } = await supabase
+        .from("circle_recordings")
+        .select(RECORDING_COLS)
+        .eq("meeting_id", meetingId)
+        .neq("status", "deleted")
+        .order("started_at", { ascending: false })
+        .returns<CircleRecordingRow[]>();
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
+
+type RecordingAction = "start" | "stop" | "refresh" | "url";
+type RecordingActionResult = { id?: string; status?: CircleRecordingRow["status"]; url?: string; error?: string };
+
+export function useManageCircleRecording() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: { action: RecordingAction; meetingId?: string; recordingId?: string }): Promise<RecordingActionResult> => {
+      const { data, error } = await supabase.functions.invoke("manage-circle-recording", {
+        body: { action: args.action, meeting_id: args.meetingId, recording_id: args.recordingId },
+      });
+      if (error) throw error;
+      const result = data as RecordingActionResult;
+      if (result.error) throw new Error(result.error);
+      return result;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["community", "recordings"] }),
+  });
+}
 
 export function useCircleMeeting(meetingId: string) {
   return useQuery({

@@ -20,6 +20,8 @@ create an account to use it. Access is restricted to approved members.
   (photos are off by default; initials are shown otherwise).
 - Content you create: chat messages, prayer requests, Ask-Pastor questions,
   notes, bookmarks, highlights, and reading-plan reflections.
+- Circle teaching recordings, only when a Circle owner or admin visibly starts
+  a recording during a live Circle meeting.
 - Giving: if you give, the amount, fund, and transaction reference. **Card and
   bank details are entered on Paystack's secure page — we never see or store
   your card details.**
@@ -40,10 +42,13 @@ We rely on your consent (which you can withdraw), on the legitimate interests of
 running a closed church community, and on what's necessary to provide a feature
 you use (e.g. giving).
 
-## 4. Gender and cross-gender messaging
-We collect gender to power conservative messaging safeguards (for example,
-requiring approval before a cross-gender direct message). This is a pastoral
-safety measure, not used for any other purpose.
+## 4. Circle meeting recordings
+Circle meetings are not recorded automatically. When a Circle owner or admin
+chooses to record a teaching, everyone in that meeting sees a clear recording
+notice and Circle members receive a notification. The finished recording is
+private to the Circle; it is stored in a private Cloudflare R2 bucket and played
+through a short-lived access link. Leaving or being removed from a Circle removes
+access to its recordings.
 
 ## 5. Pastoral oversight (important)
 Mathetes is a discipleship tool with pastoral accountability built in:
@@ -70,6 +75,8 @@ Mathetes is a discipleship tool with pastoral accountability built in:
 - **Paystack** — processing gifts (only if you give). Subject to Paystack's own
   privacy terms.
 - **Expo / app stores** — app delivery and (if enabled) push notifications.
+- **LiveKit and Cloudflare R2** — private Circle call delivery and, when an
+  authorised Circle admin starts recording, private teaching recording storage.
 
 ## 8. Storage and security
 Data is stored with our providers and protected by row-level security so members

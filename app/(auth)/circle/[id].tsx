@@ -3,11 +3,14 @@ import { Alert, Image, Modal, Pressable, ScrollView, Text, TextInput, View } fro
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { Camera, Check, ChevronLeft, Crown, ShieldCheck, UserPlus, X } from "lucide-react-native";
+import * as WebBrowser from "expo-web-browser";
+import { Camera, Check, ChevronLeft, Crown, Headphones, LoaderCircle, Play, ShieldCheck, UserPlus, Video, X } from "lucide-react-native";
 import {
   useAddCircleMembers,
   useChat,
   useParishMembers,
+  useCircleRecordings,
+  useManageCircleRecording,
   useSetCircleMemberRole,
   useUpdateCircle,
 } from "@/lib/queries/community";
@@ -23,10 +26,12 @@ export default function CircleDetailsScreen() {
   const chatId = id ?? "";
   const { data: profile } = useProfile();
   const { data: chatData } = useChat(chatId);
+  const { data: recordings } = useCircleRecordings(chatId);
   const { data: directory } = useParishMembers();
   const updateCircle = useUpdateCircle(chatId);
   const addMembers = useAddCircleMembers(chatId);
   const setRole = useSetCircleMemberRole(chatId);
+  const recordingAction = useManageCircleRecording();
   const chat = chatData?.chat;
   const members = chatData?.members ?? [];
   const myRole = members.find((member) => member.user_id === profile?.id)?.role;
@@ -87,6 +92,15 @@ export default function CircleDetailsScreen() {
   const changeRole = (memberId: string, role: "member" | "admin") => setRole.mutate({ memberId, role }, {
     onError: (error) => Alert.alert("Could not update role", error instanceof Error ? error.message : "Please try again."),
   });
+  const openRecording = async (recordingId: string) => {
+    try {
+      const result = await recordingAction.mutateAsync({ action: "url", recordingId });
+      if (!result.url) throw new Error("A playback link was not available.");
+      await WebBrowser.openBrowserAsync(result.url);
+    } catch (error) {
+      Alert.alert("Could not open recording", error instanceof Error ? error.message : "Please try again.");
+    }
+  };
 
   if (!chat || chat.kind !== "circle") {
     return <SafeAreaView className="flex-1 items-center justify-center bg-parchment"><Text className="text-ink-mute">Circle not found.</Text></SafeAreaView>;
@@ -108,6 +122,23 @@ export default function CircleDetailsScreen() {
           {editing ? <TextInput value={currentTitle} onChangeText={setTitle} maxLength={80} className="mt-4 w-full rounded-xl border border-rule bg-paper px-3 py-2.5 text-center font-display text-[21px] text-ink" /> : <Text className="mt-4 text-center font-display text-[24px] text-ink">{currentTitle}</Text>}
           {editing ? <TextInput value={currentDescription} onChangeText={setDescription} multiline maxLength={280} placeholder="A shared purpose" placeholderTextColor={colors.inkMute} textAlign="center" className="mt-3 min-h-18 w-full rounded-xl border border-rule bg-paper px-3 py-2.5 text-[14px] text-ink" /> : currentDescription ? <Text className="mt-2 text-center text-[13px] leading-5 text-ink-mute">{currentDescription}</Text> : null}
           <Text className="mt-3 text-[12px] text-ink-mute">{members.length} members · private to this Circle</Text>
+        </View>
+
+        <View className="px-5 pt-6">
+          <View className="mb-2 flex-row items-center justify-between"><Text className="font-sans-semibold text-[12px] uppercase text-ink-mute" style={{ letterSpacing: 1.2 }}>Teachings</Text>{recordings?.some((recording) => recording.status === "ready") ? <Text className="text-[11px] text-ink-faint">Private to members</Text> : null}</View>
+          <View className="overflow-hidden rounded-2xl border border-rule bg-paper">
+            {(recordings ?? []).filter((recording) => recording.status !== "deleted").map((recording, index) => {
+              const isReady = recording.status === "ready";
+              const isProcessing = recording.status === "recording" || recording.status === "processing";
+              const Icon = recording.media_kind === "video" ? Video : Headphones;
+              return <Pressable key={recording.id} disabled={!isReady || recordingAction.isPending} onPress={() => openRecording(recording.id)} className={`flex-row items-center gap-3 px-4 py-3.5 ${index ? "border-t border-rule-soft" : ""} disabled:opacity-70`}>
+                <View className="h-10 w-10 items-center justify-center rounded-full bg-copper/10">{isProcessing ? <LoaderCircle color={colors.copperDeep} size={19} /> : <Icon color={colors.copperDeep} size={19} />}</View>
+                <View className="flex-1"><Text className="font-sans-semibold text-[14px] text-ink" numberOfLines={1}>{recording.title}</Text><Text className="mt-0.5 text-[12px] text-ink-mute">{isReady ? `${recording.media_kind === "video" ? "Video" : "Audio"} teaching · Tap to play` : isProcessing ? "Saving recording…" : "Recording unavailable"}</Text></View>
+                {isReady ? <Play color={colors.copperDeep} size={18} fill={colors.copperDeep} /> : null}
+              </Pressable>;
+            })}
+            {(recordings ?? []).length === 0 ? <View className="px-5 py-5"><Text className="text-[13px] leading-5 text-ink-mute">Recorded teachings from this Circle will appear here. Recording always starts visibly, by a Circle admin.</Text></View> : null}
+          </View>
         </View>
 
         <View className="px-5 pt-6">
