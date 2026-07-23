@@ -13,7 +13,7 @@ import { useRouter } from "expo-router";
 import { formatDistanceToNowStrict } from "date-fns";
 import {
   Bell,
-  Search,
+  MessageCirclePlus,
   Megaphone,
   Users,
   HeartHandshake,
@@ -72,14 +72,14 @@ export default function Community() {
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
       {/* Header */}
       <View className="flex-row items-center justify-between px-4 pb-2 pt-3">
-        <Text className="px-2 font-display text-[23px] text-ink">Community</Text>
+        <Text className="px-2 font-display text-[23px] text-ink">Messages</Text>
         <View className="flex-row items-center">
           <Pressable
             onPress={() => router.push("/members")}
             className="h-11 w-11 items-center justify-center"
-            accessibilityLabel="Find members"
+            accessibilityLabel="Start a conversation"
           >
-            <Search color={colors.ink} size={22} />
+            <MessageCirclePlus color={colors.ink} size={22} />
           </Pressable>
           <Pressable
             onPress={() => router.push("/notifications")}

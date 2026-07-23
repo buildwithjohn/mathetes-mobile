@@ -210,6 +210,11 @@ individual gifts — decide finance-only vs keep. Mobile member view is own-only
   `KeyboardAvoidingView`; this gives Samsung and iOS the same native keyboard
   movement. It requires a new native build whenever the package is introduced
   or upgraded.
+- **Messaging discovery:** the persistent tab is labelled **Messages**, uses a
+  conversation icon, and shows a live unread-message badge everywhere in the
+  app. It opens the existing Community surface (prayer, announcements, people,
+  formation) so messaging is discoverable without turning Mathetes into a
+  social-media clone.
 
 ---
 

@@ -1,13 +1,16 @@
 import { Tabs } from "expo-router";
-import { Sun, BookOpen, Users, User, Shield } from "lucide-react-native";
+import { Sun, BookOpen, MessageCircle, User, Shield } from "lucide-react-native";
 import { useProfile } from "@/lib/queries/profile";
+import { useChats } from "@/lib/queries/community";
 import { colors } from "@/theme/colors";
 
 const LEADER_ROLES = ["house_leader", "discipler", "pastor", "admin"];
 
 export default function TabsLayout() {
   const { data: profile } = useProfile();
+  const { data: chats } = useChats();
   const isLeader = !!profile && LEADER_ROLES.includes(profile.role);
+  const unreadMessages = (chats ?? []).reduce((total, chat) => total + chat.unread, 0);
 
   return (
     <Tabs
@@ -38,8 +41,20 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="community"
         options={{
-          title: "Community",
-          tabBarIcon: ({ color, size }) => <Users color={color} size={size} />,
+          title: "Messages",
+          tabBarAccessibilityLabel: unreadMessages
+            ? `Messages, ${unreadMessages} unread`
+            : "Messages",
+          tabBarBadge: unreadMessages || undefined,
+          tabBarBadgeStyle: {
+            backgroundColor: colors.copper,
+            color: "#FFFFFF",
+            fontSize: 10,
+            fontWeight: "600",
+          },
+          tabBarIcon: ({ color, size }) => (
+            <MessageCircle color={color} size={size} />
+          ),
         }}
       />
       <Tabs.Screen
