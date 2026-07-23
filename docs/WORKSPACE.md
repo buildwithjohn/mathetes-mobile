@@ -246,6 +246,15 @@ individual gifts — decide finance-only vs keep. Mobile member view is own-only
   Android build. The app intentionally uses no social discovery, public rooms,
   follower counts, or pressure mechanics.
 
+### 4.7 Member profile presence (0047)
+
+- Active parish members can add an optional **About you** bio and **Current
+  thought** to their profile. The directory opens a profile sheet with their
+  house, studies, role, bio, thought, and pinned verse; the profile remains
+  parish-scoped by the existing RLS directory rule. This is intentional
+  community context, not a public feed, follower system, or searchable status
+  history.
+
 ---
 
 ## 5. OUTSTANDING cross-repo work

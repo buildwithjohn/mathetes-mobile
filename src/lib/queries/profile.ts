@@ -90,6 +90,8 @@ type ProfilePatch = Partial<
     | "photo_url"
     | "photo_visibility"
     | "pinned_verse_ref"
+    | "bio"
+    | "thought"
     | "campus_id"
     | "date_of_birth"
     | "phone"
@@ -116,6 +118,7 @@ export function useUpdateProfile() {
     },
     onSuccess: (profile) => {
       queryClient.setQueryData(profileKeys.me, profile);
+      queryClient.invalidateQueries({ queryKey: ["community", "members"] });
     },
   });
 }

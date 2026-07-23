@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { ChevronLeft, Search, MessageSquare, X, Users } from "lucide-react-native";
+import { BookOpen, ChevronLeft, MessageSquare, Quote, Search, X, Users } from "lucide-react-native";
 import {
   useParishMembers,
   useCreateDm,
@@ -45,27 +45,10 @@ export default function Members() {
     return (members ?? []).filter((m) => m.name.toLowerCase().includes(q));
   }, [members, query]);
 
-  // Translate create_dm() guardrail exceptions into warm, non-technical copy.
-  // We never crash and never navigate on a blocked DM.
+  // The server keeps DMs parish-scoped and active-member only. It remains the
+  // source of truth even though all active parish members may initiate a DM.
   const onDmError = (member: DirectoryMember, e: unknown) => {
     const msg = e instanceof Error ? e.message : "";
-    if (/cross-gender DM requires recipient approval/i.test(msg)) {
-      // TODO(backend): there is no dm_requests table yet, so no request is
-      // actually sent. When the backend adds a request path, insert a row here
-      // (and reword if it can't be delivered). Copy is per product spec.
-      Alert.alert(
-        "Approval needed",
-        `Direct messages with ${member.name} need their approval first. We have sent a request. You will be notified when they accept.`
-      );
-      return;
-    }
-    if (/cross-house DM/i.test(msg)) {
-      Alert.alert(
-        "House-mates only",
-        `Direct messages are limited to your house. To talk to ${member.name}, meet at fellowship, share in the parish chat, or ask your house leader for an introduction.`
-      );
-      return;
-    }
     if (/must be in your parish/i.test(msg)) {
       Alert.alert(
         "Not available",
@@ -209,6 +192,14 @@ export default function Members() {
                   {selected.year ? ` · ${selected.year}` : ""}
                 </Text>
               </View>
+              {selected.thought ? (
+                <View className="mt-5 rounded-2xl bg-copper/8 px-4 py-3.5">
+                  <View className="flex-row items-center gap-1.5"><Quote color={colors.copperDeep} size={14} /><Text className="font-sans-semibold text-[11px] uppercase text-copper-deep" style={{ letterSpacing: 1.1 }}>Current thought</Text></View>
+                  <Text className="mt-2 text-[14px] leading-5 text-ink">{selected.thought}</Text>
+                </View>
+              ) : null}
+              {selected.bio ? <Text className="mt-4 text-center text-[13.5px] leading-5 text-ink-soft">{selected.bio}</Text> : null}
+              {selected.pinned_verse_ref ? <View className="mt-4 flex-row items-center justify-center gap-1.5"><BookOpen color={colors.inkMute} size={14} /><Text className="font-sans-medium text-[12px] text-ink-mute">{selected.pinned_verse_ref}</Text></View> : null}
               <Pressable
                 onPress={() => onMessage(selected)}
                 disabled={createDm.isPending}

@@ -89,9 +89,9 @@ export function useCommunityRealtime() {
 // A profile as embedded in chat/message/member rows.
 export type MemberProfile = Pick<
   UserProfile,
-  "id" | "name" | "photo_url" | "photo_visibility" | "house_id" | "role"
+  "id" | "name" | "photo_url" | "photo_visibility" | "house_id" | "role" | "bio" | "thought" | "thought_updated_at" | "pinned_verse_ref"
 >;
-const PROFILE_COLS = "id, name, photo_url, photo_visibility, house_id, role";
+const PROFILE_COLS = "id, name, photo_url, photo_visibility, house_id, role, bio, thought, thought_updated_at, pinned_verse_ref";
 
 export type ChatMemberRow = {
   user_id: string;
@@ -767,7 +767,7 @@ export function useParishMembers() {
       const { data, error } = await supabase
         .from("user_profiles")
         .select(
-          `id, name, photo_url, photo_visibility, house_id, role, year, dept, houses!user_profiles_house_id_fkey(name, color)`
+          `id, name, photo_url, photo_visibility, house_id, role, year, dept, bio, thought, thought_updated_at, pinned_verse_ref, houses!user_profiles_house_id_fkey(name, color)`
         )
         .order("name", { ascending: true })
         .returns<DirectoryMember[]>();

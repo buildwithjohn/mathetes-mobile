@@ -30,6 +30,8 @@ const schema = z.object({
   year: z.string().trim().max(40),
   dept: z.string().trim().max(80),
   pinnedVerseRef: z.string().trim().max(60),
+  bio: z.string().trim().max(280, "Keep your bio under 280 characters."),
+  thought: z.string().trim().max(180, "Keep your current thought under 180 characters."),
 });
 type FormValues = z.infer<typeof schema>;
 
@@ -78,6 +80,8 @@ export default function EditProfile() {
       year: profile?.year ?? "",
       dept: profile?.dept ?? "",
       pinnedVerseRef: profile?.pinned_verse_ref ?? "",
+      bio: profile?.bio ?? "",
+      thought: profile?.thought ?? "",
     },
   });
 
@@ -124,6 +128,8 @@ export default function EditProfile() {
         year: values.year || null,
         dept: values.dept || null,
         pinned_verse_ref: values.pinnedVerseRef || null,
+        bio: values.bio || null,
+        thought: values.thought || null,
         gender,
         photo_visibility: visibility,
       });
@@ -241,6 +247,28 @@ export default function EditProfile() {
           error={errors.pinnedVerseRef?.message}
           placeholder="e.g. Psalm 23:1"
           autoCapitalize="words"
+        />
+
+        <TextField
+          control={control}
+          name="bio"
+          label="About you"
+          error={errors.bio?.message}
+          placeholder="A little about your walk, studies, or interests"
+          multiline
+          numberOfLines={3}
+          textAlignVertical="top"
+        />
+
+        <TextField
+          control={control}
+          name="thought"
+          label="Current thought"
+          error={errors.thought?.message}
+          placeholder="What is God teaching you lately?"
+          multiline
+          numberOfLines={2}
+          textAlignVertical="top"
         />
 
         {/* Photo visibility */}

@@ -115,6 +115,9 @@ export default function You() {
                   </View>
                 </View>
 
+                {profile?.thought ? <View className="mt-4 rounded-2xl bg-copper/8 px-4 py-3"><Text className="font-sans-semibold text-[10px] uppercase text-copper-deep" style={{ letterSpacing: 1.2 }}>Current thought</Text><Text className="mt-1 text-[13px] leading-5 text-ink">{profile.thought}</Text></View> : null}
+                {profile?.bio ? <Text className="mt-4 text-[13px] leading-5 text-ink-soft">{profile.bio}</Text> : null}
+
                 {/* Stats row */}
                 <View className="mt-4 flex-row items-center gap-2">
                   <View className="flex-row items-center gap-1.5">

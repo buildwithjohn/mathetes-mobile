@@ -524,7 +524,7 @@ export default function ChatScreen() {
             <Text className="text-center text-[10.5px] text-ink-faint">
               {chat?.kind === "discipler"
                 ? "Your discipler conversation is visible to your pastor for care."
-                : "Direct messages are visible to your house leader for pastoral care."}
+                : "Direct messages are private to the people in this conversation. Report a concern if you need help."}
             </Text>
           </View>
         ) : null}
