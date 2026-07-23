@@ -21,6 +21,8 @@ export const communityKeys = {
   chat: (id: string) => ["community", "chat", id] as const,
   messages: (id: string) => ["community", "messages", id] as const,
   members: ["community", "members"] as const,
+  meeting: (id: string) => ["community", "meeting", id] as const,
+  liveMeeting: (chatId: string) => ["community", "live-meeting", chatId] as const,
 };
 
 // Community must stay fresh even while a member is reading Today or the Bible.
@@ -50,6 +52,11 @@ export function useCommunityRealtime() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "chat_members" },
+        () => queryClient.invalidateQueries({ queryKey: communityKeys.chats })
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "circle_meetings" },
         () => queryClient.invalidateQueries({ queryKey: communityKeys.chats })
       )
       .subscribe();
@@ -83,8 +90,11 @@ export type ChatSummary = {
   kind: ChatKind;
   houseId: string | null;
   title: string;
+  imageUrl: string | null;
+  description: string | null;
   accent: string | null;
   other: MemberProfile | null;
+  memberRole: string | null;
   lastBody: string | null;
   lastAt: string | null;
   unread: number;
@@ -110,6 +120,8 @@ function titleFor(
       return "Ask Pastor";
     case "dm":
       return other ? other.name : "Direct message";
+    case "circle":
+      return chat.title ?? "Circle";
   }
   return "Community";
 }
@@ -126,7 +138,7 @@ export function useChats() {
     queryFn: async (): Promise<ChatSummary[]> => {
       const { data: chats, error: chatsErr } = await supabase
         .from("chats")
-        .select(`id, kind, parish_id, house_id, created_by, created_at, houses(name, color)`)
+        .select(`id, kind, parish_id, house_id, created_by, created_at, archived_at, title, description, image_url, max_members, houses(name, color)`)
         .returns<ChatWithHouse[]>();
       if (chatsErr) throw chatsErr;
       const ids = (chats ?? []).map((c) => c.id);
@@ -174,8 +186,11 @@ export function useChats() {
             kind: chat.kind as ChatKind,
             houseId: chat.house_id,
             title: titleFor(chat, other),
+            imageUrl: chat.image_url,
+            description: chat.description,
             accent: chat.houses?.color ?? null,
             other,
+            memberRole: mine?.role ?? null,
             lastBody: last
               ? last.body ??
                 (last.kind === "image"
@@ -207,7 +222,7 @@ export function useChat(chatId: string) {
     } | null> => {
       const { data: chat, error } = await supabase
         .from("chats")
-        .select(`id, kind, parish_id, house_id, created_by, created_at, houses(name, color)`)
+        .select(`id, kind, parish_id, house_id, created_by, created_at, archived_at, title, description, image_url, max_members, houses(name, color)`)
         .eq("id", chatId)
         .maybeSingle()
         .returns<ChatWithHouse>();
@@ -491,6 +506,132 @@ export function useCreateDm() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: communityKeys.chats });
+    },
+  });
+}
+
+// Private Circles are created exclusively through the RPC so membership is
+// validated against the caller's active parish before the chat exists.
+export function useCreateCircle() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: { title: string; description?: string; memberIds: string[] }) => {
+      const { data, error } = await supabase.rpc("create_circle", {
+        p_title: args.title,
+        p_description: args.description?.trim() || undefined,
+        p_member_ids: args.memberIds,
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: communityKeys.chats }),
+  });
+}
+
+export function useUpdateCircle(chatId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: { title?: string; description?: string; imageUrl?: string | null; clearImage?: boolean }) => {
+      const { error } = await supabase.rpc("update_circle", {
+        p_chat: chatId,
+        p_title: args.title,
+        p_description: args.description,
+        p_image_url: args.imageUrl ?? undefined,
+        p_clear_image: args.clearImage ?? false,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: communityKeys.chat(chatId) });
+      queryClient.invalidateQueries({ queryKey: communityKeys.chats });
+    },
+  });
+}
+
+export function useAddCircleMembers(chatId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (memberIds: string[]) => {
+      const { error } = await supabase.rpc("add_circle_members", { p_chat: chatId, p_member_ids: memberIds });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: communityKeys.chat(chatId) });
+      queryClient.invalidateQueries({ queryKey: communityKeys.chats });
+    },
+  });
+}
+
+export function useSetCircleMemberRole(chatId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: { memberId: string; role: "member" | "admin" }) => {
+      const { error } = await supabase.rpc("set_circle_member_role", {
+        p_chat: chatId, p_member: args.memberId, p_role: args.role,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: communityKeys.chat(chatId) }),
+  });
+}
+
+export function useCreateCircleMeeting(chatId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: { mode: "audio" | "video"; title?: string }): Promise<string> => {
+      const { data, error } = await supabase.rpc("create_circle_meeting", {
+        p_chat: chatId, p_mode: args.mode, p_title: args.title?.trim() || "Prayer meeting",
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: communityKeys.chats }),
+  });
+}
+
+export type CircleMeetingRow = {
+  id: string;
+  chat_id: string;
+  title: string;
+  mode: "audio" | "video";
+  status: "live" | "ended";
+  started_at: string;
+  ended_at: string | null;
+};
+
+export function useCircleMeeting(meetingId: string) {
+  return useQuery({
+    queryKey: communityKeys.meeting(meetingId),
+    enabled: !!meetingId,
+    queryFn: async (): Promise<CircleMeetingRow | null> => {
+      const { data, error } = await supabase
+        .from("circle_meetings")
+        .select("id, chat_id, title, mode, status, started_at, ended_at")
+        .eq("id", meetingId)
+        .maybeSingle()
+        .returns<CircleMeetingRow>();
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useLiveCircleMeeting(chatId: string) {
+  return useQuery({
+    queryKey: communityKeys.liveMeeting(chatId),
+    enabled: !!chatId,
+    queryFn: async (): Promise<CircleMeetingRow | null> => {
+      const { data, error } = await supabase
+        .from("circle_meetings")
+        .select("id, chat_id, title, mode, status, started_at, ended_at")
+        .eq("chat_id", chatId)
+        .eq("status", "live")
+        .order("started_at", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+        .returns<CircleMeetingRow>();
+      if (error) throw error;
+      return data;
     },
   });
 }

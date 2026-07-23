@@ -16,7 +16,11 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "app.mathetes.mobile",
-      "usesAppleSignIn": true
+      "usesAppleSignIn": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow Mathetes to use your camera for private Circle prayer meetings.",
+        "NSMicrophoneUsageDescription": "Allow Mathetes to use your microphone for private Circle prayer meetings."
+      }
     },
     "android": {
       "package": "app.mathetes.mobile",
@@ -56,7 +60,9 @@
         {
           "microphonePermission": "Allow Mathetes to record voice notes."
         }
-      ]
+      ],
+      "@livekit/react-native-expo-plugin",
+      "@config-plugins/react-native-webrtc"
     ],
     "experiments": {
       "typedRoutes": true

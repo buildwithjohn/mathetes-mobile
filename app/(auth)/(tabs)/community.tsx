@@ -20,6 +20,7 @@ import {
   MessageCircleQuestion,
   Hash,
   Compass,
+  UsersRound,
   type LucideIcon,
 } from "lucide-react-native";
 import { useChats, type ChatSummary } from "@/lib/queries/community";
@@ -80,6 +81,13 @@ export default function Community() {
             accessibilityLabel="Start a conversation"
           >
             <MessageCirclePlus color={colors.ink} size={22} />
+          </Pressable>
+          <Pressable
+            onPress={() => router.push("/circle/new")}
+            className="h-11 w-11 items-center justify-center"
+            accessibilityLabel="Create a Circle"
+          >
+            <UsersRound color={colors.copperDeep} size={21} />
           </Pressable>
           <Pressable
             onPress={() => router.push("/notifications")}
@@ -166,6 +174,13 @@ export default function Community() {
               title="Members"
               preview="Find someone in the parish directory"
               onPress={() => router.push("/members")}
+            />
+            <EntryRow
+              icon={UsersRound}
+              tone={colors.copper}
+              title="Create a Circle"
+              preview="A private group for friends, prayer, and growth"
+              onPress={() => router.push("/circle/new")}
             />
             <EntryRow
               icon={Compass}
@@ -337,6 +352,9 @@ function ChatIcon({
         <Hash color={accent} size={20} strokeWidth={1.7} />
       </View>
     );
+  }
+  if (chat.kind === "circle") {
+    return <Avatar name={chat.title} photoUrl={chat.imageUrl} size={44} />;
   }
   // dm / discipler / ask-pastor: the other participant's avatar.
   return (

@@ -220,6 +220,24 @@ individual gifts — decide finance-only vs keep. Mobile member view is own-only
   formation) so messaging is discoverable without turning Mathetes into a
   social-media clone.
 
+### 4.6 Private Circles and prayer meetings (0045)
+
+- A **Circle** is a student-created, private, parish-scoped group. Its owner
+  chooses members; no member directory search makes a Circle visible to people
+  outside it. The owner can promote trusted members to Circle admins.
+- Circle admins can update the name, purpose, and photo; invite members; and
+  start a private **audio** or **video** prayer meeting. Owners retain the
+  transfer/ownership safeguard. Circle messages use the existing chat contract,
+  so mute, reporting, reactions, media, unread state, and push remain unified.
+- Meeting access is never decided by the client: the app requests a short-lived
+  LiveKit token from Supabase only after the Edge Function confirms active
+  parish status, the meeting being live, and Circle membership. Tokens are room
+  scoped and expire after 15 minutes. Recording is not enabled.
+- The meeting SDK needs native WebRTC. It works in an EAS development or store
+  build, **not Expo Go**; every Circle/call release therefore requires a new
+  Android build. The app intentionally uses no social discovery, public rooms,
+  follower counts, or pressure mechanics.
+
 ---
 
 ## 5. OUTSTANDING cross-repo work

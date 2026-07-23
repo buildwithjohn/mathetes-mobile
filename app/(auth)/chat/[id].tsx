@@ -38,6 +38,9 @@ import {
   ImagePlus,
   Mic,
   Trash2,
+  Phone,
+  Settings2,
+  Video,
 } from "lucide-react-native";
 import {
   useChat,
@@ -47,6 +50,8 @@ import {
   useToggleReaction,
   useMarkChatRead,
   useToggleMute,
+  useCreateCircleMeeting,
+  useLiveCircleMeeting,
   communityKeys,
   type MessageRow,
 } from "@/lib/queries/community";
@@ -89,6 +94,8 @@ export default function ChatScreen() {
   const toggleMute = useToggleMute();
   const toggleBlock = useToggleBlock();
   const report = useReport();
+  const createMeeting = useCreateCircleMeeting(chatId);
+  const { data: liveMeeting } = useLiveCircleMeeting(chatId);
 
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recorderState = useAudioRecorderState(recorder, 300);
@@ -114,6 +121,8 @@ export default function ChatScreen() {
         return profile.parish_id === chat.parish_id;
       case "house_group":
         return profile.house_id === chat.house_id;
+      case "circle":
+        return amMember && !chat.archived_at;
       default:
         return amMember;
     }
@@ -124,13 +133,15 @@ export default function ChatScreen() {
   const isGroup =
     chat?.kind === "house_group" ||
     chat?.kind === "announcements" ||
-    chat?.kind === "parish_group";
+    chat?.kind === "parish_group" ||
+    chat?.kind === "circle";
   const isDm = chat?.kind === "dm";
   // The header shows the other participant's avatar for one-to-one threads.
   const headerAvatar =
     chat?.kind === "dm" ||
     chat?.kind === "discipler" ||
-    chat?.kind === "ask_pastor_thread";
+    chat?.kind === "ask_pastor_thread" ||
+    chat?.kind === "circle";
   const houseAccent =
     chat?.kind === "house_group" ? chat.houses?.color ?? null : null;
 
@@ -149,6 +160,8 @@ export default function ChatScreen() {
         return "Ask Pastor";
       case "dm":
         return other ? other.name : "Direct message";
+      case "circle":
+        return chat.title ?? "Circle";
     }
   }, [chat, other]);
 
@@ -162,6 +175,8 @@ export default function ChatScreen() {
         return "Everyone in the parish";
       case "house_group":
         return `${members.length} members`;
+      case "circle":
+        return chat.archived_at ? "Archived Circle" : `${members.length} members`;
       case "discipler":
         return "Discipler conversation";
       default:
@@ -195,6 +210,11 @@ export default function ChatScreen() {
           });
           queryClient.invalidateQueries({ queryKey: communityKeys.chats });
         }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "circle_meetings", filter: `chat_id=eq.${chatId}` },
+        () => queryClient.invalidateQueries({ queryKey: communityKeys.liveMeeting(chatId) })
       )
       .on(
         "postgres_changes",
@@ -346,6 +366,35 @@ export default function ChatScreen() {
     toggleMute.mutate({ chatId, muted: !(myMembership?.muted ?? false) });
   };
 
+  const isCircle = chat?.kind === "circle";
+  const isCircleAdmin = myMembership?.role === "owner" || myMembership?.role === "admin";
+  const onStartMeeting = () => {
+    if (!isCircleAdmin) return;
+    Alert.alert("Start a prayer meeting", "Everyone in this private Circle can join.", [
+      {
+        text: "Audio only",
+        onPress: () => createMeeting.mutate(
+          { mode: "audio" },
+          {
+            onSuccess: (meetingId) => router.push(`/meeting/${meetingId}`),
+            onError: () => Alert.alert("Could not start meeting", "Please try again."),
+          }
+        ),
+      },
+      {
+        text: "Video",
+        onPress: () => createMeeting.mutate(
+          { mode: "video" },
+          {
+            onSuccess: (meetingId) => router.push(`/meeting/${meetingId}`),
+            onError: () => Alert.alert("Could not start meeting", "Please try again."),
+          }
+        ),
+      },
+      { text: "Cancel", style: "cancel" },
+    ]);
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
       {/* Header */}
@@ -359,8 +408,8 @@ export default function ChatScreen() {
         </Pressable>
         {headerAvatar ? (
           <Avatar
-            name={other?.name ?? "Member"}
-            photoUrl={other ? visiblePhotoUrl(other, profile?.house_id ?? null) : null}
+            name={isCircle ? title || "Circle" : other?.name ?? "Member"}
+            photoUrl={isCircle ? chat?.image_url ?? null : other ? visiblePhotoUrl(other, profile?.house_id ?? null) : null}
             size={36}
           />
         ) : null}
@@ -386,6 +435,16 @@ export default function ChatScreen() {
             />
           ) : null}
         </View>
+        {isCircle && isCircleAdmin ? (
+          <Pressable
+            onPress={onStartMeeting}
+            disabled={createMeeting.isPending}
+            className="h-11 w-11 items-center justify-center disabled:opacity-40"
+            accessibilityLabel="Start a prayer meeting"
+          >
+            <Phone color={colors.copperDeep} size={20} />
+          </Pressable>
+        ) : null}
         <Pressable
           onPress={() => setMenuOpen(true)}
           className="h-11 w-11 items-center justify-center"
@@ -411,6 +470,19 @@ export default function ChatScreen() {
               You are viewing this for pastoral care. Read only.
             </Text>
           </View>
+        ) : null}
+
+        {isCircle && liveMeeting ? (
+          <Pressable
+            onPress={() => router.push(`/meeting/${liveMeeting.id}`)}
+            className="mx-4 mt-3 flex-row items-center gap-3 rounded-2xl border border-copper/25 bg-copper/10 px-4 py-3 active:opacity-80"
+          >
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-copper">
+              {liveMeeting.mode === "video" ? <Video color="#fff" size={18} /> : <Phone color="#fff" size={18} />}
+            </View>
+            <View className="flex-1"><Text className="font-sans-semibold text-[14px] text-ink">{liveMeeting.title}</Text><Text className="mt-0.5 text-[12px] text-ink-mute">Live now · Tap to join</Text></View>
+            <Text className="font-sans-semibold text-[12px] text-copper-deep">Join</Text>
+          </Pressable>
         ) : null}
 
         {chatLoading || msgsLoading ? (
@@ -614,6 +686,16 @@ export default function ChatScreen() {
               label={myMembership?.muted ? "Unmute" : "Mute notifications"}
               onPress={onToggleMute}
             />
+            {isCircle ? (
+              <ActionItem
+                icon={Settings2}
+                label="Circle details"
+                onPress={() => {
+                  setMenuOpen(false);
+                  router.push(`/circle/${chatId}`);
+                }}
+              />
+            ) : null}
             {isDm && other ? (
               <>
                 <ActionItem
