@@ -249,8 +249,9 @@ individual gifts — decide finance-only vs keep. Mobile member view is own-only
 ### 4.7 Member profile presence (0047)
 
 - Active parish members can add an optional **About you** bio and **Current
-  thought** to their profile. The directory opens a profile sheet with their
-  house, studies, role, bio, thought, and pinned verse; the profile remains
+  thought** to their profile. The directory opens a full profile screen with
+  their house, studies, role, bio, status, and pinned verse; empty fields say
+  “not shared yet” rather than disappearing. The profile remains
   parish-scoped by the existing RLS directory rule. This is intentional
   community context, not a public feed, follower system, or searchable status
   history.

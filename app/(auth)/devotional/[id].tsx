@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { View, Text, Pressable, ActivityIndicator, Alert, ImageBackground, Modal, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -26,7 +26,6 @@ import {
 } from "@/lib/queries/content";
 import { ContentSignalBar } from "@/components/ContentSignalBar";
 import { useRecordContentShare } from "@/lib/queries/contentSignals";
-import { useRecordFormationActivity } from "@/lib/queries/formation";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { Markdown } from "@/components/Markdown";
 import { buildDevotionCards, type DevotionCard } from "@/utils/devotionCards";
@@ -42,19 +41,10 @@ export default function DevotionalScreen() {
   const bookmarkMutation = useToggleDevotionalBookmark(id ?? "");
   const bookmarked = !!bookmarkId;
   const recordContentShare = useRecordContentShare();
-  const recordActivity = useRecordFormationActivity();
   const devotionalNote = useDevotionalNote(id ?? "");
   const saveDevotionalNote = useSaveDevotionalNote(id ?? "");
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteBody, setNoteBody] = useState("");
-  const loggedDevotionalId = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (dev?.id && loggedDevotionalId.current !== dev.id) {
-      loggedDevotionalId.current = dev.id;
-      recordActivity.mutate({ kind: "devotional_read", targetKey: dev.id });
-    }
-  }, [dev?.id, recordActivity]);
 
   const onToggleBookmark = () => {
     bookmarkMutation.mutate(undefined, {
@@ -361,12 +351,6 @@ export default function DevotionalScreen() {
                 onPress={() =>
                   saveDevotionalNote.mutate(noteBody, {
                     onSuccess: () => {
-                      if (noteBody.trim()) {
-                        recordActivity.mutate({
-                          kind: "reflection_saved",
-                          targetKey: `devotional:${dev?.id ?? ""}`,
-                        });
-                      }
                       setNoteOpen(false);
                     },
                     onError: () => Alert.alert("Could not save", "Please try again."),

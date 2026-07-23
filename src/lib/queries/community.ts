@@ -21,6 +21,7 @@ export const communityKeys = {
   chat: (id: string) => ["community", "chat", id] as const,
   messages: (id: string) => ["community", "messages", id] as const,
   members: ["community", "members"] as const,
+  member: (id: string) => ["community", "member", id] as const,
   meeting: (id: string) => ["community", "meeting", id] as const,
   liveMeeting: (chatId: string) => ["community", "live-meeting", chatId] as const,
   recordings: (chatId: string) => ["community", "recordings", chatId] as const,
@@ -773,6 +774,29 @@ export function useParishMembers() {
         .returns<DirectoryMember[]>();
       if (error) throw error;
       return data ?? [];
+    },
+  });
+}
+
+// One member's parish-scoped profile for the full profile screen. This uses the
+// same active-directory RLS policy as the list; a guessed ID cannot expose a
+// profile outside the caller's parish.
+export function useParishMember(memberId: string) {
+  const authId = useAuth((s) => s.session?.user.id ?? null);
+  return useQuery({
+    queryKey: communityKeys.member(memberId),
+    enabled: !!authId && !!memberId,
+    queryFn: async (): Promise<DirectoryMember | null> => {
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select(
+          `id, name, photo_url, photo_visibility, house_id, role, year, dept, bio, thought, thought_updated_at, pinned_verse_ref, houses!user_profiles_house_id_fkey(name, color)`
+        )
+        .eq("id", memberId)
+        .maybeSingle()
+        .returns<DirectoryMember>();
+      if (error) throw error;
+      return data;
     },
   });
 }

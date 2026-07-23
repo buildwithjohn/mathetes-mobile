@@ -118,7 +118,7 @@ export function useUpdateProfile() {
     },
     onSuccess: (profile) => {
       queryClient.setQueryData(profileKeys.me, profile);
-      queryClient.invalidateQueries({ queryKey: ["community", "members"] });
+      queryClient.invalidateQueries({ queryKey: ["community"] });
     },
   });
 }
@@ -178,6 +178,7 @@ export function useUploadProfilePhoto() {
     },
     onSuccess: (profile) => {
       queryClient.setQueryData(profileKeys.me, profile);
+      queryClient.invalidateQueries({ queryKey: ["community"] });
     },
   });
 }

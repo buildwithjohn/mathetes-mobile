@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert, ImageBackground, Modal, TextInput } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -13,9 +13,7 @@ import {
   useWordBookmark,
 } from "@/lib/queries/content";
 import { ContentSignalBar } from "@/components/ContentSignalBar";
-import { useRecordFormationActivity } from "@/lib/queries/formation";
 import { sentences } from "@/utils/text";
-import { shareContentText } from "@/utils/shareContent";
 import { Markdown } from "@/components/Markdown";
 import { colors } from "@/theme/colors";
 
@@ -27,17 +25,8 @@ export default function WordExpanded() {
   const saveWordNote = useSaveWordNote(word?.id ?? "");
   const wordBookmark = useWordBookmark(word?.id ?? "");
   const bookmarkMutation = useToggleWordBookmark(word?.id ?? "");
-  const recordActivity = useRecordFormationActivity();
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteBody, setNoteBody] = useState("");
-  const loggedWordId = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (word?.id && loggedWordId.current !== word.id) {
-      loggedWordId.current = word.id;
-      recordActivity.mutate({ kind: "word_read", targetKey: word.id });
-    }
-  }, [recordActivity, word?.id]);
 
   const prettyDate = (() => {
     try {
@@ -61,12 +50,12 @@ export default function WordExpanded() {
       },
     });
   };
-  const onShareText = () => {
-    if (!word) return Promise.resolve(false);
-    return shareContentText({
-      title: `Word of the Day · ${word.verse_ref}`,
-      message: `“${word.verse_text}”\n\n${word.verse_ref} · KJV\n\nShared from Mathetes`,
-    });
+  // The encouragement-bar action should lead to the same visual composer as
+  // the primary button. A share count is recorded only after the person shares
+  // the generated image from Studio.
+  const onOpenShareImage = () => {
+    onShareImage();
+    return Promise.resolve(false);
   };
   const onNote = () => {
     setNoteBody(wordNote.data?.body ?? "");
@@ -75,12 +64,6 @@ export default function WordExpanded() {
   const onSaveNote = () =>
     saveWordNote.mutate(noteBody, {
       onSuccess: () => {
-        if (noteBody.trim()) {
-          recordActivity.mutate({
-            kind: "reflection_saved",
-            targetKey: `word:${word?.id ?? ""}`,
-          });
-        }
         setNoteOpen(false);
       },
       onError: () => Alert.alert("Could not save", "Please try again."),
@@ -234,7 +217,7 @@ export default function WordExpanded() {
             <ContentSignalBar
               kind="word"
               contentId={word.id}
-              onShare={onShareText}
+              onShare={onOpenShareImage}
               className="mt-8 border-t border-rule-soft pt-4"
             />
           </ScrollView>

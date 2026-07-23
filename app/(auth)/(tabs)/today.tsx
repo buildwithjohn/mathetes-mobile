@@ -60,10 +60,20 @@ export default function Today() {
 
   const shareWord = async () => {
     if (!word.data) return false;
-    return shareContentText({
-      title: `Word of the Day · ${word.data.verse_ref}`,
-      message: `“${word.data.verse_text}”\n\n${word.data.verse_ref} · KJV\n\nShared from Mathetes`,
+    router.push({
+      pathname: "/studio",
+      params: {
+        text: word.data.verse_text,
+        reference: word.data.verse_ref,
+        label: "Word of the Day",
+        backgroundUrl: word.data.cover_image_url ?? undefined,
+        signalKind: "word",
+        signalContentId: word.data.id,
+      },
     });
+    // Studio records the signal only after it has rendered the actual image
+    // and the system share sheet has opened.
+    return false;
   };
 
   const shareDevotional = async () => {
