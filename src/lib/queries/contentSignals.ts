@@ -36,12 +36,17 @@ export function useContentSignalSummary(
 ) {
   const authId = useAuth((state) => state.session?.user.id ?? null);
   const queryClient = useQueryClient();
-
   useEffect(() => {
     if (!authId || !contentId) return;
 
+    // `removeChannel` is asynchronous. This must be created inside the effect
+    // (rather than once per component) so React's development effect replay or
+    // a fast screen remount never tries to add callbacks to a channel that is
+    // still subscribed.
+    const channelName = `content-signal-counts:${kind}:${contentId}:${Math.random().toString(36).slice(2)}`;
+
     const channel = supabase
-      .channel(`content-signal-counts:${kind}:${contentId}`)
+      .channel(channelName)
       .on(
         "postgres_changes",
         {

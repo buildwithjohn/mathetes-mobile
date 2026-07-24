@@ -110,6 +110,7 @@ export default function ChatScreen() {
   const members = chatData?.members ?? [];
   const amMember = !!me && members.some((m) => m.user_id === me);
   const other = members.find((m) => m.user_id !== me)?.user_profiles ?? null;
+  const otherMemberId = members.find((m) => m.user_id !== me)?.user_id ?? null;
   const myMembership = members.find((m) => m.user_id === me) ?? null;
 
   const canPost = useMemo(() => {
@@ -406,35 +407,46 @@ export default function ChatScreen() {
         >
           <ChevronLeft color={colors.ink} size={26} />
         </Pressable>
-        {headerAvatar ? (
-          <Avatar
-            name={isCircle ? title || "Circle" : other?.name ?? "Member"}
-            photoUrl={isCircle ? chat?.image_url ?? null : other ? visiblePhotoUrl(other, profile?.house_id ?? null) : null}
-            size={36}
-          />
-        ) : null}
-        <View className={`flex-1 ${headerAvatar ? "ml-2" : ""}`}>
-          <Text className="font-display text-[17px] text-ink" numberOfLines={1}>
-            {title}
-          </Text>
-          {subtitle ? (
-            <Text
-              className="mt-0.5 font-sans-semibold text-[10.5px] uppercase"
-              style={{
-                color: houseAccent ?? colors.inkMute,
-                letterSpacing: 1.26,
-              }}
-            >
-              {subtitle}
-            </Text>
-          ) : null}
-          {houseAccent ? (
-            <View
-              className="mt-1 h-0.5 w-[22px] rounded-full"
-              style={{ backgroundColor: houseAccent }}
+        <Pressable
+          className="flex-1 flex-row items-center"
+          disabled={!otherMemberId || !(chat?.kind === "dm" || chat?.kind === "discipler")}
+          onPress={() => {
+            if (!otherMemberId) return;
+            router.push({ pathname: "/member/[id]" as never, params: { id: otherMemberId } });
+          }}
+          accessibilityRole={otherMemberId ? "button" : undefined}
+          accessibilityLabel={other ? `View ${other.name}'s profile` : undefined}
+        >
+          {headerAvatar ? (
+            <Avatar
+              name={isCircle ? title || "Circle" : other?.name ?? "Member"}
+              photoUrl={isCircle ? chat?.image_url ?? null : other ? visiblePhotoUrl(other, profile?.house_id ?? null) : null}
+              size={36}
             />
           ) : null}
-        </View>
+          <View className={`flex-1 ${headerAvatar ? "ml-2" : ""}`}>
+            <Text className="font-display text-[17px] text-ink" numberOfLines={1}>
+              {title}
+            </Text>
+            {subtitle ? (
+              <Text
+                className="mt-0.5 font-sans-semibold text-[10.5px] uppercase"
+                style={{
+                  color: houseAccent ?? colors.inkMute,
+                  letterSpacing: 1.26,
+                }}
+              >
+                {subtitle}
+              </Text>
+            ) : null}
+            {houseAccent ? (
+              <View
+                className="mt-1 h-0.5 w-[22px] rounded-full"
+                style={{ backgroundColor: houseAccent }}
+              />
+            ) : null}
+          </View>
+        </Pressable>
         {isCircle && isCircleAdmin ? (
           <Pressable
             onPress={onStartMeeting}

@@ -243,7 +243,10 @@ individual gifts — decide finance-only vs keep. Mobile member view is own-only
   are unavailable immediately to members removed from the Circle.
 - The meeting SDK needs native WebRTC. It works in an EAS development or store
   build, **not Expo Go**; every Circle/call release therefore requires a new
-  Android build. The app intentionally uses no social discovery, public rooms,
+  Android build. Native LiveKit imports and `registerGlobals()` must remain in
+  `src/components/MeetingNative.tsx` (outside Expo Router's `app/` tree) and
+  be lazy-loaded only after the Expo Go guard; otherwise Expo Go will crash
+  while it eagerly discovers routes. The app intentionally uses no social discovery, public rooms,
   follower counts, or pressure mechanics.
 
 ### 4.7 Member profile presence (0047)

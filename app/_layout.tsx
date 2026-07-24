@@ -23,16 +23,6 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/stores/auth";
 import { useTheme } from "@/lib/stores/theme";
 import { AuthDeepLinks } from "@/components/AuthDeepLinks";
-import Constants, { ExecutionEnvironment } from "expo-constants";
-
-// LiveKit needs WebRTC globals before any meeting screen or room component is
-// mounted. Expo Go intentionally cannot load this native module, so defer the
-// require there; development and store builds still register it before routes.
-if (Constants.executionEnvironment !== ExecutionEnvironment.StoreClient) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { registerGlobals } = require("@livekit/react-native");
-  registerGlobals();
-}
 
 SplashScreen.preventAutoHideAsync();
 

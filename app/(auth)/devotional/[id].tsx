@@ -30,7 +30,6 @@ import { AudioPlayer } from "@/components/AudioPlayer";
 import { Markdown } from "@/components/Markdown";
 import { buildDevotionCards, type DevotionCard } from "@/utils/devotionCards";
 import { colors } from "@/theme/colors";
-import { shareContentText } from "@/utils/shareContent";
 
 export default function DevotionalScreen() {
   const router = useRouter();
@@ -108,18 +107,25 @@ export default function DevotionalScreen() {
     }
   };
 
-  const onShareText = () => {
+  const onOpenShareImage = () => {
     if (!dev) return Promise.resolve(false);
-    const reference = dev.scripture_refs[0] ? `\n${dev.scripture_refs[0]}` : "";
     const preview = dev.body_md
       .replace(/[#>*_`~-]/g, " ")
       .replace(/\s+/g, " ")
       .trim()
-      .slice(0, 220);
-    return shareContentText({
-      title: dev.title,
-      message: `${dev.title}${reference}\n\n${preview}${preview.length === 220 ? "…" : ""}\n\nRead today's reflection in Mathetes.`,
+      .slice(0, 260);
+    router.push({
+      pathname: "/studio",
+      params: {
+        text: preview,
+        reference: dev.scripture_refs[0] ?? dev.title,
+        label: dev.title,
+        backgroundUrl: dev.cover_image_url ?? undefined,
+        signalKind: "devotional",
+        signalContentId: dev.id,
+      },
     });
+    return Promise.resolve(false);
   };
 
   const onWriteReflection = () => {
@@ -258,7 +264,7 @@ export default function DevotionalScreen() {
           <ContentSignalBar
             kind="devotional"
             contentId={dev.id}
-            onShare={onShareText}
+            onShare={onOpenShareImage}
             className="mt-8 border-t border-rule-soft pt-4"
           />
 

@@ -16,7 +16,6 @@ import { useProfile } from "@/lib/queries/profile";
 import { useStreak } from "@/lib/queries/engagement";
 import { useReadingPosition, useBibleBooks } from "@/lib/queries/bible";
 import { greeting } from "@/utils/text";
-import { shareContentText } from "@/utils/shareContent";
 import { colors } from "@/theme/colors";
 
 // Plain-text first line of a markdown body, for the devotional preview snippet.
@@ -78,16 +77,18 @@ export default function Today() {
 
   const shareDevotional = async () => {
     if (!devotional.data) return false;
-    const reference = devotional.data.scripture_refs[0]
-      ? `\n${devotional.data.scripture_refs[0]}`
-      : "";
-    return shareContentText({
-      title: devotional.data.title,
-      message: `${devotional.data.title}${reference}\n\n${previewFromMarkdown(
-        devotional.data.body_md,
-        220
-      )}\n\nRead today's reflection in Mathetes.`,
+    router.push({
+      pathname: "/studio",
+      params: {
+        text: previewFromMarkdown(devotional.data.body_md, 260),
+        reference: devotional.data.scripture_refs[0] ?? devotional.data.title,
+        label: devotional.data.title,
+        backgroundUrl: devotional.data.cover_image_url ?? undefined,
+        signalKind: "devotional",
+        signalContentId: devotional.data.id,
+      },
     });
+    return false;
   };
 
   return (
