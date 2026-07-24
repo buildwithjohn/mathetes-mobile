@@ -35,8 +35,12 @@ export default function CircleDetailsScreen() {
   const chat = chatData?.chat;
   const members = chatData?.members ?? [];
   const myRole = members.find((member) => member.user_id === profile?.id)?.role;
-  const isAdmin = myRole === "owner" || myRole === "admin";
-  const isOwner = myRole === "owner";
+  // A global app owner can keep a Circle safe and operational even if its
+  // original student owner becomes unavailable. The backend enforces the same
+  // narrow override and still keeps private DMs outside this path.
+  const isGlobalOwner = profile?.is_owner === true;
+  const isAdmin = isGlobalOwner || myRole === "owner" || myRole === "admin";
+  const isOwner = isGlobalOwner || myRole === "owner";
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");

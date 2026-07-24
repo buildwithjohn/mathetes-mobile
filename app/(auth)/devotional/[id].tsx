@@ -70,15 +70,15 @@ export default function DevotionalScreen() {
     [dev?.body_md]
   );
 
-  const onShareImages = async () => {
-    if (!dev || cards.length === 0 || sharing) return;
+  const onShareImages = async (): Promise<boolean> => {
+    if (!dev || cards.length === 0 || sharing) return false;
     // Image sharing needs the native share module, absent from Expo Go.
     if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
       Alert.alert(
         "Available in the app",
         "Sharing the devotion as images works in the installed Mathetes app, not in Expo Go."
       );
-      return;
+      return false;
     }
     setSharing(true);
     try {
@@ -89,7 +89,10 @@ export default function DevotionalScreen() {
         const uri = await captureRef(node, { format: "png", quality: 1 });
         urls.push(uri.startsWith("file://") ? uri : `file://${uri}`);
       }
-      if (urls.length === 0) return;
+      if (urls.length === 0) {
+        Alert.alert("Could not prepare images", "Please try again in a moment.");
+        return false;
+      }
       // Lazily load the native share module so the screen still works in Expo
       // Go (RNShare is only in an EAS build).
       const Share = (await import("react-native-share")).default;
@@ -100,32 +103,14 @@ export default function DevotionalScreen() {
         failOnCancel: false,
       });
       recordContentShare.mutate({ kind: "devotional", contentId: dev.id });
+      return true;
     } catch {
-      // Expo Go (no native module), user cancelled, or share unavailable: no-op.
+      // Cancelling the share sheet is normal. Other failures simply leave the
+      // reader on the devotional rather than crashing the screen.
+      return false;
     } finally {
       setSharing(false);
     }
-  };
-
-  const onOpenShareImage = () => {
-    if (!dev) return Promise.resolve(false);
-    const preview = dev.body_md
-      .replace(/[#>*_`~-]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim()
-      .slice(0, 260);
-    router.push({
-      pathname: "/studio",
-      params: {
-        text: preview,
-        reference: dev.scripture_refs[0] ?? dev.title,
-        label: dev.title,
-        backgroundUrl: dev.cover_image_url ?? undefined,
-        signalKind: "devotional",
-        signalContentId: dev.id,
-      },
-    });
-    return Promise.resolve(false);
   };
 
   const onWriteReflection = () => {
@@ -264,7 +249,7 @@ export default function DevotionalScreen() {
           <ContentSignalBar
             kind="devotional"
             contentId={dev.id}
-            onShare={onOpenShareImage}
+            onShare={onShareImages}
             className="mt-8 border-t border-rule-soft pt-4"
           />
 

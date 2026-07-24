@@ -596,6 +596,26 @@ export function useSetCircleMemberRole(chatId: string) {
   });
 }
 
+// House groups are not arbitrary chats: their membership is the member's
+// canonical house assignment. Parish administrators use this RPC rather than
+// inserting a misleading chat-members row.
+export function useAssignHouseMembers(houseId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (memberIds: string[]) => {
+      const { error } = await supabase.rpc("assign_house_members", {
+        p_house: houseId,
+        p_member_ids: memberIds,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: communityKeys.members });
+      queryClient.invalidateQueries({ queryKey: communityKeys.chats });
+    },
+  });
+}
+
 export function useCreateCircleMeeting(chatId: string) {
   const queryClient = useQueryClient();
   return useMutation({

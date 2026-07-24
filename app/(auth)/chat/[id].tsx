@@ -195,8 +195,12 @@ export default function ChatScreen() {
   // Realtime: refetch on new messages or reaction changes for this chat.
   useEffect(() => {
     if (!chatId) return;
+    // `removeChannel` completes asynchronously. Make a fresh name for every
+    // effect run so a fast navigation (or React development replay) never
+    // attaches callbacks to the previous channel after it has subscribed.
+    const channelName = `chat:${chatId}:${Math.random().toString(36).slice(2)}`;
     const channel = supabase
-      .channel(`chat:${chatId}`)
+      .channel(channelName)
       .on(
         "postgres_changes",
         {
@@ -368,7 +372,16 @@ export default function ChatScreen() {
   };
 
   const isCircle = chat?.kind === "circle";
-  const isCircleAdmin = myMembership?.role === "owner" || myMembership?.role === "admin";
+  const isCircleAdmin = profile?.is_owner === true || myMembership?.role === "owner" || myMembership?.role === "admin";
+  const isHouseGroup = chat?.kind === "house_group";
+  const canOpenDetails = isCircle || isHouseGroup;
+  const openDetails = () => {
+    if (isCircle) {
+      router.push(`/circle/${chatId}`);
+    } else if (isHouseGroup) {
+      router.push(`/group/${chatId}`);
+    }
+  };
   const onStartMeeting = () => {
     if (!isCircleAdmin) return;
     Alert.alert("Start a prayer meeting", "Everyone in this private Circle can join.", [
@@ -409,13 +422,19 @@ export default function ChatScreen() {
         </Pressable>
         <Pressable
           className="flex-1 flex-row items-center"
-          disabled={!otherMemberId || !(chat?.kind === "dm" || chat?.kind === "discipler")}
+          disabled={
+            !canOpenDetails &&
+            (!otherMemberId || !(chat?.kind === "dm" || chat?.kind === "discipler"))
+          }
           onPress={() => {
-            if (!otherMemberId) return;
-            router.push({ pathname: "/member/[id]" as never, params: { id: otherMemberId } });
+            if (canOpenDetails) {
+              openDetails();
+            } else if (otherMemberId) {
+              router.push({ pathname: "/member/[id]" as never, params: { id: otherMemberId } });
+            }
           }}
-          accessibilityRole={otherMemberId ? "button" : undefined}
-          accessibilityLabel={other ? `View ${other.name}'s profile` : undefined}
+          accessibilityRole={canOpenDetails || otherMemberId ? "button" : undefined}
+          accessibilityLabel={canOpenDetails ? "View group details" : other ? `View ${other.name}'s profile` : undefined}
         >
           {headerAvatar ? (
             <Avatar
@@ -698,13 +717,13 @@ export default function ChatScreen() {
               label={myMembership?.muted ? "Unmute" : "Mute notifications"}
               onPress={onToggleMute}
             />
-            {isCircle ? (
+            {canOpenDetails ? (
               <ActionItem
                 icon={Settings2}
-                label="Circle details"
+                label={isCircle ? "Circle details" : "House details"}
                 onPress={() => {
                   setMenuOpen(false);
-                  router.push(`/circle/${chatId}`);
+                  openDetails();
                 }}
               />
             ) : null}

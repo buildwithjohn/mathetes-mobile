@@ -249,6 +249,20 @@ individual gifts — decide finance-only vs keep. Mobile member view is own-only
   while it eagerly discovers routes. The app intentionally uses no social discovery, public rooms,
   follower counts, or pressure mechanics.
 
+### 4.6a Group stewardship (0052)
+
+- **Official House groups** are canonical House fellowship spaces, not free-form
+  chats. Their roster follows each active member's `house_id`; an owner/admin
+  can place a member in a House through the audited `assign_house_members` RPC.
+  This prevents a misleading group roster that disagrees with the member's
+  House everywhere else in the app.
+- **Circles** are the WhatsApp-style custom-group surface: student owners and
+  Circle admins can change the photo/name/purpose, invite members, and promote
+  admins. A global Mathetes owner may steward any same-parish Circle or shared
+  House/parish group when continuity or safeguarding requires it. This is
+  deliberately limited to shared group spaces: it does not grant access to
+  anyone's DM, discipler, or Ask-Pastor conversation.
+
 ### 4.7 Member profile presence (0047)
 
 - Active parish members can add an optional **About you** bio and **Current
