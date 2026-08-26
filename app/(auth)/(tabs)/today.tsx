@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, ActivityIndicator, Image, StyleSheet } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator, Image, StyleSheet, useWindowDimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
@@ -93,124 +93,151 @@ export default function Today() {
     return false;
   };
 
+  const { height } = useWindowDimensions();
+  const heroMin = Math.round(height * 0.6);
+  const reveal = Math.round(height * 0.2);
+
   return (
-    <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
+    <View className="flex-1 bg-parchment">
       <Animated.View entering={FadeIn.duration(380)} className="flex-1">
         <ScrollView
           className="flex-1"
           contentContainerClassName="pb-10"
           showsVerticalScrollIndicator={false}
         >
-          {/* Top bar: date eyebrow + greeting + streak chip */}
-          <View className="flex-row items-start justify-between px-6 pb-3 pt-4">
-            <View className="flex-1 pr-3">
-              <Eyebrow className="mb-1.5">{format(new Date(), "EEEE, d MMMM")}</Eyebrow>
-              <Text className="font-display text-[26px] leading-8 text-ink">
-                {greeting()},{" "}
-                {firstName ? (
-                  <Text className="font-display-italic text-copper-deep">{firstName}</Text>
-                ) : (
-                  <Text className="font-display-italic text-copper-deep">friend</Text>
-                )}
-              </Text>
-            </View>
-            {/* Daily streak from record_check_in() (grace-day aware). */}
-            <PressableScale
-              onPress={() => router.push("/(auth)/(tabs)/you")}
-              className="mt-1 flex-row items-center gap-1.5 rounded-full border border-rule px-2.5 py-1.5"
-              accessibilityLabel={`${streak} day streak`}
-            >
-              <AnimatedFlame size={15} />
-              <Text className="font-sans-medium text-sm text-ink-soft">{streak}</Text>
-            </PressableScale>
-          </View>
-
-          {/* Word of the Day — immersive verse hero (YouVersion-style) */}
-          <View className="px-5 pt-4">
-            <View className="overflow-hidden rounded-[30px]">
-              {/* Atmospheric hero: the pastor's cover for the day, or a warm
-                  sun-through-forest default, with a scrim so the verse reads. */}
-              <Image
-                source={
-                  word.data?.cover_image_url
-                    ? { uri: word.data.cover_image_url }
-                    : require("../../../assets/images/today/wotd-bg.jpg")
-                }
-                style={StyleSheet.absoluteFill}
-                resizeMode="cover"
-              />
-              <LinearGradient
-                colors={["rgba(26,17,9,0.28)", "rgba(24,15,8,0.58)", "rgba(17,10,5,0.94)"]}
-                locations={[0, 0.44, 1]}
-                style={StyleSheet.absoluteFill}
-                pointerEvents="none"
-              />
-              <PressableScale
-                haptic="light"
-                scaleTo={0.985}
-                onPress={() => router.push(`/word/${todayKey()}`)}
-                disabled={!word.data}
-              >
-              <View
-                className="px-6 pb-5 pt-7"
-                style={{ minHeight: 250, justifyContent: "flex-end" }}
-              >
-                <Text
-                  className="font-sans-semibold text-[11px] uppercase"
-                  style={{ letterSpacing: 1.9, color: "#F0C892" }}
-                >
-                  Word of the day · {format(new Date(), "EEE, d MMM")}
-                </Text>
-                {word.isLoading ? (
-                  <ActivityIndicator className="mt-6 self-start" color="#F0C892" />
-                ) : word.data ? (
-                  <>
-                    <Animated.Text
-                      entering={FadeInDown.delay(60).duration(620)}
-                      className="mt-4 font-display text-[26px] leading-[35px]"
-                      style={{ color: "#FBF7F1" }}
-                    >
-                      {word.data.verse_text}
-                    </Animated.Text>
-                    <View
-                      className="mt-5"
-                      style={{ height: 1.5, width: 34, backgroundColor: "#F0C892" }}
-                    />
-                    <View className="mt-3.5 flex-row items-center justify-between">
-                      <Text
-                        className="font-sans-semibold text-[12px] uppercase"
-                        style={{ letterSpacing: 1.9, color: "#F0C892" }}
-                      >
-                        {word.data.verse_ref}
-                      </Text>
-                      <ChevronRight color="#F0C892" size={18} strokeWidth={1.8} />
-                    </View>
-                  </>
-                ) : (
-                  <Text className="mt-5 text-sm" style={{ color: "#E8D9C6" }}>
-                    No Word posted yet today. Check back soon.
+          {/* IMMERSIVE HERO — the greeting and Word of the Day live over a
+              full-bleed atmospheric image, bleeding under the status bar. */}
+          <View style={{ minHeight: heroMin }} className="overflow-hidden">
+            <Image
+              source={
+                word.data?.cover_image_url
+                  ? { uri: word.data.cover_image_url }
+                  : require("../../../assets/images/today/wotd-bg.jpg")
+              }
+              style={StyleSheet.absoluteFill}
+              resizeMode="cover"
+            />
+            <LinearGradient
+              colors={[
+                "rgba(24,15,8,0.44)",
+                "rgba(24,15,8,0.10)",
+                "rgba(22,13,7,0.60)",
+                "rgba(15,9,4,0.96)",
+              ]}
+              locations={[0, 0.28, 0.62, 1]}
+              style={StyleSheet.absoluteFill}
+              pointerEvents="none"
+            />
+            <SafeAreaView edges={["top"]}>
+              <View className="px-6 pb-9 pt-2">
+                {/* Top row: date + streak (glassy) */}
+                <View className="flex-row items-center justify-between">
+                  <Text
+                    className="font-sans-semibold text-[11px] uppercase"
+                    style={{ letterSpacing: 1.7, color: "rgba(255,240,225,0.82)" }}
+                  >
+                    {format(new Date(), "EEEE, d MMMM")}
                   </Text>
-                )}
-              </View>
-              </PressableScale>
-              {word.data ? (
-                <View
-                  className="border-t px-3 py-1"
-                  style={{ borderColor: "rgba(240,200,146,0.22)" }}
-                >
-                  <ContentSignalBar
-                    kind="word"
-                    contentId={word.data.id}
-                    onShare={shareWord}
-                    dark
-                  />
+                  <PressableScale
+                    onPress={() => router.push("/(auth)/(tabs)/you")}
+                    className="flex-row items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3 py-1.5"
+                    accessibilityLabel={`${streak} day streak`}
+                  >
+                    <AnimatedFlame size={15} />
+                    <Text
+                      className="font-sans-semibold text-sm"
+                      style={{ color: "#FFFFFF" }}
+                    >
+                      {streak}
+                    </Text>
+                  </PressableScale>
                 </View>
-              ) : null}
-            </View>
+
+                {/* Breathing room so the image sings before the words */}
+                <View style={{ height: reveal }} />
+
+                <Animated.Text
+                  entering={FadeInDown.delay(80).duration(640)}
+                  className="font-display text-[32px] leading-[38px]"
+                  style={{
+                    color: "#FFFFFF",
+                    textShadowColor: "rgba(0,0,0,0.40)",
+                    textShadowRadius: 14,
+                    textShadowOffset: { width: 0, height: 1 },
+                  }}
+                >
+                  {greeting()},{" "}
+                  <Text className="font-display-italic" style={{ color: "#F5C98A" }}>
+                    {firstName ?? "friend"}
+                  </Text>
+                </Animated.Text>
+
+                <PressableScale
+                  haptic="light"
+                  scaleTo={0.99}
+                  onPress={() => router.push(`/word/${todayKey()}`)}
+                  disabled={!word.data}
+                  className="mt-7"
+                >
+                  <Text
+                    className="font-sans-semibold text-[11px] uppercase"
+                    style={{ letterSpacing: 1.9, color: "#F0C892" }}
+                  >
+                    Word of the day
+                  </Text>
+                  {word.isLoading ? (
+                    <ActivityIndicator className="mt-4 self-start" color="#F0C892" />
+                  ) : word.data ? (
+                    <>
+                      <Animated.Text
+                        entering={FadeInDown.delay(180).duration(700)}
+                        className="mt-3 font-display text-[23px] leading-[32px]"
+                        style={{
+                          color: "#FBF7F1",
+                          textShadowColor: "rgba(0,0,0,0.45)",
+                          textShadowRadius: 12,
+                          textShadowOffset: { width: 0, height: 1 },
+                        }}
+                      >
+                        {word.data.verse_text}
+                      </Animated.Text>
+                      <View className="mt-4 flex-row items-center gap-2.5">
+                        <View
+                          style={{ height: 1.5, width: 26, backgroundColor: "#F0C892" }}
+                        />
+                        <Text
+                          className="font-sans-semibold text-[12px] uppercase"
+                          style={{ letterSpacing: 1.9, color: "#F0C892" }}
+                        >
+                          {word.data.verse_ref}
+                        </Text>
+                      </View>
+                    </>
+                  ) : (
+                    <Text className="mt-3 text-sm" style={{ color: "#E8D9C6" }}>
+                      No Word posted yet today. Check back soon.
+                    </Text>
+                  )}
+                </PressableScale>
+
+                {word.data ? (
+                  <View className="mt-4">
+                    <ContentSignalBar
+                      kind="word"
+                      contentId={word.data.id}
+                      onShare={shareWord}
+                      dark
+                    />
+                  </View>
+                ) : null}
+              </View>
+            </SafeAreaView>
           </View>
 
+          {/* CONTENT SHEET — rises over the image edge for depth */}
+          <View className="-mt-6 rounded-t-[30px] bg-parchment pt-7">
           {/* Section: today's reflection */}
-          <View className="flex-row items-end justify-between gap-3 px-6 pb-3 pt-8">
+          <View className="flex-row items-end justify-between gap-3 px-6 pb-3">
             <View className="min-w-0">
               <Eyebrow className="mb-1">Devotional</Eyebrow>
               <Text className="font-display text-xl text-ink">Today's reflection</Text>
@@ -350,8 +377,9 @@ export default function Today() {
           <Text className="mt-9 px-9 text-center font-display-italic text-sm leading-[22px] text-ink-mute">
             "In all thy ways acknowledge him."
           </Text>
+          </View>
         </ScrollView>
       </Animated.View>
-    </SafeAreaView>
+    </View>
   );
 }
