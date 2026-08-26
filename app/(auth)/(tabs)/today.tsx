@@ -127,19 +127,21 @@ export default function Today() {
 
           {/* Word of the Day — immersive verse hero (YouVersion-style) */}
           <View className="px-5 pt-4">
-            <View className="overflow-hidden rounded-[28px]">
-              {/* Depth: a deep teal-navy gradient with a soft dawn glow, so the
-                  hero reads as lit rather than flat. */}
-              <LinearGradient
-                colors={["#1C2E3B", "#152430", "#0F1B25"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
+            <View className="overflow-hidden rounded-[30px]">
+              {/* Atmospheric hero: the pastor's cover for the day, or a warm
+                  sun-through-forest default, with a scrim so the verse reads. */}
+              <Image
+                source={
+                  word.data?.cover_image_url
+                    ? { uri: word.data.cover_image_url }
+                    : require("../../../assets/images/today/wotd-bg.jpg")
+                }
                 style={StyleSheet.absoluteFill}
+                resizeMode="cover"
               />
               <LinearGradient
-                colors={["rgba(126,168,205,0.22)", "rgba(126,168,205,0)"]}
-                start={{ x: 0.15, y: 0 }}
-                end={{ x: 0.85, y: 0.75 }}
+                colors={["rgba(26,17,9,0.28)", "rgba(24,15,8,0.58)", "rgba(17,10,5,0.94)"]}
+                locations={[0, 0.44, 1]}
                 style={StyleSheet.absoluteFill}
                 pointerEvents="none"
               />
@@ -149,40 +151,43 @@ export default function Today() {
                 onPress={() => router.push(`/word/${todayKey()}`)}
                 disabled={!word.data}
               >
-              <View className="px-6 pb-6 pt-7">
+              <View
+                className="px-6 pb-5 pt-7"
+                style={{ minHeight: 250, justifyContent: "flex-end" }}
+              >
                 <Text
-                  className="font-sans-medium text-[11px] uppercase"
-                  style={{ letterSpacing: 1.8, color: "#7EA8CD" }}
+                  className="font-sans-semibold text-[11px] uppercase"
+                  style={{ letterSpacing: 1.9, color: "#F0C892" }}
                 >
                   Word of the day · {format(new Date(), "EEE, d MMM")}
                 </Text>
                 {word.isLoading ? (
-                  <ActivityIndicator className="mt-6 self-start" color="#7EA8CD" />
+                  <ActivityIndicator className="mt-6 self-start" color="#F0C892" />
                 ) : word.data ? (
                   <>
                     <Animated.Text
                       entering={FadeInDown.delay(60).duration(620)}
-                      className="mt-5 font-display text-[27px] leading-[36px]"
-                      style={{ color: "#F2F4F6" }}
+                      className="mt-4 font-display text-[26px] leading-[35px]"
+                      style={{ color: "#FBF7F1" }}
                     >
                       {word.data.verse_text}
                     </Animated.Text>
                     <View
-                      className="mt-6"
-                      style={{ height: 1, width: 34, backgroundColor: "#7EA8CD" }}
+                      className="mt-5"
+                      style={{ height: 1.5, width: 34, backgroundColor: "#F0C892" }}
                     />
-                    <View className="mt-4 flex-row items-center justify-between">
+                    <View className="mt-3.5 flex-row items-center justify-between">
                       <Text
-                        className="font-sans-medium text-[12px] uppercase"
-                        style={{ letterSpacing: 1.8, color: "#7EA8CD" }}
+                        className="font-sans-semibold text-[12px] uppercase"
+                        style={{ letterSpacing: 1.9, color: "#F0C892" }}
                       >
                         {word.data.verse_ref}
                       </Text>
-                      <ChevronRight color="#7EA8CD" size={18} strokeWidth={1.6} />
+                      <ChevronRight color="#F0C892" size={18} strokeWidth={1.8} />
                     </View>
                   </>
                 ) : (
-                  <Text className="mt-5 text-sm" style={{ color: "#9FB3C4" }}>
+                  <Text className="mt-5 text-sm" style={{ color: "#E8D9C6" }}>
                     No Word posted yet today. Check back soon.
                   </Text>
                 )}
@@ -191,7 +196,7 @@ export default function Today() {
               {word.data ? (
                 <View
                   className="border-t px-3 py-1"
-                  style={{ borderColor: "rgba(220,232,242,0.17)" }}
+                  style={{ borderColor: "rgba(240,200,146,0.22)" }}
                 >
                   <ContentSignalBar
                     kind="word"
