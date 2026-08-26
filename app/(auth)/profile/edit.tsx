@@ -22,6 +22,7 @@ import {
 } from "@/lib/queries/profile";
 import { TextField } from "@/components/TextField";
 import { Avatar } from "@/components/Avatar";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 import type { Gender, PhotoVisibility } from "@/lib/database.types";
 
@@ -294,10 +295,11 @@ export default function EditProfile() {
       </ScrollView>
 
       <View className="border-t border-border bg-parchment px-6 pb-8 pt-4">
-        <Pressable
+        <PressableScale
+          haptic="medium"
           onPress={onSave}
           disabled={updateProfile.isPending}
-          className="h-14 items-center justify-center rounded-full bg-copper active:opacity-90 disabled:opacity-50"
+          className="h-14 items-center justify-center rounded-full bg-copper"
         >
           {updateProfile.isPending ? (
             <ActivityIndicator color={colors.parchment} />
@@ -306,7 +308,7 @@ export default function EditProfile() {
               Save changes
             </Text>
           )}
-        </Pressable>
+        </PressableScale>
       </View>
     </SafeAreaView>
   );

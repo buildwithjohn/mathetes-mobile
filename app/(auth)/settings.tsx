@@ -22,6 +22,7 @@ import {
 } from "@/lib/queries/settings";
 import { registerPushToken, type PushRegistration } from "@/lib/push";
 import { useProfile } from "@/lib/queries/profile";
+import { haptic } from "@/utils/haptics";
 import { colors } from "@/theme/colors";
 import type { DmWho, NotificationChannel } from "@/lib/database.types";
 
@@ -155,9 +156,10 @@ export default function Settings() {
                 return (
                   <Pressable
                     key={opt.key}
-                    onPress={() =>
-                      updatePrivacy.mutate({ dm_who: opt.key as DmWho })
-                    }
+                    onPress={() => {
+                      if (!active) haptic("selection");
+                      updatePrivacy.mutate({ dm_who: opt.key as DmWho });
+                    }}
                     className={`flex-row items-center justify-between px-4 py-3.5 active:bg-surface2 ${
                       i > 0 ? "border-t border-rule-soft" : ""
                     }`}
