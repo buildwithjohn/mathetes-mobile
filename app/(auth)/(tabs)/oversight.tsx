@@ -40,6 +40,7 @@ import {
   useResolveReport,
   type PendingMember,
 } from "@/lib/queries/oversight";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 import type { AskQuestion, Report, Campus } from "@/lib/database.types";
 
@@ -321,20 +322,21 @@ function ApprovalRow({
         </View>
       </View>
       <View className="mt-2.5 flex-row gap-2 pl-12">
-        <Pressable
+        <PressableScale
+          haptic="success"
           onPress={onApprove}
           disabled={busy}
-          className="rounded-full bg-copper px-4 py-1.5 active:opacity-90 disabled:opacity-50"
+          className="rounded-full bg-copper px-4 py-1.5"
         >
           <Text className="text-[13px] font-sans-semibold text-white">Approve</Text>
-        </Pressable>
-        <Pressable
+        </PressableScale>
+        <PressableScale
           onPress={onReject}
           disabled={busy}
-          className="rounded-full border border-rule px-4 py-1.5 active:opacity-70 disabled:opacity-50"
+          className="rounded-full border border-rule px-4 py-1.5"
         >
           <Text className="text-[13px] text-oxblood">Reject</Text>
-        </Pressable>
+        </PressableScale>
       </View>
     </View>
   );

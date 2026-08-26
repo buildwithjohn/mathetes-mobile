@@ -18,6 +18,7 @@ import { useProfile } from "@/lib/queries/profile";
 import { uploadToBucket } from "@/lib/storage";
 import { Avatar } from "@/components/Avatar";
 import { visiblePhotoUrl } from "@/utils/profile";
+import { haptic } from "@/utils/haptics";
 import { colors } from "@/theme/colors";
 
 export default function CircleDetailsScreen() {
@@ -172,7 +173,7 @@ export default function CircleDetailsScreen() {
         <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
           <View className="flex-row items-center justify-between border-b border-rule-soft px-4 py-2"><Pressable onPress={() => setAddOpen(false)} className="h-11 w-11 items-center justify-center"><X color={colors.ink} size={22} /></Pressable><Text className="font-display text-[19px] text-ink">Add members</Text><Pressable onPress={addSelected} disabled={!selected.length || addMembers.isPending} className="px-3 py-2 disabled:opacity-40"><Text className="font-sans-semibold text-[13px] text-copper-deep">Add ({selected.length})</Text></Pressable></View>
           <ScrollView contentContainerClassName="px-4 py-4">
-            {available.map((person) => { const picked = selected.includes(person.id); return <Pressable key={person.id} onPress={() => toggle(person.id)} className="flex-row items-center gap-3 border-b border-rule-soft py-3"><Avatar name={person.name} photoUrl={visiblePhotoUrl(person, profile?.house_id ?? null)} size={39} /><View className="flex-1"><Text className="font-sans-semibold text-[14px] text-ink">{person.name}</Text><Text className="text-[12px] text-ink-mute">{person.houses?.name ?? "Parish member"}</Text></View><View className={`h-6 w-6 items-center justify-center rounded-full border ${picked ? "border-copper bg-copper" : "border-rule"}`}>{picked ? <Check color="#fff" size={15} /> : null}</View></Pressable>; })}
+            {available.map((person) => { const picked = selected.includes(person.id); return <Pressable key={person.id} onPress={() => { haptic("selection"); toggle(person.id); }} className="flex-row items-center gap-3 border-b border-rule-soft py-3"><Avatar name={person.name} photoUrl={visiblePhotoUrl(person, profile?.house_id ?? null)} size={39} /><View className="flex-1"><Text className="font-sans-semibold text-[14px] text-ink">{person.name}</Text><Text className="text-[12px] text-ink-mute">{person.houses?.name ?? "Parish member"}</Text></View><View className={`h-6 w-6 items-center justify-center rounded-full border ${picked ? "border-copper bg-copper" : "border-rule"}`}>{picked ? <Check color="#fff" size={15} /> : null}</View></Pressable>; })}
           </ScrollView>
         </SafeAreaView>
       </Modal>

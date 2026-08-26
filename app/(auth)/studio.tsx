@@ -30,6 +30,7 @@ import {
   type ContentSignalKind,
   useRecordContentShare,
 } from "@/lib/queries/contentSignals";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 
 type ImageContrast = {
@@ -401,34 +402,39 @@ export default function Studio() {
             className="flex-row gap-3 border-t border-border bg-parchment px-6 pt-4"
             style={{ paddingBottom: insets.bottom + 12 }}
           >
-            <Pressable
-              onPress={onSave}
-              disabled={busy !== null}
-              className="h-12 flex-1 flex-row items-center justify-center gap-2 rounded-full border border-border active:opacity-70 disabled:opacity-40"
-            >
-              {busy === "save" ? (
-                <ActivityIndicator color={colors.ink} />
-              ) : (
-                <>
-                  <Download color={colors.ink} size={18} />
-                  <Text className="font-sans-medium text-ink">Save</Text>
-                </>
-              )}
-            </Pressable>
-            <Pressable
-              onPress={onShare}
-              disabled={busy !== null}
-              className="h-12 flex-1 flex-row items-center justify-center gap-2 rounded-full bg-copper active:opacity-90 disabled:opacity-60"
-            >
-              {busy === "share" ? (
-                <ActivityIndicator color={colors.parchment} />
-              ) : (
-                <>
-                  <Share2 color={colors.parchment} size={18} />
-                  <Text className="font-sans-semibold text-parchment">Share</Text>
-                </>
-              )}
-            </Pressable>
+            <View style={{ flex: 1 }}>
+              <PressableScale
+                onPress={onSave}
+                disabled={busy !== null}
+                className="h-12 flex-row items-center justify-center gap-2 rounded-full border border-border"
+              >
+                {busy === "save" ? (
+                  <ActivityIndicator color={colors.ink} />
+                ) : (
+                  <>
+                    <Download color={colors.ink} size={18} />
+                    <Text className="font-sans-medium text-ink">Save</Text>
+                  </>
+                )}
+              </PressableScale>
+            </View>
+            <View style={{ flex: 1 }}>
+              <PressableScale
+                haptic="medium"
+                onPress={onShare}
+                disabled={busy !== null}
+                className="h-12 flex-row items-center justify-center gap-2 rounded-full bg-copper"
+              >
+                {busy === "share" ? (
+                  <ActivityIndicator color={colors.parchment} />
+                ) : (
+                  <>
+                    <Share2 color={colors.parchment} size={18} />
+                    <Text className="font-sans-semibold text-parchment">Share</Text>
+                  </>
+                )}
+              </PressableScale>
+            </View>
           </View>
         </>
       )}

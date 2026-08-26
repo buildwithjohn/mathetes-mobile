@@ -11,6 +11,7 @@ import {
 import { useProfile } from "@/lib/queries/profile";
 import { Avatar } from "@/components/Avatar";
 import { visiblePhotoUrl } from "@/utils/profile";
+import { haptic } from "@/utils/haptics";
 import { colors } from "@/theme/colors";
 
 // Official House groups are different from private Circles. A member belongs
@@ -156,7 +157,7 @@ export default function GroupDetailsScreen() {
             {available.map((member) => {
               const picked = selected.includes(member.id);
               return (
-                <Pressable key={member.id} onPress={() => toggle(member.id)} className="flex-row items-center gap-3 border-b border-rule-soft py-3">
+                <Pressable key={member.id} onPress={() => { haptic("selection"); toggle(member.id); }} className="flex-row items-center gap-3 border-b border-rule-soft py-3">
                   <Avatar name={member.name} photoUrl={visiblePhotoUrl(member, profile?.house_id ?? null)} size={40} />
                   <View className="flex-1"><Text className="font-sans-semibold text-[14px] text-ink">{member.name}</Text><Text className="mt-0.5 text-[12px] text-ink-mute">{member.houses?.name ?? "No House"}</Text></View>
                   <View className={`h-6 w-6 items-center justify-center rounded-full border ${picked ? "border-copper bg-copper" : "border-rule"}`}>{picked ? <Check color="#fff" size={15} /> : null}</View>
