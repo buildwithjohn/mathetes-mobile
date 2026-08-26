@@ -45,7 +45,7 @@ export default function NewCircleScreen() {
   return (
     <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
       <View className="flex-row items-center border-b border-rule-soft px-2 py-2">
-        <Pressable onPress={() => router.back()} className="h-11 w-11 items-center justify-center">
+        <Pressable onPress={() => router.back()} className="h-11 w-11 items-center justify-center" accessibilityLabel="Go back">
           <ChevronLeft color={colors.ink} size={26} />
         </Pressable>
         <Text className="font-display text-[20px] text-ink">Create a Circle</Text>
