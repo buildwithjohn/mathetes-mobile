@@ -15,6 +15,9 @@ import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 import type { ReadingPlanDay } from "@/lib/database.types";
 
+// Warm gold for the journey path — a "quest trail" feel, distinct from chrome.
+const JOURNEY_AMBER = "#E0912F";
+
 const DIFFICULTY_LABEL: Record<string, string> = {
   starter: "Starter",
   intermediate: "Intermediate",
@@ -147,22 +150,32 @@ export default function PlanDetail() {
           ) : null}
         </View>
 
-        {/* Days */}
-        <Text
-          className="mb-1 mt-7 px-6 font-sans-medium text-[11px] uppercase text-ink-mute"
-          style={{ letterSpacing: 1.6 }}
-        >
-          The path
-        </Text>
-        <View className="px-5">
-          {(days ?? []).map((day) => {
+        {/* The journey — a walkable path of day-nodes */}
+        <View className="flex-row items-baseline justify-between px-6 pb-1 pt-8">
+          <Text
+            className="font-sans-semibold text-[11px] uppercase text-ink-mute"
+            style={{ letterSpacing: 1.7 }}
+          >
+            The journey
+          </Text>
+          {sub ? (
+            <Text className="text-[12px] text-ink-mute">
+              {completed?.size ?? 0} of {plan.length_days} days
+            </Text>
+          ) : null}
+        </View>
+        <View className="px-6 pt-4">
+          {(days ?? []).map((day, i) => {
             const isDone = completed?.has(day.id) ?? false;
-            const isCurrent = sub && day.day_number === sub.current_day;
+            const isCurrent = !!sub && day.day_number === sub.current_day;
             const locked =
               !!sub && plan.sequence_locked && day.day_number > sub.current_day;
+            const isLast = i === (days?.length ?? 0) - 1;
+            const filled = isDone || isCurrent;
             return (
-              <Pressable
+              <PressableScale
                 key={day.id}
+                haptic={locked ? "none" : "light"}
                 onPress={() =>
                   locked
                     ? Alert.alert(
@@ -171,44 +184,92 @@ export default function PlanDetail() {
                       )
                     : openDay(day)
                 }
-                className={`flex-row items-center gap-3.5 border-b border-rule-soft py-3.5 ${
-                  locked ? "opacity-50" : "active:opacity-70"
-                }`}
               >
-                {/* Day marker */}
-                <View
-                  className="h-8 w-8 items-center justify-center rounded-full border"
-                  style={{
-                    backgroundColor: isDone ? colors.copper : "transparent",
-                    borderColor: isDone
-                      ? colors.copper
-                      : isCurrent
-                        ? colors.copper
-                        : colors.rule,
-                  }}
-                >
-                  {isDone ? (
-                    <Check color="#fff" size={15} strokeWidth={2.4} />
-                  ) : locked ? (
-                    <Lock color={colors.inkFaint} size={13} strokeWidth={1.7} />
-                  ) : (
-                    <Text
-                      className="font-sans-medium text-[12px]"
-                      style={{ color: isCurrent ? colors.copper : colors.inkMute }}
+                <View className="flex-row gap-4">
+                  {/* Path column: node + connecting trail */}
+                  <View className="items-center" style={{ width: 44 }}>
+                    <View
+                      className="items-center justify-center"
+                      style={{ width: 44, height: 44 }}
                     >
-                      {day.day_number}
+                      {isCurrent ? (
+                        <View
+                          className="absolute rounded-full"
+                          style={{ width: 44, height: 44, backgroundColor: `${JOURNEY_AMBER}26` }}
+                        />
+                      ) : null}
+                      <View
+                        className={`items-center justify-center rounded-full ${
+                          filled ? "" : "border-[1.5px] border-rule bg-paper"
+                        }`}
+                        style={{
+                          width: 34,
+                          height: 34,
+                          backgroundColor: filled ? JOURNEY_AMBER : undefined,
+                        }}
+                      >
+                        {isDone ? (
+                          <Check color="#fff" size={16} strokeWidth={2.6} />
+                        ) : locked ? (
+                          <Lock color="#A39C8E" size={13} strokeWidth={1.8} />
+                        ) : (
+                          <Text
+                            className={`font-sans-semibold text-[13px] ${
+                              isCurrent ? "" : "text-ink-mute"
+                            }`}
+                            style={isCurrent ? { color: "#fff" } : undefined}
+                          >
+                            {day.day_number}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                    {!isLast ? (
+                      <View
+                        className={`rounded-full ${isDone ? "" : "bg-rule"}`}
+                        style={{
+                          width: 2.5,
+                          flex: 1,
+                          minHeight: 24,
+                          backgroundColor: isDone ? JOURNEY_AMBER : undefined,
+                        }}
+                      />
+                    ) : null}
+                  </View>
+
+                  {/* Content */}
+                  <View
+                    className="mb-3 flex-1 rounded-2xl px-4 py-3"
+                    style={{
+                      backgroundColor: isCurrent ? `${JOURNEY_AMBER}12` : "transparent",
+                      opacity: locked ? 0.55 : 1,
+                    }}
+                  >
+                    <Text
+                      className="font-sans-semibold text-[10px] uppercase"
+                      style={{
+                        letterSpacing: 1.4,
+                        color: isCurrent ? JOURNEY_AMBER : colors.inkMute,
+                      }}
+                    >
+                      Day {day.day_number}
+                      {isCurrent ? " · Today" : ""}
                     </Text>
-                  )}
+                    <Text
+                      className="mt-1 font-display text-[18px] leading-[22px] text-ink"
+                      numberOfLines={2}
+                    >
+                      {day.title}
+                    </Text>
+                    <Text
+                      className="mt-0.5 text-[12.5px] text-ink-mute"
+                      numberOfLines={1}
+                    >
+                      {day.scripture_reference}
+                    </Text>
+                  </View>
                 </View>
-                <View className="flex-1">
-                  <Text className="font-sans-semibold text-[14.5px] text-ink" numberOfLines={1}>
-                    {day.title}
-                  </Text>
-                  <Text className="mt-0.5 text-[12px] text-ink-mute" numberOfLines={1}>
-                    {day.scripture_reference}
-                  </Text>
-                </View>
-              </Pressable>
+              </PressableScale>
             );
           })}
         </View>
