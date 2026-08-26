@@ -5,6 +5,7 @@ import { ChevronLeft, Bookmark, Highlighter, BookOpen } from "lucide-react-nativ
 import { useLibraryEntries } from "@/lib/queries/library";
 import { useSavedDevotionals, useSavedWords } from "@/lib/queries/content";
 import { EmptyState } from "@/components/EmptyState";
+import { PressableScale } from "@/components/PressableScale";
 import { colors, highlightColors } from "@/theme/colors";
 
 // The member's saved verses: bookmarks and highlights in one place. Tapping an
@@ -86,10 +87,10 @@ export default function Library() {
                 Saved devotionals
               </Text>
               {savedDevotionals.map((devotional) => (
-                <Pressable
+                <PressableScale
                   key={devotional.id}
                   onPress={() => router.push(`/devotional/${devotional.id}`)}
-                  className="rounded-2xl border border-border bg-surface1 p-4 active:opacity-90"
+                  className="rounded-2xl border border-border bg-surface1 p-4"
                 >
                   <Text className="font-display text-xl text-ink">
                     {devotional.title}
@@ -99,7 +100,7 @@ export default function Library() {
                       ? `${devotional.reading_time_minutes} min read`
                       : "Devotional"}
                   </Text>
-                </Pressable>
+                </PressableScale>
               ))}
             </>
           ) : null}
@@ -110,10 +111,10 @@ export default function Library() {
                 Saved Words
               </Text>
               {savedWords.map((word) => (
-                <Pressable
+                <PressableScale
                   key={word.id}
                   onPress={() => word.publish_date && router.push(`/word/${word.publish_date}`)}
-                  className="rounded-2xl border border-border bg-surface1 p-4 active:opacity-90"
+                  className="rounded-2xl border border-border bg-surface1 p-4"
                 >
                   <Text className="font-sans-semibold text-sm text-oxblood">
                     {word.verse_ref} · KJV
@@ -124,7 +125,7 @@ export default function Library() {
                   >
                     {word.verse_text}
                   </Text>
-                </Pressable>
+                </PressableScale>
               ))}
             </>
           ) : null}
@@ -135,10 +136,10 @@ export default function Library() {
             </Text>
           ) : null}
           {(entries ?? []).map((e) => (
-            <Pressable
+            <PressableScale
               key={e.key}
               onPress={() => openInBible(e.bookAbbrev, e.chapter)}
-              className="rounded-2xl border border-border bg-surface1 p-4 active:opacity-90"
+              className="rounded-2xl border border-border bg-surface1 p-4"
             >
               <View className="flex-row items-center justify-between">
                 <Text className="font-sans-semibold text-sm text-oxblood">
@@ -166,7 +167,7 @@ export default function Library() {
               >
                 {e.text}
               </Text>
-            </Pressable>
+            </PressableScale>
           ))}
         </ScrollView>
       )}

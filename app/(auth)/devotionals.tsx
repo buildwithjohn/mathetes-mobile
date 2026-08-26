@@ -13,6 +13,7 @@ import {
   useDevotionalSeries,
   useDevotionalArchive,
 } from "@/lib/queries/content";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 import type { Devotional, DevotionalSeries } from "@/lib/database.types";
 
@@ -93,9 +94,9 @@ function SeriesCard({
   onPress: () => void;
 }) {
   return (
-    <Pressable
+    <PressableScale
       onPress={onPress}
-      className="overflow-hidden rounded-2xl border border-border bg-surface1 active:opacity-90"
+      className="overflow-hidden rounded-2xl border border-border bg-surface1"
     >
       <View className="h-1.5 w-full bg-copper" />
       <View className="p-4">
@@ -116,7 +117,7 @@ function SeriesCard({
           </Text>
         ) : null}
       </View>
-    </Pressable>
+    </PressableScale>
   );
 }
 
@@ -128,9 +129,9 @@ function DevotionalRow({
   onPress: () => void;
 }) {
   return (
-    <Pressable
+    <PressableScale
       onPress={onPress}
-      className="flex-row items-center gap-3 rounded-2xl border border-border bg-surface1 p-4 active:opacity-90"
+      className="flex-row items-center gap-3 rounded-2xl border border-border bg-surface1 p-4"
     >
       <View className="h-10 w-10 items-center justify-center rounded-xl bg-surface2">
         <BookOpen color={colors.copper} size={18} />
@@ -149,6 +150,6 @@ function DevotionalRow({
         </Text>
       </View>
       <ChevronRight color={colors.ink} size={18} />
-    </Pressable>
+    </PressableScale>
   );
 }
