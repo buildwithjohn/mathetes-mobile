@@ -6,8 +6,10 @@ import {
   ScrollView,
   ActivityIndicator,
   RefreshControl,
+  StyleSheet,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import { formatDistanceToNowStrict } from "date-fns";
@@ -29,6 +31,7 @@ import {
   useUnreadCount,
 } from "@/lib/queries/notifications";
 import { Avatar } from "@/components/Avatar";
+import { PressableScale } from "@/components/PressableScale";
 import { visiblePhotoUrl } from "@/utils/profile";
 import { haptic } from "@/utils/haptics";
 import { colors } from "@/theme/colors";
@@ -71,38 +74,75 @@ export default function Community() {
       entering={FadeInDown.duration(380)}
       className="flex-1 bg-parchment"
     >
-    <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-4 pb-2 pt-3">
-        <Text className="px-2 font-display text-[23px] text-ink">Messages</Text>
-        <View className="flex-row items-center">
-          <Pressable
-            onPress={() => router.push("/members")}
-            className="h-11 w-11 items-center justify-center"
-            accessibilityLabel="Start a conversation"
-          >
-            <MessageCirclePlus color={colors.ink} size={22} />
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/circle/new")}
-            className="h-11 w-11 items-center justify-center"
-            accessibilityLabel="Create a Circle"
-          >
-            <UsersRound color={colors.copperDeep} size={21} />
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/notifications")}
-            className="h-11 w-11 items-center justify-center"
-            accessibilityLabel="Notifications"
-          >
-            <Bell color={colors.ink} size={22} />
-            {unread > 0 ? (
-              <View className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full border-[1.5px] border-parchment bg-copper" />
-            ) : null}
-          </Pressable>
-        </View>
+    <View className="flex-1 bg-parchment">
+      {/* Compact gradient header */}
+      <View className="overflow-hidden">
+        <LinearGradient
+          colors={["#2C2027", "#41303C", "#4C3140"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+        <LinearGradient
+          colors={["rgba(240,200,146,0.18)", "rgba(240,200,146,0)"]}
+          start={{ x: 0.85, y: 0 }}
+          end={{ x: 0.2, y: 0.8 }}
+          style={StyleSheet.absoluteFill}
+          pointerEvents="none"
+        />
+        <SafeAreaView edges={["top"]}>
+          <View className="flex-row items-end justify-between px-6 pb-6 pt-3">
+            <View>
+              <Text
+                className="font-display text-[27px] leading-8"
+                style={{
+                  color: "#FFFFFF",
+                  textShadowColor: "rgba(0,0,0,0.28)",
+                  textShadowRadius: 12,
+                  textShadowOffset: { width: 0, height: 1 },
+                }}
+              >
+                Messages
+              </Text>
+              <Text
+                className="mt-0.5 text-[12.5px]"
+                style={{ color: "rgba(255,240,225,0.7)" }}
+              >
+                Your parish, houses &amp; circles
+              </Text>
+            </View>
+            <View className="flex-row items-center gap-2">
+              <PressableScale
+                onPress={() => router.push("/members")}
+                className="h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10"
+                accessibilityLabel="Start a conversation"
+              >
+                <MessageCirclePlus color="#fff" size={20} />
+              </PressableScale>
+              <PressableScale
+                onPress={() => router.push("/circle/new")}
+                className="h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10"
+                accessibilityLabel="Create a Circle"
+              >
+                <UsersRound color="#F0C892" size={19} />
+              </PressableScale>
+              <PressableScale
+                onPress={() => router.push("/notifications")}
+                className="h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10"
+                accessibilityLabel="Notifications"
+              >
+                <Bell color="#fff" size={20} />
+                {unread > 0 ? (
+                  <View className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#FFC978]" />
+                ) : null}
+              </PressableScale>
+            </View>
+          </View>
+        </SafeAreaView>
       </View>
 
+      {/* Content sheet: tabs + list rise over the header */}
+      <View className="-mt-5 flex-1 rounded-t-[28px] bg-parchment pt-4">
       {/* Filter chips (underline tabs) */}
       <View className="flex-row gap-6 px-6 pb-2">
         {FILTERS.map((f) => {
@@ -223,7 +263,8 @@ export default function Community() {
           </Text>
         ) : null}
       </ScrollView>
-    </SafeAreaView>
+      </View>
+    </View>
     </Animated.View>
   );
 }
