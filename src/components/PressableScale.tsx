@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import {
   Pressable,
-  Platform,
   View,
   type PressableProps,
   type ViewStyle,
@@ -11,9 +10,7 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from "react-native-reanimated";
-import * as Haptics from "expo-haptics";
-
-type HapticKind = "light" | "medium" | "heavy" | "none";
+import { haptic as triggerHaptic, type HapticKind } from "@/utils/haptics";
 
 // A tactile press primitive: springs to a slightly smaller scale on press and
 // fires a haptic on tap. This is the shared "expensive feel" layer — prefer it
@@ -22,22 +19,11 @@ type HapticKind = "light" | "medium" | "heavy" | "none";
 // scales as one.
 type Props = Omit<PressableProps, "children" | "style"> & {
   className?: string;
-  haptic?: HapticKind;
+  haptic?: HapticKind | "none";
   scaleTo?: number;
   style?: ViewStyle;
   children?: ReactNode;
 };
-
-function fireHaptic(kind: HapticKind) {
-  if (kind === "none" || Platform.OS === "web") return;
-  const style =
-    kind === "medium"
-      ? Haptics.ImpactFeedbackStyle.Medium
-      : kind === "heavy"
-        ? Haptics.ImpactFeedbackStyle.Heavy
-        : Haptics.ImpactFeedbackStyle.Light;
-  Haptics.impactAsync(style).catch(() => {});
-}
 
 export function PressableScale({
   className,
@@ -68,7 +54,7 @@ export function PressableScale({
         onPressOut?.(e);
       }}
       onPress={(e) => {
-        fireHaptic(haptic);
+        if (haptic !== "none") triggerHaptic(haptic);
         onPress?.(e);
       }}
       {...rest}

@@ -1,11 +1,13 @@
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Image } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator, Image, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { format } from "date-fns";
 import { ChevronRight, BookOpen } from "lucide-react-native";
 import { AnimatedFlame } from "@/components/AnimatedFlame";
 import { ContentSignalBar } from "@/components/ContentSignalBar";
+import { PressableScale } from "@/components/PressableScale";
 import { Ring } from "@/components/Ring";
 import {
   useTodaysWordOfDay,
@@ -113,26 +115,39 @@ export default function Today() {
               </Text>
             </View>
             {/* Daily streak from record_check_in() (grace-day aware). */}
-            <Pressable
+            <PressableScale
               onPress={() => router.push("/(auth)/(tabs)/you")}
-              className="mt-1 flex-row items-center gap-1.5 rounded-full border border-rule px-2.5 py-1.5 active:opacity-70"
+              className="mt-1 flex-row items-center gap-1.5 rounded-full border border-rule px-2.5 py-1.5"
               accessibilityLabel={`${streak} day streak`}
             >
               <AnimatedFlame size={15} />
               <Text className="font-sans-medium text-sm text-ink-soft">{streak}</Text>
-            </Pressable>
+            </PressableScale>
           </View>
 
           {/* Word of the Day — immersive verse hero (YouVersion-style) */}
           <View className="px-5 pt-4">
-            <View
-              className="overflow-hidden rounded-[28px]"
-              style={{ backgroundColor: "#17242E" }}
-            >
-              <Pressable
+            <View className="overflow-hidden rounded-[28px]">
+              {/* Depth: a deep teal-navy gradient with a soft dawn glow, so the
+                  hero reads as lit rather than flat. */}
+              <LinearGradient
+                colors={["#1C2E3B", "#152430", "#0F1B25"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <LinearGradient
+                colors={["rgba(126,168,205,0.22)", "rgba(126,168,205,0)"]}
+                start={{ x: 0.15, y: 0 }}
+                end={{ x: 0.85, y: 0.75 }}
+                style={StyleSheet.absoluteFill}
+                pointerEvents="none"
+              />
+              <PressableScale
+                haptic="light"
+                scaleTo={0.985}
                 onPress={() => router.push(`/word/${todayKey()}`)}
                 disabled={!word.data}
-                className="active:opacity-95"
               >
               <View className="px-6 pb-6 pt-7">
                 <Text
@@ -172,7 +187,7 @@ export default function Today() {
                   </Text>
                 )}
               </View>
-              </Pressable>
+              </PressableScale>
               {word.data ? (
                 <View
                   className="border-t px-3 py-1"
@@ -206,12 +221,14 @@ export default function Today() {
 
           <View className="px-5">
             <View className="overflow-hidden rounded-2xl border border-rule bg-paper">
-              <Pressable
+              <PressableScale
+                haptic="light"
+                scaleTo={0.99}
                 onPress={() =>
                   devotional.data && router.push(`/devotional/${devotional.data.id}`)
                 }
                 disabled={!devotional.data}
-                className="p-5 active:opacity-90"
+                className="p-5"
               >
                 {devotional.isLoading ? (
                   <ActivityIndicator className="self-start" color={colors.copper} />
@@ -267,7 +284,7 @@ export default function Today() {
                     No devotional posted yet today.
                   </Text>
                 )}
-              </Pressable>
+              </PressableScale>
               {devotional.data ? (
                 <View className="border-t border-rule-soft px-3 py-1">
                   <ContentSignalBar
@@ -285,9 +302,11 @@ export default function Today() {
             <Text className="font-display text-xl text-ink">Continue reading</Text>
           </View>
           <View className="px-5">
-            <Pressable
+            <PressableScale
+              haptic="light"
+              scaleTo={0.99}
               onPress={() => router.push("/(auth)/(tabs)/bible")}
-              className="flex-row items-center gap-3.5 rounded-2xl border border-rule bg-paper px-5 py-[18px] active:opacity-90"
+              className="flex-row items-center gap-3.5 rounded-2xl border border-rule bg-paper px-5 py-[18px]"
             >
               {/* TODO(backend): true progress needs the chapter's verse_count
                   (not loaded here). Show a track ring with the book glyph until
@@ -319,7 +338,7 @@ export default function Today() {
                 )}
               </View>
               <ChevronRight color={colors.inkMute} size={18} strokeWidth={1.5} />
-            </Pressable>
+            </PressableScale>
           </View>
 
           {/* End-of-feed quiet line */}
