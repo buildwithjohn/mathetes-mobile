@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert, ImageBackground, Modal, TextInput } from "react-native";
+import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert, Image, ImageBackground, Modal, StyleSheet, TextInput } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, {
   FadeInDown,
@@ -99,41 +100,7 @@ export default function WordExpanded() {
   const verseLines = word ? sentences(word.verse_text) : [];
 
   return (
-    <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
-      {/* Top bar: close left, archive + save right */}
-      <View className="flex-row items-center justify-between px-3 py-2">
-        <Pressable
-          onPress={() => router.back()}
-          className="h-11 w-11 items-center justify-center"
-          accessibilityLabel="Close"
-        >
-          <X color={colors.ink} size={24} />
-        </Pressable>
-        <View className="flex-row">
-          <Pressable
-            onPress={() => router.push("/words")}
-            className="h-11 w-11 items-center justify-center"
-            accessibilityLabel="Word archive"
-          >
-            <CalendarDays color={colors.inkSoft} size={22} strokeWidth={1.6} />
-          </Pressable>
-          <Pressable
-            onPress={onSave}
-            disabled={bookmarkMutation.isPending}
-            className="h-11 w-11 items-center justify-center"
-            accessibilityLabel={wordBookmark.data ? "Remove saved Word" : "Save Word"}
-          >
-            <Animated.View style={bookmarkStyle}>
-              {wordBookmark.data ? (
-                <BookmarkCheck color={colors.copper} size={22} />
-              ) : (
-                <Bookmark color={colors.inkSoft} size={22} strokeWidth={1.6} />
-              )}
-            </Animated.View>
-          </Pressable>
-        </View>
-      </View>
-
+    <View className="flex-1 bg-parchment">
       {isLoading ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator color={colors.copper} />
@@ -148,57 +115,113 @@ export default function WordExpanded() {
         <>
           <ScrollView
             className="flex-1"
-            contentContainerClassName="px-7 pb-8 pt-2"
+            contentContainerClassName="pb-8"
             showsVerticalScrollIndicator={false}
           >
-            {word.cover_image_url ? (
-              <ImageBackground
-                source={{ uri: word.cover_image_url }}
+            {/* IMMERSIVE VERSE HERO — the verse over a full-bleed atmospheric
+                image, with glassy close/archive/save floating on top. */}
+            <View style={{ minHeight: 430 }} className="overflow-hidden">
+              <Image
+                source={
+                  word.cover_image_url
+                    ? { uri: word.cover_image_url }
+                    : require("../../../assets/images/today/wotd-bg.jpg")
+                }
+                style={StyleSheet.absoluteFill}
                 resizeMode="cover"
-                className="mb-7 overflow-hidden rounded-3xl"
-                imageStyle={{ borderRadius: 24 }}
-              >
-                <View className="min-h-48 justify-end bg-ink/45 p-6">
-                  <Text className="font-display text-[28px] leading-9 text-white">
-                    {word.verse_ref}
-                  </Text>
+              />
+              <LinearGradient
+                colors={[
+                  "rgba(22,14,7,0.44)",
+                  "rgba(22,14,7,0.10)",
+                  "rgba(20,12,6,0.62)",
+                  "rgba(13,8,3,0.96)",
+                ]}
+                locations={[0, 0.26, 0.6, 1]}
+                style={StyleSheet.absoluteFill}
+                pointerEvents="none"
+              />
+              <SafeAreaView edges={["top"]}>
+                <View className="flex-row items-center justify-between px-3 pt-1">
+                  <Pressable
+                    onPress={() => router.back()}
+                    className="h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/25"
+                    accessibilityLabel="Close"
+                  >
+                    <X color="#fff" size={22} />
+                  </Pressable>
+                  <View className="flex-row gap-2">
+                    <Pressable
+                      onPress={() => router.push("/words")}
+                      className="h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/25"
+                      accessibilityLabel="Word archive"
+                    >
+                      <CalendarDays color="#fff" size={21} strokeWidth={1.7} />
+                    </Pressable>
+                    <Pressable
+                      onPress={onSave}
+                      disabled={bookmarkMutation.isPending}
+                      className="h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/25"
+                      accessibilityLabel={wordBookmark.data ? "Remove saved Word" : "Save Word"}
+                    >
+                      <Animated.View style={bookmarkStyle}>
+                        {wordBookmark.data ? (
+                          <BookmarkCheck color="#FFC978" size={21} />
+                        ) : (
+                          <Bookmark color="#fff" size={21} strokeWidth={1.7} />
+                        )}
+                      </Animated.View>
+                    </Pressable>
+                  </View>
                 </View>
-              </ImageBackground>
-            ) : null}
-            <Text
-              className="mb-[18px] font-sans-medium text-[11px] uppercase text-copper-deep"
-              style={{ letterSpacing: 1.76 }}
-            >
-              Word of the day · {prettyDate}
-            </Text>
 
-            {/* Staggered sentence reveal, in the display face */}
-            <Text className="font-display text-[30px] leading-[37px] text-ink">
-              {verseLines.map((s, i) => (
-                <Animated.Text
-                  key={i}
-                  entering={FadeInDown.delay(100 + i * 180).duration(620)}
-                >
-                  {i === 0 ? "“" : ""}
-                  {s}
-                  {i < verseLines.length - 1 ? " " : "”"}
-                </Animated.Text>
-              ))}
-            </Text>
+                <View style={{ height: 84 }} />
 
-            {/* Reference, small caps with a short copper rule */}
-            <Animated.View
-              entering={FadeIn.delay(verseLines.length * 180 + 160)}
-              className="mt-7 flex-row items-center gap-2.5"
-            >
-              <View className="h-px w-7 bg-copper opacity-70" />
-              <Text
-                className="font-sans-semibold text-[12px] uppercase text-copper-deep"
-                style={{ letterSpacing: 2.16 }}
-              >
-                {word.verse_ref} · KJV
-              </Text>
-            </Animated.View>
+                <View className="px-6 pb-8">
+                  <Text
+                    className="mb-4 font-sans-semibold text-[11px] uppercase"
+                    style={{ letterSpacing: 1.9, color: "#F0C892" }}
+                  >
+                    Word of the day · {prettyDate}
+                  </Text>
+                  <Text
+                    className="font-display text-[27px] leading-[37px]"
+                    style={{
+                      color: "#FBF7F1",
+                      textShadowColor: "rgba(0,0,0,0.45)",
+                      textShadowRadius: 13,
+                      textShadowOffset: { width: 0, height: 1 },
+                    }}
+                  >
+                    {verseLines.map((s, i) => (
+                      <Animated.Text
+                        key={i}
+                        entering={FadeInDown.delay(100 + i * 160).duration(620)}
+                      >
+                        {i === 0 ? "“" : ""}
+                        {s}
+                        {i < verseLines.length - 1 ? " " : "”"}
+                      </Animated.Text>
+                    ))}
+                  </Text>
+                  <Animated.View
+                    entering={FadeIn.delay(verseLines.length * 160 + 160)}
+                    className="mt-6 flex-row items-center gap-2.5"
+                  >
+                    <View style={{ height: 1.5, width: 28, backgroundColor: "#F0C892" }} />
+                    <Text
+                      className="font-sans-semibold text-[12px] uppercase"
+                      style={{ letterSpacing: 2.16, color: "#F0C892" }}
+                    >
+                      {word.verse_ref} · KJV
+                    </Text>
+                  </Animated.View>
+                </View>
+              </SafeAreaView>
+            </View>
+
+            {/* CONTENT SHEET — reflection / prompt / prayer rise over the image */}
+            <View className="-mt-6 rounded-t-[30px] bg-parchment px-7 pt-6">
 
             {word.reflection_md ? (
               <Animated.View
@@ -244,6 +267,7 @@ export default function WordExpanded() {
               onShare={onOpenShareImage}
               className="mt-8 border-t border-rule-soft pt-4"
             />
+          </View>
           </ScrollView>
 
           {/* Sticky share footer */}
@@ -288,6 +312,6 @@ export default function WordExpanded() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
