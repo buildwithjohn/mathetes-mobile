@@ -5,10 +5,13 @@ import {
   Pressable,
   ScrollView,
   ActivityIndicator,
+  Image,
   Modal,
+  StyleSheet,
   TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -471,17 +474,44 @@ export default function Bible() {
           contentContainerClassName="px-7 pb-40 pt-3"
           showsVerticalScrollIndicator={false}
         >
-          {/* Centered chapter header */}
-          <Text
-            className="mt-3 text-center font-sans-medium text-[11px] uppercase text-ink-mute"
-            style={{ letterSpacing: 1.76 }}
-          >
-            {book.name}
-          </Text>
-          <Text className="mb-1.5 mt-1 text-center font-display text-[38px] text-ink">
-            {chapter}
-          </Text>
-          <View className="mx-auto mb-6 h-px w-[60px] bg-copper opacity-50" />
+          {/* Immersive chapter header — still waters at dawn, book + chapter
+              over a soft scrim. Bleeds full-width out of the reading padding. */}
+          <View className="-mx-7 mb-7 h-52 overflow-hidden">
+            <Image
+              source={require("../../../assets/images/today/bible-bg.jpg")}
+              style={StyleSheet.absoluteFill}
+              resizeMode="cover"
+            />
+            <LinearGradient
+              colors={["rgba(28,26,34,0.30)", "rgba(28,26,34,0.14)", "rgba(24,22,30,0.52)"]}
+              locations={[0, 0.5, 1]}
+              style={StyleSheet.absoluteFill}
+              pointerEvents="none"
+            />
+            <View className="flex-1 items-center justify-center">
+              <Text
+                className="font-sans-semibold text-[11px] uppercase"
+                style={{ letterSpacing: 2.4, color: "rgba(255,250,244,0.9)" }}
+              >
+                {book.name}
+              </Text>
+              <Text
+                className="mt-1 font-display text-[54px] leading-[58px]"
+                style={{
+                  color: "#FFFFFF",
+                  textShadowColor: "rgba(0,0,0,0.35)",
+                  textShadowRadius: 16,
+                  textShadowOffset: { width: 0, height: 1 },
+                }}
+              >
+                {chapter}
+              </Text>
+              <View
+                className="mt-3"
+                style={{ height: 1.5, width: 46, backgroundColor: "#F0C892" }}
+              />
+            </View>
+          </View>
 
           <View className="mb-6 flex-row items-center justify-center gap-2">
             <PressableScale
