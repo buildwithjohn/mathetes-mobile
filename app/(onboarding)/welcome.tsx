@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { View, Text, StyleSheet, useWindowDimensions } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
@@ -22,8 +22,6 @@ import { colors } from "@/theme/colors";
 // still feels alive.
 export default function Welcome() {
   const router = useRouter();
-  const { height } = useWindowDimensions();
-  const heroHeight = Math.round(height * 0.5);
 
   const drift = useSharedValue(0);
   useEffect(() => {
@@ -42,8 +40,10 @@ export default function Welcome() {
 
   return (
     <View className="flex-1 bg-parchment">
-      {/* Cinematic hero, bleeding under the status bar, dissolving into parchment */}
-      <View style={{ height: heroHeight }} className="overflow-hidden">
+      {/* Cinematic hero, bleeding under the status bar, dissolving into parchment.
+          It flexes to fill whatever space the content leaves, so the brand
+          statement + buttons are always fully visible on any screen size. */}
+      <View className="flex-1 overflow-hidden">
         <Animated.View style={[StyleSheet.absoluteFill, kenBurns]}>
           <Image
             source={require("../../assets/images/onboarding/welcome-hero.jpg")}
@@ -61,9 +61,10 @@ export default function Welcome() {
         />
       </View>
 
-      {/* Brand statement + actions */}
-      <SafeAreaView edges={["bottom"]} className="flex-1">
-        <View className="flex-1 justify-between px-7 pb-4 pt-2">
+      {/* Brand statement + actions — natural height, anchored at the bottom, so
+          the hero above absorbs any extra space and this never clips. */}
+      <SafeAreaView edges={["bottom"]}>
+        <View className="px-7 pb-4 pt-3">
           <View>
             <View className="flex-row items-center gap-2.5">
               <Flame color={colors.copper} size={22} fill={colors.copper} />
@@ -72,14 +73,14 @@ export default function Welcome() {
 
             <Animated.Text
               entering={FadeInDown.delay(80).duration(600)}
-              className="mb-3 mt-7 font-sans-medium text-[11px] uppercase text-ink-mute"
+              className="mb-2.5 mt-5 font-sans-medium text-[11px] uppercase text-ink-mute"
               style={{ letterSpacing: 1.76 }}
             >
               Follow daily
             </Animated.Text>
             <Animated.Text
               entering={FadeInDown.delay(160).duration(680)}
-              className="font-display text-[40px] leading-[43px] text-ink"
+              className="font-display text-[36px] leading-[40px] text-ink"
             >
               A discipleship{" "}
               <Text className="font-display-italic text-copper-deep">companion</Text>
@@ -87,14 +88,14 @@ export default function Welcome() {
             </Animated.Text>
             <Animated.Text
               entering={FadeInDown.delay(360).duration(680)}
-              className="mt-5 max-w-[330px] text-[15.5px] leading-6 text-ink-soft"
+              className="mt-4 max-w-[330px] text-[15px] leading-[21px] text-ink-soft"
             >
               For students who want to be formed, not informed. Walk a daily path
               with the cloud of witnesses who came before.
             </Animated.Text>
           </View>
 
-          <Animated.View entering={FadeInDown.delay(520).duration(640)} className="gap-2.5">
+          <Animated.View entering={FadeInDown.delay(520).duration(640)} className="mt-7 gap-2.5">
             <PressableScale
               haptic="medium"
               onPress={() => router.push("/(onboarding)/signup")}
