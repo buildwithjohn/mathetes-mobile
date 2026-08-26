@@ -12,6 +12,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { Check } from "lucide-react-native";
 import { useHouses, useProfile, useUpdateProfile } from "@/lib/queries/profile";
 import { OnboardingProgress } from "@/components/OnboardingProgress";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 
 // Short meaning shown beneath each house. Keyed by base slug (Ikole houses use
@@ -97,7 +98,8 @@ export default function HousePicker() {
                 key={house.id}
                 entering={FadeInDown.delay(i * 55).duration(360)}
               >
-                <Pressable
+                <PressableScale
+                  haptic="light"
                   onPress={() => setSelected(house.id)}
                   className="relative overflow-hidden rounded-2xl border bg-paper py-4 pl-[22px] pr-4"
                   style={{
@@ -140,7 +142,7 @@ export default function HousePicker() {
                       {house.verse_ref}
                     </Text>
                   ) : null}
-                </Pressable>
+                </PressableScale>
               </Animated.View>
             );
           })}
@@ -155,10 +157,11 @@ export default function HousePicker() {
               : "Could not save your house. Please try again."}
           </Text>
         ) : null}
-        <Pressable
+        <PressableScale
+          haptic="medium"
           onPress={onContinue}
           disabled={!selected || updateProfile.isPending}
-          className="h-[52px] items-center justify-center rounded-full bg-ink active:opacity-90 disabled:opacity-40"
+          className="h-[52px] items-center justify-center rounded-full bg-ink"
         >
           {updateProfile.isPending ? (
             <ActivityIndicator color={colors.parchment} />
@@ -167,7 +170,7 @@ export default function HousePicker() {
               {selectedHouse ? `Join ${selectedHouse.name}` : "Continue"}
             </Text>
           )}
-        </Pressable>
+        </PressableScale>
       </View>
     </SafeAreaView>
   );

@@ -44,6 +44,7 @@ export function PressableScale({
   haptic = "light",
   scaleTo = 0.96,
   style,
+  disabled,
   onPressIn,
   onPressOut,
   onPress,
@@ -57,6 +58,7 @@ export function PressableScale({
 
   return (
     <Pressable
+      disabled={disabled}
       onPressIn={(e) => {
         scale.value = withSpring(scaleTo, { damping: 18, stiffness: 320 });
         onPressIn?.(e);
@@ -73,9 +75,11 @@ export function PressableScale({
     >
       {/* Transform lives on the animated wrapper; the styled box is a plain
           View so NativeWind's className is never dropped in favour of the
-          animated style (which happens when both sit on one element on web). */}
+          animated style (which happens when both sit on one element on web).
+          Disabled dims the box, since the className `disabled:` variant can't
+          see the Pressable's state from here. */}
       <Animated.View style={animatedStyle}>
-        <View className={className} style={style}>
+        <View className={className} style={[style, disabled ? { opacity: 0.5 } : null]}>
           {children}
         </View>
       </Animated.View>

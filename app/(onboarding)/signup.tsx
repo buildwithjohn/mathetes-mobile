@@ -16,6 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { TextField } from "@/components/TextField";
 import { SocialAuth } from "@/components/SocialAuth";
+import { PressableScale } from "@/components/PressableScale";
 import { useAuth } from "@/lib/stores/auth";
 import { colors } from "@/theme/colors";
 
@@ -150,10 +151,11 @@ export default function SignUp() {
             <Text className="mt-4 text-sm text-oxblood">{submitError}</Text>
           ) : null}
 
-          <Pressable
+          <PressableScale
+            haptic="medium"
             onPress={onSubmit}
             disabled={isSubmitting}
-            className="mt-8 h-[52px] items-center justify-center rounded-full bg-ink active:opacity-90 disabled:opacity-60"
+            className="mt-8 h-[52px] items-center justify-center rounded-full bg-ink"
           >
             {isSubmitting ? (
               <ActivityIndicator color={colors.parchment} />
@@ -162,7 +164,7 @@ export default function SignUp() {
                 Continue
               </Text>
             )}
-          </Pressable>
+          </PressableScale>
 
           <View className="mt-6 flex-row items-center gap-3">
             <View className="h-px flex-1 bg-rule" />

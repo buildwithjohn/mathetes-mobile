@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Notifications from "expo-notifications";
 import { Bell, Sun } from "lucide-react-native";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 
 // Notification priming screen with a mock device notification preview. The
@@ -61,14 +62,15 @@ export default function Notify() {
         </View>
 
         <View className="w-full gap-2.5">
-          <Pressable
+          <PressableScale
+            haptic="medium"
             onPress={enableAndFinish}
-            className="h-[52px] items-center justify-center rounded-full bg-ink active:opacity-90"
+            className="h-[52px] items-center justify-center rounded-full bg-ink"
           >
             <Text className="font-sans-semibold text-base text-parchment">
               Turn on notifications
             </Text>
-          </Pressable>
+          </PressableScale>
           <Pressable
             onPress={finish}
             className="h-12 items-center justify-center active:opacity-60"
