@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "nativewind";
+import { ReducedMotionConfig, ReduceMotion } from "react-native-reanimated";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { KeyboardProvider } from "react-native-keyboard-controller";
@@ -87,6 +88,9 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      {/* Respect the OS "Reduce Motion" setting across every Reanimated
+          animation (Ken Burns drift, entrance fades, haptic pops). */}
+      <ReducedMotionConfig mode={ReduceMotion.System} />
       <SafeAreaProvider>
         <KeyboardProvider statusBarTranslucent>
           <QueryClientProvider client={queryClient}>

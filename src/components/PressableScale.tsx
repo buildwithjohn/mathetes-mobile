@@ -44,6 +44,10 @@ export function PressableScale({
 
   return (
     <Pressable
+      // Announce as a button to screen readers by default; callers can override
+      // via accessibilityRole in ...rest. Disabled state is forwarded to
+      // accessibilityState by Pressable automatically.
+      accessibilityRole="button"
       disabled={disabled}
       onPressIn={(e) => {
         scale.value = withSpring(scaleTo, { damping: 18, stiffness: 320 });

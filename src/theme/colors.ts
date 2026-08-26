@@ -40,7 +40,7 @@ export const lightColors: Palette = {
   copperSoft: "#FF6B7A",
   inkSoft: "#3D3935",
   inkMute: "#75706A",
-  inkFaint: "#B0A99B",
+  inkFaint: "#767162", // darkened for WCAG AA on parchment/paper (4.5:1+)
   rule: "#E8E7E5",
   ruleSoft: "#F0EFEE",
   paper: "#FFFFFF",
@@ -62,7 +62,7 @@ export const darkColors: Palette = {
   copperSoft: "#FF6B7A",
   inkSoft: "#D4D2CE",
   inkMute: "#9A958E",
-  inkFaint: "#6B675F",
+  inkFaint: "#928B7F", // lightened for WCAG AA on dark surfaces (4.5:1+)
   rule: "#2E2E32",
   ruleSoft: "#232327",
   paper: "#1C1C1F",
