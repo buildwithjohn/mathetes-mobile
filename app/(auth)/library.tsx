@@ -6,6 +6,7 @@ import { useLibraryEntries } from "@/lib/queries/library";
 import { useSavedDevotionals, useSavedWords } from "@/lib/queries/content";
 import { EmptyState } from "@/components/EmptyState";
 import { PressableScale } from "@/components/PressableScale";
+import { ScreenHero } from "@/components/ScreenHero";
 import { colors, highlightColors } from "@/theme/colors";
 
 // The member's saved verses: bookmarks and highlights in one place. Tapping an
@@ -33,17 +34,9 @@ export default function Library() {
     });
 
   return (
-    <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
-      <View className="flex-row items-center px-4 py-2">
-        <Pressable
-          onPress={() => router.back()}
-          className="h-11 w-11 items-center justify-center"
-          accessibilityLabel="Go back"
-        >
-          <ChevronLeft color={colors.ink} size={26} />
-        </Pressable>
-        <Text className="font-display text-xl text-ink">Your library</Text>
-      </View>
+    <View className="flex-1 bg-parchment">
+      <ScreenHero title="Your library" onBack={() => router.back()} />
+      <View className="-mt-6 flex-1 rounded-t-[30px] bg-parchment pt-5">
 
       {isLoading || devotionalsLoading || wordsLoading ? (
         <View className="flex-1 items-center justify-center">
@@ -171,6 +164,7 @@ export default function Library() {
           ))}
         </ScrollView>
       )}
-    </SafeAreaView>
+      </View>
+    </View>
   );
 }

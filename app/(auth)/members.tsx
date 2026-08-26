@@ -15,6 +15,7 @@ import {
 } from "@/lib/queries/community";
 import { useProfile } from "@/lib/queries/profile";
 import { Avatar } from "@/components/Avatar";
+import { ScreenHero } from "@/components/ScreenHero";
 import { visiblePhotoUrl } from "@/utils/profile";
 import { haptic } from "@/utils/haptics";
 import { colors } from "@/theme/colors";
@@ -41,24 +42,17 @@ export default function Members() {
   }, [members, query]);
 
   return (
-    <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
-      <View className="flex-row items-center px-2 py-2">
-        <Pressable
-          onPress={() => router.back()}
-          className="h-11 w-11 items-center justify-center"
-          accessibilityLabel="Go back"
-        >
-          <ChevronLeft color={colors.ink} size={26} />
-        </Pressable>
-        <View className="flex-1">
-          <Text className="font-display text-xl text-ink">Members</Text>
-          {members && members.length > 0 ? (
-            <Text className="text-[12px] text-ink/50">
-              {members.length} in the parish
-            </Text>
-          ) : null}
-        </View>
-      </View>
+    <View className="flex-1 bg-parchment">
+      <ScreenHero
+        title="Members"
+        subtitle={
+          members && members.length > 0
+            ? `${members.length} in the parish`
+            : "The parish directory"
+        }
+        onBack={() => router.back()}
+      />
+      <View className="-mt-6 flex-1 rounded-t-[30px] bg-parchment pt-5">
 
       {/* Search */}
       <View className="mx-4 mb-2 flex-row items-center gap-2 rounded-full border border-border bg-surface1 px-4">
@@ -132,7 +126,7 @@ export default function Members() {
           }
         />
       )}
-
-    </SafeAreaView>
+      </View>
+    </View>
   );
 }

@@ -14,6 +14,7 @@ import {
   useDevotionalArchive,
 } from "@/lib/queries/content";
 import { PressableScale } from "@/components/PressableScale";
+import { ScreenHero } from "@/components/ScreenHero";
 import { colors } from "@/theme/colors";
 import type { Devotional, DevotionalSeries } from "@/lib/database.types";
 
@@ -25,17 +26,13 @@ export default function Devotionals() {
   const loading = series.isLoading || archive.isLoading;
 
   return (
-    <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
-      <View className="flex-row items-center px-2 py-2">
-        <Pressable
-          onPress={() => router.back()}
-          className="h-11 w-11 items-center justify-center"
-          accessibilityLabel="Go back"
-        >
-          <ChevronLeft color={colors.ink} size={26} />
-        </Pressable>
-        <Text className="font-display text-xl text-ink">Devotionals</Text>
-      </View>
+    <View className="flex-1 bg-parchment">
+      <ScreenHero
+        title="Devotionals"
+        subtitle="Series &amp; daily readings from the parish"
+        onBack={() => router.back()}
+      />
+      <View className="-mt-6 flex-1 rounded-t-[30px] bg-parchment pt-5">
 
       {loading ? (
         <ActivityIndicator className="mt-10" color={colors.copper} />
@@ -82,7 +79,8 @@ export default function Devotionals() {
           )}
         </ScrollView>
       )}
-    </SafeAreaView>
+      </View>
+    </View>
   );
 }
 
