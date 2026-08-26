@@ -30,6 +30,7 @@ import {
 } from "@/lib/queries/notifications";
 import { Avatar } from "@/components/Avatar";
 import { visiblePhotoUrl } from "@/utils/profile";
+import { haptic } from "@/utils/haptics";
 import { colors } from "@/theme/colors";
 
 const FILTERS = ["All", "Unread", "Houses", "DMs"] as const;
@@ -109,7 +110,10 @@ export default function Community() {
           return (
             <Pressable
               key={f}
-              onPress={() => setFilter(f)}
+              onPress={() => {
+                if (f !== filter) haptic("selection");
+                setFilter(f);
+              }}
               className={`pb-1.5 ${on ? "border-b-2 border-b-copper" : ""}`}
             >
               <Text
@@ -252,7 +256,10 @@ function EntryRow({
 }) {
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => {
+        haptic("light");
+        onPress();
+      }}
       className="flex-row items-center gap-3 px-[18px] py-3 active:bg-surface2"
     >
       <View
@@ -284,7 +291,10 @@ function ChatRow({
 }) {
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => {
+        haptic("light");
+        onPress();
+      }}
       className="flex-row items-center gap-3 px-[18px] py-3 active:bg-surface2"
     >
       <ChatIcon chat={chat} viewerHouseId={viewerHouseId} />

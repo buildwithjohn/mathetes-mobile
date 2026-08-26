@@ -32,6 +32,8 @@ import { useBookmarks, useHighlights } from "@/lib/queries/library";
 import { useVerseImages } from "@/lib/queries/verseImages";
 import { Avatar } from "@/components/Avatar";
 import { AnimatedFlame } from "@/components/AnimatedFlame";
+import { PressableScale } from "@/components/PressableScale";
+import { haptic } from "@/utils/haptics";
 import { colors } from "@/theme/colors";
 
 export default function You() {
@@ -253,12 +255,12 @@ export default function You() {
           />
         </View>
 
-        <Pressable
+        <PressableScale
           onPress={signOut}
-          className="mt-8 h-12 items-center justify-center rounded-full border border-rule active:opacity-70"
+          className="mt-8 h-12 items-center justify-center rounded-full border border-rule"
         >
           <Text className="font-sans-medium text-ink">Sign out</Text>
-        </Pressable>
+        </PressableScale>
       </Animated.ScrollView>
     </SafeAreaView>
   );
@@ -285,13 +287,15 @@ function Shortcut({
   onPress: () => void;
 }) {
   return (
-    <Pressable
-      onPress={onPress}
-      className="flex-1 items-center gap-1.5 rounded-2xl border border-rule bg-paper py-4 active:opacity-90"
-    >
-      <Icon color={colors.copper} size={20} strokeWidth={1.7} />
-      <Text className="text-[13px] text-ink">{label}</Text>
-    </Pressable>
+    <View style={{ flex: 1 }}>
+      <PressableScale
+        onPress={onPress}
+        className="items-center gap-1.5 rounded-2xl border border-rule bg-paper py-4"
+      >
+        <Icon color={colors.copper} size={20} strokeWidth={1.7} />
+        <Text className="text-[13px] text-ink">{label}</Text>
+      </PressableScale>
+    </View>
   );
 }
 
@@ -307,14 +311,16 @@ function LibraryStat({
   onPress: () => void;
 }) {
   return (
-    <Pressable
-      onPress={onPress}
-      className="flex-1 rounded-2xl border border-rule bg-paper p-3.5 active:opacity-90"
-    >
-      <Icon color={colors.copper} size={18} strokeWidth={1.6} />
-      <Text className="mt-2 font-display text-[22px] text-ink">{n}</Text>
-      <Text className="mt-0.5 text-[11px] text-ink-mute">{label}</Text>
-    </Pressable>
+    <View style={{ flex: 1 }}>
+      <PressableScale
+        onPress={onPress}
+        className="rounded-2xl border border-rule bg-paper p-3.5"
+      >
+        <Icon color={colors.copper} size={18} strokeWidth={1.6} />
+        <Text className="mt-2 font-display text-[22px] text-ink">{n}</Text>
+        <Text className="mt-0.5 text-[11px] text-ink-mute">{label}</Text>
+      </PressableScale>
+    </View>
   );
 }
 
@@ -331,7 +337,10 @@ function MenuRow({
 }) {
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => {
+        haptic("light");
+        onPress();
+      }}
       className={`flex-row items-center gap-3.5 px-4 py-3.5 active:bg-surface2 ${
         divider ? "border-t border-rule-soft" : ""
       }`}

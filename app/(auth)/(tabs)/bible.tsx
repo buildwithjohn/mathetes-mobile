@@ -51,6 +51,8 @@ import {
 } from "@/lib/queries/library";
 import { useProfile } from "@/lib/queries/profile";
 import { BibleNavigator } from "@/components/BibleNavigator";
+import { PressableScale } from "@/components/PressableScale";
+import { haptic } from "@/utils/haptics";
 import { colors, highlightColors } from "@/theme/colors";
 import type { HighlightColor } from "@/lib/database.types";
 
@@ -198,6 +200,7 @@ export default function Bible() {
   };
 
   const goChapter = (next: boolean) => {
+    haptic("light");
     void stopNarration();
     clearSelection();
     if (!books || !book) return;
@@ -225,6 +228,7 @@ export default function Bible() {
   };
 
   const toggleVerse = (n: number) => {
+    haptic("selection");
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(n)) next.delete(n);
@@ -317,6 +321,7 @@ export default function Bible() {
   };
 
   const applyHighlight = async (color: HighlightColor | null) => {
+    haptic(color ? "success" : "light");
     for (const v of selectedVerses)
       await setHighlight.mutateAsync({ verseId: v.id, color });
     clearSelection();
@@ -479,19 +484,20 @@ export default function Bible() {
           <View className="mx-auto mb-6 h-px w-[60px] bg-copper opacity-50" />
 
           <View className="mb-6 flex-row items-center justify-center gap-2">
-            <Pressable
+            <PressableScale
+              haptic="medium"
               onPress={() => void startNarration(selectedVerse?.number)}
-              className="flex-row items-center gap-2 rounded-full border border-rule bg-paper-raised px-4 py-2 active:opacity-70"
+              className="flex-row items-center gap-2 rounded-full border border-rule bg-paper-raised px-4 py-2"
               accessibilityLabel="Listen to this chapter"
             >
               <Volume2 color={colors.copper} size={16} />
               <Text className="font-sans-medium text-sm text-ink">
                 {narratingVerse != null ? "Restart listening" : "Listen to this chapter"}
               </Text>
-            </Pressable>
-            <Pressable
+            </PressableScale>
+            <PressableScale
               onPress={() => setVoiceOpen(true)}
-              className="rounded-full border border-rule bg-paper-raised px-3 py-2 active:opacity-70"
+              className="rounded-full border border-rule bg-paper-raised px-3 py-2"
               accessibilityLabel="Choose narration voice"
             >
               <Text className="max-w-[92px]" numberOfLines={1}>
@@ -499,7 +505,7 @@ export default function Bible() {
                   {selectedVoice?.name ?? "Voice"}
                 </Text>
               </Text>
-            </Pressable>
+            </PressableScale>
           </View>
 
           {narratingVerse != null ? (
@@ -613,20 +619,22 @@ export default function Bible() {
 
           {/* Chapter pager */}
           <View className="mt-9 flex-row items-center justify-between">
-            <Pressable
+            <PressableScale
+              haptic="none"
               onPress={() => goChapter(false)}
-              className="flex-row items-center gap-1 rounded-full border border-rule px-4 py-2 active:opacity-60"
+              className="flex-row items-center gap-1 rounded-full border border-rule px-4 py-2"
             >
               <ChevronLeft color={colors.inkSoft} size={18} />
               <Text className="font-sans-medium text-ink">Previous</Text>
-            </Pressable>
-            <Pressable
+            </PressableScale>
+            <PressableScale
+              haptic="none"
               onPress={() => goChapter(true)}
-              className="flex-row items-center gap-1 rounded-full border border-rule px-4 py-2 active:opacity-60"
+              className="flex-row items-center gap-1 rounded-full border border-rule px-4 py-2"
             >
               <Text className="font-sans-medium text-ink">Next</Text>
               <ChevronRight color={colors.inkSoft} size={18} />
-            </Pressable>
+            </PressableScale>
           </View>
         </Animated.ScrollView>
       )}
