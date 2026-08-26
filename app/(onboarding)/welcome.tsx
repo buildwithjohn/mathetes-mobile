@@ -1,58 +1,41 @@
-import { useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Image } from "expo-image";
+import { useVideoPlayer, VideoView } from "expo-video";
 import { LinearGradient } from "expo-linear-gradient";
-import Animated, {
-  FadeInDown,
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  Easing,
-} from "react-native-reanimated";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { Flame } from "lucide-react-native";
 import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 
-// Entry point of onboarding: a cinematic hero (a lamp-lit open Bible, echoing
-// the flame mark) that dissolves into an editorial brand statement, then routes
-// to sign-up or sign-in. The hero drifts with a slow Ken Burns so a still image
-// still feels alive.
+// Entry point of onboarding: a living hero (a lamp-lit open Bible, the flame
+// echoed in the lamp) plays as a looping video and dissolves into an editorial
+// brand statement, then routes to sign-up or sign-in.
 export default function Welcome() {
   const router = useRouter();
 
-  const drift = useSharedValue(0);
-  useEffect(() => {
-    drift.value = withRepeat(
-      withTiming(1, { duration: 16000, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true
-    );
-  }, [drift]);
-  const kenBurns = useAnimatedStyle(() => ({
-    transform: [
-      { scale: 1.04 + drift.value * 0.1 },
-      { translateY: drift.value * -12 },
-    ],
-  }));
+  const player = useVideoPlayer(
+    require("../../assets/videos/welcome.mp4"),
+    (p) => {
+      p.loop = true;
+      p.muted = true;
+      p.play();
+    }
+  );
 
   return (
     <View className="flex-1 bg-parchment">
-      {/* Cinematic hero, bleeding under the status bar, dissolving into parchment.
+      {/* Living hero, bleeding under the status bar, dissolving into parchment.
           It flexes to fill whatever space the content leaves, so the brand
           statement + buttons are always fully visible on any screen size. */}
       <View className="flex-1 overflow-hidden">
-        <Animated.View style={[StyleSheet.absoluteFill, kenBurns]}>
-          <Image
-            source={require("../../assets/images/onboarding/welcome-hero.jpg")}
-            style={StyleSheet.absoluteFill}
-            contentFit="cover"
-            transition={500}
-            cachePolicy="memory-disk"
-          />
-        </Animated.View>
+        <VideoView
+          player={player}
+          style={StyleSheet.absoluteFill}
+          contentFit="cover"
+          nativeControls={false}
+          pointerEvents="none"
+        />
         <LinearGradient
           colors={[`${colors.parchment}00`, `${colors.parchment}00`, colors.parchment]}
           locations={[0, 0.5, 1]}
