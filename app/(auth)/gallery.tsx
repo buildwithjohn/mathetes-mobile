@@ -21,6 +21,7 @@ import {
   useDeleteVerseImage,
 } from "@/lib/queries/verseImages";
 import { EmptyState } from "@/components/EmptyState";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 import type { VerseImage } from "@/lib/database.types";
 
@@ -90,16 +91,13 @@ export default function Gallery() {
           contentContainerStyle={{ padding: 16, gap: GAP, paddingBottom: 40 }}
           renderItem={({ item, index }) => (
             <Animated.View entering={FadeIn.delay(index * 40).duration(300)}>
-              <Pressable
-                onPress={() => setActive(item)}
-                className="active:opacity-90"
-              >
+              <PressableScale onPress={() => setActive(item)}>
                 <Image
                   source={{ uri: item.url }}
                   style={{ width: SIZE, height: SIZE * 1.25, borderRadius: 16 }}
                   resizeMode="cover"
                 />
-              </Pressable>
+              </PressableScale>
             </Animated.View>
           )}
           ListEmptyComponent={
@@ -137,10 +135,11 @@ export default function Gallery() {
                 resizeMode="contain"
               />
               <View className="mt-6 flex-row gap-3">
-                <Pressable
+                <PressableScale
+                  haptic="medium"
                   onPress={() => onShare(active)}
                   disabled={sharing}
-                  className="h-12 flex-row items-center justify-center gap-2 rounded-full bg-copper px-6 active:opacity-90 disabled:opacity-60"
+                  className="h-12 flex-row items-center justify-center gap-2 rounded-full bg-copper px-6"
                 >
                   {sharing ? (
                     <ActivityIndicator color={colors.parchment} />
@@ -152,7 +151,7 @@ export default function Gallery() {
                       </Text>
                     </>
                   )}
-                </Pressable>
+                </PressableScale>
                 <Pressable
                   onPress={() => onDelete(active)}
                   className="h-12 w-12 items-center justify-center rounded-full border border-parchment/30 active:opacity-70"

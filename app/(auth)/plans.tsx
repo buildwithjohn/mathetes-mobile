@@ -10,6 +10,7 @@ import {
 } from "@/lib/queries/readingPlans";
 import { Ring } from "@/components/Ring";
 import { EmptyState } from "@/components/EmptyState";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 import type { ReadingPlan } from "@/lib/database.types";
 
@@ -144,9 +145,9 @@ function ContinueCard({
   const total = plan.length_days || 1;
   const done = Math.max(0, Math.min(sub.current_day - 1, total));
   return (
-    <Pressable
+    <PressableScale
       onPress={onPress}
-      className="flex-row items-center gap-3.5 rounded-2xl border border-rule bg-paper px-5 py-[18px] active:opacity-90"
+      className="flex-row items-center gap-3.5 rounded-2xl border border-rule bg-paper px-5 py-[18px]"
     >
       <Ring value={done / total} size={38} stroke={2.5}>
         <Text className="font-sans-semibold text-[11px] text-ink">
@@ -162,16 +163,16 @@ function ContinueCard({
         </Text>
       </View>
       <ChevronRight color={colors.inkMute} size={18} strokeWidth={1.5} />
-    </Pressable>
+    </PressableScale>
   );
 }
 
 function PlanCard({ plan, onPress }: { plan: ReadingPlan; onPress: () => void }) {
   const cover = planCover(plan.slug);
   return (
-    <Pressable
+    <PressableScale
       onPress={onPress}
-      className="overflow-hidden rounded-2xl border border-rule bg-paper active:opacity-90"
+      className="overflow-hidden rounded-2xl border border-rule bg-paper"
     >
       {/* Covers are pastor-uploaded from the admin plan editor. */}
       <View className="h-28 w-full">
@@ -214,7 +215,7 @@ function PlanCard({ plan, onPress }: { plan: ReadingPlan; onPress: () => void })
           ) : null}
         </View>
       </View>
-    </Pressable>
+    </PressableScale>
   );
 }
 

@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { format, parseISO } from "date-fns";
 import { ChevronLeft } from "lucide-react-native";
 import { useWordArchive } from "@/lib/queries/content";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 
 export default function Words() {
@@ -31,12 +32,12 @@ export default function Words() {
           keyExtractor={(w) => w.id}
           contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 10 }}
           renderItem={({ item }) => (
-            <Pressable
+            <PressableScale
               onPress={() =>
                 item.publish_date && router.push(`/word/${item.publish_date}`)
               }
               disabled={!item.publish_date}
-              className="overflow-hidden rounded-2xl border border-border bg-surface1 active:opacity-90"
+              className="overflow-hidden rounded-2xl border border-border bg-surface1"
             >
               <View className="h-1.5 w-full bg-copper" />
               <View className="p-4">
@@ -55,7 +56,7 @@ export default function Words() {
                   {item.verse_ref}
                 </Text>
               </View>
-            </Pressable>
+            </PressableScale>
           )}
           ListEmptyComponent={
             <Text className="mt-10 text-center text-sm text-ink/50">
