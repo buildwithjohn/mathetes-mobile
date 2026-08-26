@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
-import { View, Text, Pressable, ActivityIndicator, Alert, ImageBackground, Modal, TextInput } from "react-native";
+import { View, Text, Pressable, ActivityIndicator, Alert, Image, ImageBackground, Modal, StyleSheet, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Animated, {
   useSharedValue,
@@ -136,49 +137,10 @@ export default function DevotionalScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
-      {/* Header + progress thread */}
-      <View>
-        <View className="flex-row items-center justify-between px-3 py-2">
-          <Pressable
-            onPress={() => router.back()}
-            className="h-11 w-11 items-center justify-center"
-            accessibilityLabel="Go back"
-          >
-            <ChevronLeft color={colors.ink} size={26} />
-          </Pressable>
-          <View className="flex-row">
-            <Pressable
-              onPress={onShareImages}
-              disabled={sharing}
-              className="h-11 w-11 items-center justify-center"
-              accessibilityLabel="Share as images"
-            >
-              {sharing ? (
-                <ActivityIndicator color={colors.copper} />
-              ) : (
-                <Share2 color={colors.inkSoft} size={21} strokeWidth={1.6} />
-              )}
-            </Pressable>
-            <Pressable
-              onPress={onToggleBookmark}
-              disabled={bookmarkMutation.isPending}
-              className="h-11 w-11 items-center justify-center"
-              accessibilityLabel={bookmarked ? "Remove bookmark" : "Bookmark"}
-            >
-              <Animated.View style={bookmarkStyle}>
-                {bookmarked ? (
-                  <BookmarkCheck color={colors.copper} size={22} />
-                ) : (
-                  <Bookmark color={colors.inkSoft} size={22} strokeWidth={1.6} />
-                )}
-              </Animated.View>
-            </Pressable>
-          </View>
-        </View>
-        <View className="h-[1.5px] w-full bg-rule-soft">
-          <Animated.View className="h-[1.5px] bg-copper" style={barStyle} />
-        </View>
+    <View className="flex-1 bg-parchment">
+      {/* Slim reading-progress bar, fixed at the very top */}
+      <View className="absolute inset-x-0 top-0 z-20 h-[3px] bg-black/10">
+        <Animated.View className="h-[3px] bg-copper" style={barStyle} />
       </View>
 
       {isLoading ? (
@@ -194,51 +156,109 @@ export default function DevotionalScreen() {
       ) : (
         <Animated.ScrollView
           className="flex-1"
-          contentContainerClassName="px-7 pb-16 pt-2"
+          contentContainerClassName="pb-16"
           showsVerticalScrollIndicator={false}
           onScroll={onScroll}
           scrollEventThrottle={16}
         >
-          {dev.cover_image_url ? (
-            <ImageBackground
-              source={{ uri: dev.cover_image_url }}
+          {/* IMMERSIVE HERO — the pastor's cover, or a doorway-into-light
+              default, with the title over a warm scrim and glassy actions. */}
+          <View style={{ minHeight: 360 }} className="overflow-hidden">
+            <Image
+              source={
+                dev.cover_image_url
+                  ? { uri: dev.cover_image_url }
+                  : require("../../../assets/images/today/devotion-bg.jpg")
+              }
+              style={StyleSheet.absoluteFill}
               resizeMode="cover"
-              className="mb-7 overflow-hidden rounded-3xl"
-              imageStyle={{ borderRadius: 24 }}
-            >
-              <View className="min-h-56 justify-end bg-ink/40 p-6">
+            />
+            <LinearGradient
+              colors={[
+                "rgba(20,13,7,0.44)",
+                "rgba(20,13,7,0.10)",
+                "rgba(18,11,6,0.64)",
+                "rgba(12,7,3,0.96)",
+              ]}
+              locations={[0, 0.3, 0.66, 1]}
+              style={StyleSheet.absoluteFill}
+              pointerEvents="none"
+            />
+            <SafeAreaView edges={["top"]}>
+              <View className="flex-row items-center justify-between px-3 pt-1">
+                <Pressable
+                  onPress={() => router.back()}
+                  className="h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/25"
+                  accessibilityLabel="Go back"
+                >
+                  <ChevronLeft color="#fff" size={24} />
+                </Pressable>
+                <View className="flex-row gap-2">
+                  <Pressable
+                    onPress={onShareImages}
+                    disabled={sharing}
+                    className="h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/25"
+                    accessibilityLabel="Share as images"
+                  >
+                    {sharing ? (
+                      <ActivityIndicator color="#fff" />
+                    ) : (
+                      <Share2 color="#fff" size={20} strokeWidth={1.7} />
+                    )}
+                  </Pressable>
+                  <Pressable
+                    onPress={onToggleBookmark}
+                    disabled={bookmarkMutation.isPending}
+                    className="h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/25"
+                    accessibilityLabel={bookmarked ? "Remove bookmark" : "Bookmark"}
+                  >
+                    <Animated.View style={bookmarkStyle}>
+                      {bookmarked ? (
+                        <BookmarkCheck color="#FFC978" size={21} />
+                      ) : (
+                        <Bookmark color="#fff" size={21} strokeWidth={1.7} />
+                      )}
+                    </Animated.View>
+                  </Pressable>
+                </View>
+              </View>
+
+              <View style={{ height: 148 }} />
+
+              <View className="px-6 pb-8">
                 {dev.day_in_series ? (
-                  <Text className="font-sans-semibold text-[11px] uppercase text-white" style={{ letterSpacing: 1.8 }}>
+                  <Text
+                    className="font-sans-semibold text-[11px] uppercase"
+                    style={{ letterSpacing: 1.9, color: "#F0C892" }}
+                  >
                     Day {dev.day_in_series}
                   </Text>
                 ) : null}
-                <Text className="mt-2 font-display text-[30px] leading-9 text-white">
+                <Text
+                  className="mt-2 font-display text-[32px] leading-[37px]"
+                  style={{
+                    color: "#FFFFFF",
+                    textShadowColor: "rgba(0,0,0,0.4)",
+                    textShadowRadius: 14,
+                    textShadowOffset: { width: 0, height: 1 },
+                  }}
+                >
                   {dev.title}
                 </Text>
+                <Text
+                  className="mt-2 text-[12.5px]"
+                  style={{ color: "rgba(255,240,225,0.78)" }}
+                >
+                  {dev.reading_time_minutes
+                    ? `${dev.reading_time_minutes} min read`
+                    : "Devotional"}
+                </Text>
               </View>
-            </ImageBackground>
-          ) : null}
-          {/* TODO(backend): series_id is stored but not the series name; show
-              the day index until a joined series title is available. */}
-          {dev.day_in_series && !dev.cover_image_url ? (
-            <Text
-              className="font-sans-medium text-[11px] uppercase text-ink-mute"
-              style={{ letterSpacing: 1.76 }}
-            >
-              Day {dev.day_in_series}
-            </Text>
-          ) : null}
-          {!dev.cover_image_url ? (
-            <Text className="mb-3.5 mt-3 font-display text-[34px] leading-[37px] text-ink">
-              {dev.title}
-            </Text>
-          ) : null}
-          {/* TODO(backend): author_id only (no joined name); show reading time. */}
-          <Text className="text-[12.5px] text-ink-soft">
-            {dev.reading_time_minutes
-              ? `${dev.reading_time_minutes} min read`
-              : "Devotional"}
-          </Text>
+            </SafeAreaView>
+          </View>
+
+          {/* CONTENT SHEET — rises over the hero image edge */}
+          <View className="-mt-6 rounded-t-[30px] bg-parchment px-7 pt-5">
 
           {/* Narration, when the pastor has recorded one */}
           {dev.audio_url ? <AudioPlayer url={dev.audio_url} /> : null}
@@ -310,6 +330,7 @@ export default function DevotionalScreen() {
               <ChevronRight color={colors.inkMute} size={16} strokeWidth={1.5} />
             </PressableScale>
           ) : null}
+          </View>
         </Animated.ScrollView>
       )}
 
@@ -380,7 +401,7 @@ export default function DevotionalScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
