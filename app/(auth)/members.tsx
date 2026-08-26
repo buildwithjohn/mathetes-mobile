@@ -16,6 +16,7 @@ import {
 import { useProfile } from "@/lib/queries/profile";
 import { Avatar } from "@/components/Avatar";
 import { visiblePhotoUrl } from "@/utils/profile";
+import { haptic } from "@/utils/haptics";
 import { colors } from "@/theme/colors";
 
 const ROLE_LABEL: Record<string, string> = {
@@ -83,15 +84,16 @@ export default function Members() {
             const role = ROLE_LABEL[item.role];
             return (
               <Pressable
-                onPress={() =>
-                  !isMe &&
+                onPress={() => {
+                  if (isMe) return;
+                  haptic("light");
                   router.push({
                     // Expo regenerates this route union when Metro starts.
                     // Keep the object form so the member ID is never dropped.
                     pathname: "/member/[id]" as never,
                     params: { id: item.id },
-                  })
-                }
+                  });
+                }}
                 disabled={isMe}
                 className="flex-row items-center gap-3 border-b border-border/60 py-3 active:opacity-70"
               >

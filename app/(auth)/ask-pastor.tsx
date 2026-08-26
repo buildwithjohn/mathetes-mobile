@@ -29,6 +29,7 @@ import {
   useWithdrawQuestion,
 } from "@/lib/queries/ask";
 import { EmptyState } from "@/components/EmptyState";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 import type { AskQuestion, PublicQa } from "@/lib/database.types";
 
@@ -55,13 +56,14 @@ export default function AskPastor() {
         <Text className="flex-1 text-center font-display text-[18px] text-ink">
           Ask Pastor
         </Text>
-        <Pressable
+        <PressableScale
+          haptic="medium"
           onPress={() => setComposing(true)}
-          className="h-[34px] w-[34px] items-center justify-center rounded-full bg-copper active:opacity-90"
+          className="h-[34px] w-[34px] items-center justify-center rounded-full bg-copper"
           accessibilityLabel="Ask a question"
         >
           <Plus color="#fff" size={18} strokeWidth={2} />
-        </Pressable>
+        </PressableScale>
       </View>
 
       {/* Tabs (underline) */}
@@ -285,10 +287,11 @@ function ComposeModal({
             <ToggleRow label="Mark urgent" value={urgent} onChange={setUrgent} />
           </View>
 
-          <Pressable
+          <PressableScale
+            haptic="medium"
             onPress={onSubmit}
             disabled={!body.trim() || submit.isPending}
-            className="mt-5 h-13 items-center justify-center rounded-full bg-copper py-3.5 active:opacity-90 disabled:opacity-50"
+            className="mt-5 h-13 items-center justify-center rounded-full bg-copper py-3.5"
           >
             {submit.isPending ? (
               <ActivityIndicator color={colors.parchment} />
@@ -297,7 +300,7 @@ function ComposeModal({
                 Send question
               </Text>
             )}
-          </Pressable>
+          </PressableScale>
         </View>
       </KeyboardAvoidingView>
     </Modal>

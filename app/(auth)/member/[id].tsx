@@ -6,6 +6,7 @@ import { Avatar } from "@/components/Avatar";
 import { useCreateDm, useParishMember } from "@/lib/queries/community";
 import { useProfile } from "@/lib/queries/profile";
 import { visiblePhotoUrl } from "@/utils/profile";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 
 const ROLE_LABEL: Record<string, string> = {
@@ -107,10 +108,11 @@ export default function MemberProfileScreen() {
           </ScrollView>
 
           <View className="border-t border-rule-soft bg-parchment px-6 pb-8 pt-4">
-            <Pressable
+            <PressableScale
+              haptic="medium"
               onPress={onMessage}
               disabled={createDm.isPending}
-              className="h-13 flex-row items-center justify-center gap-2 rounded-full bg-ink active:opacity-85 disabled:opacity-55"
+              className="h-13 flex-row items-center justify-center gap-2 rounded-full bg-ink"
             >
               {createDm.isPending ? (
                 <ActivityIndicator color={colors.parchment} />
@@ -120,7 +122,7 @@ export default function MemberProfileScreen() {
                   <Text className="font-sans-semibold text-base text-parchment">Message {member.name.split(" ")[0]}</Text>
                 </>
               )}
-            </Pressable>
+            </PressableScale>
           </View>
         </>
       )}

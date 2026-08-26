@@ -61,6 +61,7 @@ import { supabase } from "@/lib/supabase";
 import { Avatar } from "@/components/Avatar";
 import { VoiceBubble } from "@/components/VoiceBubble";
 import { visiblePhotoUrl } from "@/utils/profile";
+import { haptic } from "@/utils/haptics";
 import { colors } from "@/theme/colors";
 import type { ReactionEmoji } from "@/lib/database.types";
 
@@ -238,6 +239,7 @@ export default function ChatScreen() {
   const onSend = () => {
     const body = draft.trim();
     if (!body) return;
+    haptic("light");
     setDraft("");
     send.mutate(body, {
       onError: (e) => {

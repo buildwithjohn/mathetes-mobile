@@ -24,6 +24,7 @@ import {
   useMarkAllNotificationsRead,
 } from "@/lib/queries/notifications";
 import { EmptyState } from "@/components/EmptyState";
+import { haptic } from "@/utils/haptics";
 import { colors } from "@/theme/colors";
 import type { Notification, NotificationType } from "@/lib/database.types";
 
@@ -84,7 +85,10 @@ export default function Notifications() {
         </Text>
         {hasUnread ? (
           <Pressable
-            onPress={() => markAll.mutate()}
+            onPress={() => {
+              haptic("light");
+              markAll.mutate();
+            }}
             className="px-3 py-2 active:opacity-60"
           >
             <Text className="text-sm font-sans-medium text-copper">
@@ -113,7 +117,10 @@ export default function Notifications() {
             const unread = item.read_at === null;
             return (
               <Pressable
-                onPress={() => open(item)}
+                onPress={() => {
+                  haptic("light");
+                  open(item);
+                }}
                 className={`flex-row gap-3 px-5 py-4 active:bg-surface2 ${
                   unread ? "bg-copper/5" : ""
                 }`}

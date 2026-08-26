@@ -28,6 +28,8 @@ import { useProfile } from "@/lib/queries/profile";
 import { Avatar } from "@/components/Avatar";
 import { EmptyState } from "@/components/EmptyState";
 import { visiblePhotoUrl } from "@/utils/profile";
+import { PressableScale } from "@/components/PressableScale";
+import { haptic } from "@/utils/haptics";
 import { colors } from "@/theme/colors";
 
 export default function PrayerWall() {
@@ -61,13 +63,14 @@ export default function PrayerWall() {
             Carry one another
           </Text>
         </View>
-        <Pressable
+        <PressableScale
+          haptic="medium"
           onPress={() => setComposing(true)}
-          className="h-[34px] w-[34px] items-center justify-center rounded-full bg-copper active:opacity-90"
+          className="h-[34px] w-[34px] items-center justify-center rounded-full bg-copper"
           accessibilityLabel="Share a request"
         >
           <Plus color="#fff" size={18} strokeWidth={2} />
-        </Pressable>
+        </PressableScale>
       </View>
 
       {isLoading ? (
@@ -206,7 +209,10 @@ function PrayerCard({
 
       <View className="mt-3 flex-row items-center gap-3">
         <Pressable
-          onPress={onPray}
+          onPress={() => {
+            if (!entry.prayedByMe) haptic("success");
+            onPray();
+          }}
           className={`flex-row items-center gap-2 self-start rounded-full border px-3.5 py-1.5 active:opacity-80 ${
             entry.prayedByMe
               ? "border-copper bg-copper/15"
@@ -366,10 +372,11 @@ function ComposeModal({
             ) : null}
           </View>
 
-          <Pressable
+          <PressableScale
+            haptic="medium"
             onPress={onSubmit}
             disabled={!body.trim() || create.isPending}
-            className="mt-5 h-13 items-center justify-center rounded-full bg-copper py-3.5 active:opacity-90 disabled:opacity-50"
+            className="mt-5 h-13 items-center justify-center rounded-full bg-copper py-3.5"
           >
             {create.isPending ? (
               <ActivityIndicator color={colors.parchment} />
@@ -378,7 +385,7 @@ function ComposeModal({
                 Share request
               </Text>
             )}
-          </Pressable>
+          </PressableScale>
         </View>
       </KeyboardAvoidingView>
     </Modal>
