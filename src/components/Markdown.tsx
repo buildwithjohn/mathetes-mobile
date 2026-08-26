@@ -24,6 +24,37 @@ function tokenizeInline(text: string): InlineToken[] {
   return tokens.length ? tokens : [{ text }];
 }
 
+// Some devotional bodies arrive with their paragraph breaks stripped (a
+// TipTap -> markdown serialization issue upstream), so the whole body renders
+// as one unbroken wall with sentences run together ("...despair.First..."). As
+// a defensive measure we (1) restore the missing space after sentence-ending
+// punctuation, and (2) reflow an over-long break-less paragraph into readable
+// chunks at sentence boundaries. Clean, well-formed content is left untouched.
+function normalizeProse(text: string): string {
+  return text.replace(/([.!?])(["'“‘(]?[A-Z])/g, "$1 $2");
+}
+
+function splitSentences(text: string): string[] {
+  const s =
+    text.match(/[^.!?]+[.!?]+["'”’)\]]*\s*|[^.!?]+$/g) ?? [text];
+  return s.map((x) => x.trim()).filter(Boolean);
+}
+
+function reflowWall(text: string): string[] {
+  if (text.length <= 600) return [text];
+  const out: string[] = [];
+  let buf = "";
+  for (const sentence of splitSentences(text)) {
+    if (buf && buf.length + 1 + sentence.length > 340) {
+      out.push(buf);
+      buf = "";
+    }
+    buf = buf ? `${buf} ${sentence}` : sentence;
+  }
+  if (buf) out.push(buf);
+  return out;
+}
+
 function Inline({ text }: { text: string }) {
   return (
     <>
@@ -128,14 +159,20 @@ export function Markdown({ body }: { body: string }) {
           );
         }
 
-        // Paragraph (single line breaks become spaces)
+        // Paragraph (single line breaks become spaces). A body that lost its
+        // paragraph breaks upstream is reflowed into readable blocks here.
+        const paragraphs = reflowWall(normalizeProse(lines.join(" ")));
         return (
-          <Text
-            key={i}
-            className="mb-4 font-scripture text-[18px] leading-[30px] text-ink"
-          >
-            <Inline text={lines.join(" ")} />
-          </Text>
+          <Fragment key={i}>
+            {paragraphs.map((p, k) => (
+              <Text
+                key={k}
+                className="mb-4 font-scripture text-[18px] leading-[30px] text-ink"
+              >
+                <Inline text={p} />
+              </Text>
+            ))}
+          </Fragment>
         );
       })}
     </View>
