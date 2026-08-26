@@ -6,6 +6,8 @@ import Animated, {
   useSharedValue,
   useAnimatedScrollHandler,
   useAnimatedStyle,
+  withSequence,
+  withSpring,
 } from "react-native-reanimated";
 import { captureRef } from "react-native-view-shot";
 import Constants, { ExecutionEnvironment } from "expo-constants";
@@ -29,6 +31,8 @@ import { useRecordContentShare } from "@/lib/queries/contentSignals";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { Markdown } from "@/components/Markdown";
 import { buildDevotionCards, type DevotionCard } from "@/utils/devotionCards";
+import { PressableScale } from "@/components/PressableScale";
+import { haptic } from "@/utils/haptics";
 import { colors } from "@/theme/colors";
 
 export default function DevotionalScreen() {
@@ -45,7 +49,19 @@ export default function DevotionalScreen() {
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteBody, setNoteBody] = useState("");
 
+  const bookmarkScale = useSharedValue(1);
+  const bookmarkStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: bookmarkScale.value }],
+  }));
   const onToggleBookmark = () => {
+    const saving = !bookmarked;
+    haptic(saving ? "success" : "light");
+    if (saving) {
+      bookmarkScale.value = withSequence(
+        withSpring(1.3, { damping: 6, stiffness: 320 }),
+        withSpring(1, { damping: 12, stiffness: 240 })
+      );
+    }
     bookmarkMutation.mutate(undefined, {
       onError: () => Alert.alert("Could not save", "Please try again."),
     });
@@ -72,6 +88,7 @@ export default function DevotionalScreen() {
 
   const onShareImages = async (): Promise<boolean> => {
     if (!dev || cards.length === 0 || sharing) return false;
+    haptic("light");
     // Image sharing needs the native share module, absent from Expo Go.
     if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
       Alert.alert(
@@ -149,11 +166,13 @@ export default function DevotionalScreen() {
               className="h-11 w-11 items-center justify-center"
               accessibilityLabel={bookmarked ? "Remove bookmark" : "Bookmark"}
             >
-              {bookmarked ? (
-                <BookmarkCheck color={colors.copper} size={22} />
-              ) : (
-                <Bookmark color={colors.inkSoft} size={22} strokeWidth={1.6} />
-              )}
+              <Animated.View style={bookmarkStyle}>
+                {bookmarked ? (
+                  <BookmarkCheck color={colors.copper} size={22} />
+                ) : (
+                  <Bookmark color={colors.inkSoft} size={22} strokeWidth={1.6} />
+                )}
+              </Animated.View>
             </Pressable>
           </View>
         </View>
@@ -266,28 +285,30 @@ export default function DevotionalScreen() {
                 ? `Sit with ${dev.scripture_refs[0]} today. Where is the Lord asking you to take the first step?`
                 : "Where is the Lord asking you to take the first step today?"}
             </Text>
-            <Pressable
-              onPress={onWriteReflection}
-              className="mt-4 flex-row items-center gap-2 self-start rounded-full border border-rule px-4 py-2.5 active:opacity-70"
-            >
-              <NotebookPen color={colors.ink} size={14} strokeWidth={1.6} />
-              <Text className="text-[13px] text-ink">Write your reflection</Text>
-            </Pressable>
+            <View className="mt-4 self-start">
+              <PressableScale
+                onPress={onWriteReflection}
+                className="flex-row items-center gap-2 rounded-full border border-rule px-4 py-2.5"
+              >
+                <NotebookPen color={colors.ink} size={14} strokeWidth={1.6} />
+                <Text className="text-[13px] text-ink">Write your reflection</Text>
+              </PressableScale>
+            </View>
           </View>
 
           {/* Continue the series. TODO(backend): the design shows tomorrow's
               title, which needs a next-in-series query; link to the series
               browser until that lands. */}
           {dev.series_id ? (
-            <Pressable
+            <PressableScale
               onPress={() => router.push("/devotionals")}
-              className="mt-10 flex-row items-center gap-3.5 border-t border-rule pt-6 active:opacity-70"
+              className="mt-10 flex-row items-center gap-3.5 border-t border-rule pt-6"
             >
               <Text className="flex-1 font-display-italic text-sm text-ink-mute">
                 More in this series
               </Text>
               <ChevronRight color={colors.inkMute} size={16} strokeWidth={1.5} />
-            </Pressable>
+            </PressableScale>
           ) : null}
         </Animated.ScrollView>
       )}
@@ -338,7 +359,8 @@ export default function DevotionalScreen() {
               <Pressable onPress={() => setNoteOpen(false)} className="rounded-full px-4 py-3">
                 <Text className="font-sans-medium text-ink-soft">Cancel</Text>
               </Pressable>
-              <Pressable
+              <PressableScale
+                haptic="medium"
                 onPress={() =>
                   saveDevotionalNote.mutate(noteBody, {
                     onSuccess: () => {
@@ -348,12 +370,12 @@ export default function DevotionalScreen() {
                   })
                 }
                 disabled={saveDevotionalNote.isPending}
-                className="rounded-full bg-ink px-5 py-3 disabled:opacity-60"
+                className="rounded-full bg-ink px-5 py-3"
               >
                 <Text className="font-sans-semibold text-parchment">
                   {saveDevotionalNote.isPending ? "Saving…" : "Save reflection"}
                 </Text>
-              </Pressable>
+              </PressableScale>
             </View>
           </View>
         </View>

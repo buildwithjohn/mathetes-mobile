@@ -2,7 +2,14 @@ import { useState } from "react";
 import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert, ImageBackground, Modal, TextInput } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
+import Animated, {
+  FadeInDown,
+  FadeIn,
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withSpring,
+} from "react-native-reanimated";
 import { format, parseISO } from "date-fns";
 import { X, CalendarDays, Bookmark, BookmarkCheck, NotebookPen, ImageDown } from "lucide-react-native";
 import {
@@ -13,7 +20,9 @@ import {
   useWordBookmark,
 } from "@/lib/queries/content";
 import { ContentSignalBar } from "@/components/ContentSignalBar";
+import { PressableScale } from "@/components/PressableScale";
 import { sentences } from "@/utils/text";
+import { haptic } from "@/utils/haptics";
 import { Markdown } from "@/components/Markdown";
 import { colors } from "@/theme/colors";
 
@@ -68,10 +77,23 @@ export default function WordExpanded() {
       },
       onError: () => Alert.alert("Could not save", "Please try again."),
     });
-  const onSave = () =>
+  const bookmarkScale = useSharedValue(1);
+  const bookmarkStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: bookmarkScale.value }],
+  }));
+  const onSave = () => {
+    const saving = !wordBookmark.data;
+    haptic(saving ? "success" : "light");
+    if (saving) {
+      bookmarkScale.value = withSequence(
+        withSpring(1.3, { damping: 6, stiffness: 320 }),
+        withSpring(1, { damping: 12, stiffness: 240 })
+      );
+    }
     bookmarkMutation.mutate(undefined, {
       onError: () => Alert.alert("Could not save", "Please try again."),
     });
+  };
 
   const insets = useSafeAreaInsets();
   const verseLines = word ? sentences(word.verse_text) : [];
@@ -101,11 +123,13 @@ export default function WordExpanded() {
             className="h-11 w-11 items-center justify-center"
             accessibilityLabel={wordBookmark.data ? "Remove saved Word" : "Save Word"}
           >
-            {wordBookmark.data ? (
-              <BookmarkCheck color={colors.copper} size={22} />
-            ) : (
-              <Bookmark color={colors.inkSoft} size={22} strokeWidth={1.6} />
-            )}
+            <Animated.View style={bookmarkStyle}>
+              {wordBookmark.data ? (
+                <BookmarkCheck color={colors.copper} size={22} />
+              ) : (
+                <Bookmark color={colors.inkSoft} size={22} strokeWidth={1.6} />
+              )}
+            </Animated.View>
           </Pressable>
         </View>
       </View>
@@ -227,22 +251,27 @@ export default function WordExpanded() {
             className="flex-row gap-2.5 border-t border-rule-soft bg-parchment px-6 pt-2.5"
             style={{ paddingBottom: insets.bottom + 12 }}
           >
-            <Pressable
-              onPress={onNote}
-              className="h-[50px] flex-1 flex-row items-center justify-center gap-2 rounded-full border border-rule active:opacity-70"
-            >
-              <NotebookPen color={colors.ink} size={16} strokeWidth={1.6} />
-              <Text className="font-sans-medium text-ink">Note</Text>
-            </Pressable>
-            <Pressable
-              onPress={onShareImage}
-              className="h-[50px] flex-[2] flex-row items-center justify-center gap-2 rounded-full bg-copper active:opacity-90"
-            >
-              <ImageDown color={colors.parchment} size={16} strokeWidth={1.8} />
-              <Text className="font-sans-semibold text-parchment">
-                Share as image
-              </Text>
-            </Pressable>
+            <View style={{ flex: 1 }}>
+              <PressableScale
+                onPress={onNote}
+                className="h-[50px] flex-row items-center justify-center gap-2 rounded-full border border-rule"
+              >
+                <NotebookPen color={colors.ink} size={16} strokeWidth={1.6} />
+                <Text className="font-sans-medium text-ink">Note</Text>
+              </PressableScale>
+            </View>
+            <View style={{ flex: 2 }}>
+              <PressableScale
+                haptic="medium"
+                onPress={onShareImage}
+                className="h-[50px] flex-row items-center justify-center gap-2 rounded-full bg-copper"
+              >
+                <ImageDown color={colors.parchment} size={16} strokeWidth={1.8} />
+                <Text className="font-sans-semibold text-parchment">
+                  Share as image
+                </Text>
+              </PressableScale>
+            </View>
           </View>
         </>
       )}
@@ -254,7 +283,7 @@ export default function WordExpanded() {
             <TextInput value={noteBody} onChangeText={setNoteBody} multiline autoFocus placeholder="What is God showing you today?" placeholderTextColor={colors.inkMute} textAlignVertical="top" className="mt-5 min-h-32 rounded-2xl border border-rule bg-paper p-4 text-[16px] leading-6 text-ink" />
             <View className="mt-4 flex-row justify-end gap-3">
               <Pressable onPress={() => setNoteOpen(false)} className="rounded-full px-4 py-3"><Text className="font-sans-medium text-ink-soft">Cancel</Text></Pressable>
-              <Pressable onPress={onSaveNote} className="rounded-full bg-ink px-5 py-3"><Text className="font-sans-semibold text-parchment">{saveWordNote.isPending ? "Saving…" : "Save reflection"}</Text></Pressable>
+              <PressableScale haptic="medium" onPress={onSaveNote} className="rounded-full bg-ink px-5 py-3"><Text className="font-sans-semibold text-parchment">{saveWordNote.isPending ? "Saving…" : "Save reflection"}</Text></PressableScale>
             </View>
           </View>
         </View>
