@@ -16,6 +16,8 @@ import { ChevronLeft, ChevronRight, Check } from "lucide-react-native";
 import { usePlanDay, useCompletePlanDay } from "@/lib/queries/readingPlans";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { Markdown } from "@/components/Markdown";
+import { PressableScale } from "@/components/PressableScale";
+import { haptic } from "@/utils/haptics";
 import { colors } from "@/theme/colors";
 
 export default function PlanDayReader() {
@@ -152,7 +154,10 @@ export default function PlanDayReader() {
             </Text>
 
             <Pressable
-              onPress={() => setShare((s) => !s)}
+              onPress={() => {
+                haptic("selection");
+                setShare((s) => !s);
+              }}
               className="mt-3 flex-row items-center justify-between rounded-2xl border border-rule bg-paper px-4 py-3 active:opacity-80"
             >
               <Text className="flex-1 pr-3 text-[15px] text-ink">
@@ -182,10 +187,11 @@ export default function PlanDayReader() {
               </Pressable>
             ) : null}
 
-            <Pressable
+            <PressableScale
+              haptic="success"
               onPress={onComplete}
               disabled={complete.isPending}
-              className="mt-7 h-[52px] items-center justify-center rounded-full bg-ink active:opacity-90 disabled:opacity-50"
+              className="mt-7 h-[52px] items-center justify-center rounded-full bg-ink"
             >
               {complete.isPending ? (
                 <ActivityIndicator color={colors.parchment} />
@@ -194,7 +200,7 @@ export default function PlanDayReader() {
                   Mark day complete
                 </Text>
               )}
-            </Pressable>
+            </PressableScale>
           </ScrollView>
         </KeyboardAvoidingView>
       )}

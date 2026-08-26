@@ -14,6 +14,7 @@ import {
 } from "lucide-react-native";
 import { useLibraryItems } from "@/lib/queries/resources";
 import { EmptyState } from "@/components/EmptyState";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 import type { LibraryItem, LibraryItemKind } from "@/lib/database.types";
 
@@ -134,9 +135,9 @@ function ResourceCard({
   const Icon = KIND_ICON[kind] ?? LibraryIcon;
   const dur = durationLabel(item.duration_seconds);
   return (
-    <Pressable
+    <PressableScale
       onPress={onPress}
-      className="flex-row gap-3.5 rounded-2xl border border-rule bg-paper p-3 active:opacity-90"
+      className="flex-row gap-3.5 rounded-2xl border border-rule bg-paper p-3"
     >
       {/* Cover (gradient placeholder when no image) */}
       <View className="overflow-hidden rounded-lg" style={{ width: 64, height: 80 }}>
@@ -175,6 +176,6 @@ function ResourceCard({
         strokeWidth={1.5}
         style={{ alignSelf: "center" }}
       />
-    </Pressable>
+    </PressableScale>
   );
 }

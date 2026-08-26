@@ -26,6 +26,7 @@ import {
   useSetEventRsvp,
 } from "@/lib/queries/formation";
 import type { EarnedFormationBadge } from "@/lib/queries/formation";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 
 export default function Formation() {
@@ -108,16 +109,17 @@ export default function Formation() {
                       <Text className="font-display text-[21px] leading-[26px] text-ink">{campaign.title}</Text>
                       {campaign.body ? <Text className="mt-2 text-[13px] leading-[19px] text-ink-soft">{campaign.body}</Text> : null}
                       {campaign.scripture_ref ? <Text className="mt-3 font-sans-semibold text-[12px] text-copper-deep">{campaign.scripture_ref}</Text> : null}
-                      <Pressable
+                      <PressableScale
+                        haptic="success"
                         onPress={() => onCompleteCampaign(campaign.id)}
                         disabled={done || completeCampaign.isPending}
-                        className={`mt-4 h-11 flex-row items-center justify-center gap-2 rounded-full ${done ? "bg-sage/25" : "bg-ink"} active:opacity-85 disabled:opacity-70`}
+                        className={`mt-4 h-11 flex-row items-center justify-center gap-2 rounded-full ${done ? "bg-sage/25" : "bg-ink"}`}
                       >
                         {done ? <Check color={colors.ink} size={17} /> : <Heart color={colors.parchment} size={16} />}
                         <Text className={`font-sans-semibold text-[13px] ${done ? "text-ink" : "text-parchment"}`}>
                           {done ? "Practice completed" : "I did this"}
                         </Text>
-                      </Pressable>
+                      </PressableScale>
                     </View>
                   </View>
                 );

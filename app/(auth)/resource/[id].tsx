@@ -14,6 +14,7 @@ import {
 } from "lucide-react-native";
 import { useLibraryItem } from "@/lib/queries/resources";
 import { AudioPlayer } from "@/components/AudioPlayer";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 import type { LibraryItemKind } from "@/lib/database.types";
 
@@ -108,25 +109,27 @@ export default function ResourceDetail() {
             {item.kind === "audio" && item.file_url ? (
               <AudioPlayer url={item.file_url} />
             ) : item.kind === "video" ? (
-              <Pressable
+              <PressableScale
+                haptic="medium"
                 onPress={() => open(item.external_url ?? item.file_url)}
-                className="h-[52px] flex-row items-center justify-center gap-2 rounded-full bg-copper active:opacity-90"
+                className="h-[52px] flex-row items-center justify-center gap-2 rounded-full bg-copper"
               >
                 <Play color="#fff" size={18} fill="#fff" />
                 <Text className="font-sans-semibold text-base text-white">
                   Watch video
                 </Text>
-              </Pressable>
+              </PressableScale>
             ) : (
-              <Pressable
+              <PressableScale
+                haptic="medium"
                 onPress={() => open(item.file_url ?? item.external_url)}
-                className="h-[52px] flex-row items-center justify-center gap-2 rounded-full bg-copper active:opacity-90"
+                className="h-[52px] flex-row items-center justify-center gap-2 rounded-full bg-copper"
               >
                 <FileText color="#fff" size={18} strokeWidth={1.8} />
                 <Text className="font-sans-semibold text-base text-white">
                   {item.kind === "manual" ? "Open manual" : "Read"}
                 </Text>
-              </Pressable>
+              </PressableScale>
             )}
           </View>
 

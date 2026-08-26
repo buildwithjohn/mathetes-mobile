@@ -12,6 +12,7 @@ import {
   useDevotionalSeries,
   useSeriesDevotionals,
 } from "@/lib/queries/content";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 
 export default function SeriesDetail() {
@@ -64,10 +65,10 @@ export default function SeriesDetail() {
           ) : (
             <View className="gap-2">
               {(days ?? []).map((d) => (
-                <Pressable
+                <PressableScale
                   key={d.id}
                   onPress={() => router.push(`/devotional/${d.id}`)}
-                  className="flex-row items-center gap-3 rounded-2xl border border-border bg-surface1 p-4 active:opacity-90"
+                  className="flex-row items-center gap-3 rounded-2xl border border-border bg-surface1 p-4"
                 >
                   <View className="h-11 w-11 items-center justify-center rounded-full bg-copper/15">
                     <Text className="font-display text-lg text-copper">
@@ -88,7 +89,7 @@ export default function SeriesDetail() {
                     ) : null}
                   </View>
                   <ChevronRight color={colors.ink} size={18} />
-                </Pressable>
+                </PressableScale>
               ))}
             </View>
           )}

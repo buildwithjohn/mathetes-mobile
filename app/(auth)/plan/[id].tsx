@@ -11,6 +11,7 @@ import {
   useSubscribeToPlan,
   useTogglePlanPause,
 } from "@/lib/queries/readingPlans";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 import type { ReadingPlanDay } from "@/lib/database.types";
 
@@ -215,10 +216,11 @@ export default function PlanDetail() {
 
       {/* Sticky CTA */}
       <View className="border-t border-rule-soft bg-parchment px-6 pb-8 pt-3">
-        <Pressable
+        <PressableScale
+          haptic="medium"
           onPress={sub ? onContinue : onBegin}
           disabled={subscribe.isPending}
-          className="h-[52px] items-center justify-center rounded-full bg-ink active:opacity-90 disabled:opacity-50"
+          className="h-[52px] items-center justify-center rounded-full bg-ink"
         >
           {subscribe.isPending ? (
             <ActivityIndicator color={colors.parchment} />
@@ -231,7 +233,7 @@ export default function PlanDetail() {
                 : "Begin plan"}
             </Text>
           )}
-        </Pressable>
+        </PressableScale>
       </View>
     </SafeAreaView>
   );

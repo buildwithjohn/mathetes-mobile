@@ -23,6 +23,8 @@ import {
   watchDonation,
 } from "@/lib/queries/giving";
 import { EmptyState } from "@/components/EmptyState";
+import { PressableScale } from "@/components/PressableScale";
+import { haptic } from "@/utils/haptics";
 import { colors } from "@/theme/colors";
 import type {
   GivingInterval,
@@ -209,7 +211,10 @@ export default function Giving() {
                 return (
                   <Pressable
                     key={f.id}
-                    onPress={() => setFundId(on ? null : f.id)}
+                    onPress={() => {
+                      haptic("selection");
+                      setFundId(on ? null : f.id);
+                    }}
                     className="rounded-full border px-3.5 py-2"
                     style={{
                       borderColor: on ? colors.copper : colors.rule,
@@ -290,10 +295,11 @@ export default function Giving() {
           </View>
         </Pressable>
 
-        <Pressable
+        <PressableScale
+          haptic="medium"
           onPress={onGive}
           disabled={!GIVING_ENABLED || init.isPending || processing}
-          className="mt-5 h-[52px] flex-row items-center justify-center gap-2 rounded-full bg-copper active:opacity-90 disabled:opacity-50"
+          className="mt-5 h-[52px] flex-row items-center justify-center gap-2 rounded-full bg-copper"
         >
           {init.isPending || processing ? (
             <ActivityIndicator color="#fff" />
@@ -309,7 +315,7 @@ export default function Giving() {
               </Text>
             </>
           )}
-        </Pressable>
+        </PressableScale>
         {processing ? (
           <Text className="mt-2 text-center text-[12px] text-ink-mute">
             Completing your gift… you can finish payment in the page that opened.

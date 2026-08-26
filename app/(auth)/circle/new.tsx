@@ -7,6 +7,8 @@ import { useCreateCircle, useParishMembers } from "@/lib/queries/community";
 import { useProfile } from "@/lib/queries/profile";
 import { Avatar } from "@/components/Avatar";
 import { visiblePhotoUrl } from "@/utils/profile";
+import { PressableScale } from "@/components/PressableScale";
+import { haptic } from "@/utils/haptics";
 import { colors } from "@/theme/colors";
 
 export default function NewCircleScreen() {
@@ -72,7 +74,7 @@ export default function NewCircleScreen() {
           {invitees.map((member, index) => {
             const isSelected = selected.includes(member.id);
             return (
-              <Pressable key={member.id} onPress={() => toggleMember(member.id)} className={`flex-row items-center gap-3 px-4 py-3 ${index ? "border-t border-rule-soft" : ""}`}>
+              <Pressable key={member.id} onPress={() => { haptic("selection"); toggleMember(member.id); }} className={`flex-row items-center gap-3 px-4 py-3 ${index ? "border-t border-rule-soft" : ""}`}>
                 <Avatar name={member.name} photoUrl={visiblePhotoUrl(member, profile?.house_id ?? null)} size={38} />
                 <View className="flex-1">
                   <Text className="font-sans-semibold text-[14px] text-ink">{member.name}</Text>
@@ -85,9 +87,9 @@ export default function NewCircleScreen() {
             );
           })}
         </View>
-        <Pressable onPress={submit} disabled={createCircle.isPending} className="mt-7 items-center rounded-2xl bg-ink py-4 active:opacity-85 disabled:opacity-50">
+        <PressableScale haptic="medium" onPress={submit} disabled={createCircle.isPending} className="mt-7 items-center rounded-2xl bg-ink py-4">
           <Text className="font-sans-semibold text-[15px] text-parchment">{createCircle.isPending ? "Creating…" : "Create private Circle"}</Text>
-        </Pressable>
+        </PressableScale>
       </ScrollView>
     </SafeAreaView>
   );
