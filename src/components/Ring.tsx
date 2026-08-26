@@ -8,13 +8,23 @@ type RingProps = {
   value?: number | null;
   size?: number;
   stroke?: number;
+  // Override the track/fill colours (e.g. on a dark gamified card).
+  color?: string;
+  trackColor?: string;
   // Optional element centered inside the ring (e.g. an icon or a number).
   children?: React.ReactNode;
 };
 
-// Thin circular progress ring. Track in `rule`, fill in `copper`. Matches the
-// design's Ring (value 0..1, configurable size/stroke).
-export function Ring({ value = null, size = 36, stroke = 2.5, children }: RingProps) {
+// Thin circular progress ring. Track in `rule`, fill in `copper` by default;
+// pass color/trackColor to theme it (e.g. bright fill on a dark card).
+export function Ring({
+  value = null,
+  size = 36,
+  stroke = 2.5,
+  color = colors.copper,
+  trackColor = colors.rule,
+  children,
+}: RingProps) {
   const r = (size - stroke) / 2;
   const circumference = 2 * Math.PI * r;
   const clamped = value == null ? 0 : Math.max(0, Math.min(1, value));
@@ -27,7 +37,7 @@ export function Ring({ value = null, size = 36, stroke = 2.5, children }: RingPr
           cx={size / 2}
           cy={size / 2}
           r={r}
-          stroke={colors.rule}
+          stroke={trackColor}
           strokeWidth={stroke}
           fill="none"
         />
@@ -36,7 +46,7 @@ export function Ring({ value = null, size = 36, stroke = 2.5, children }: RingPr
             cx={size / 2}
             cy={size / 2}
             r={r}
-            stroke={colors.copper}
+            stroke={color}
             strokeWidth={stroke}
             strokeLinecap="round"
             fill="none"

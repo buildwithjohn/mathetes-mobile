@@ -1,8 +1,9 @@
-import { View, Text, Pressable, ScrollView, ActivityIndicator, ImageBackground } from "react-native";
+import { View, Text, Pressable, ScrollView, ActivityIndicator, ImageBackground, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import Svg, { Defs, LinearGradient, Stop, Rect, Circle } from "react-native-svg";
-import { ChevronLeft, ChevronRight, BookOpen } from "lucide-react-native";
+import { LinearGradient as Gradient } from "expo-linear-gradient";
+import { ChevronLeft, ChevronRight, BookOpen, Flame } from "lucide-react-native";
 import {
   useReadingPlans,
   useMySubscriptions,
@@ -144,25 +145,75 @@ function ContinueCard({
   const plan = sub.reading_plans!;
   const total = plan.length_days || 1;
   const done = Math.max(0, Math.min(sub.current_day - 1, total));
+  const day = Math.min(sub.current_day, total);
+  const pct = Math.round((done / total) * 100);
   return (
     <PressableScale
+      haptic="light"
       onPress={onPress}
-      className="flex-row items-center gap-3.5 rounded-2xl border border-rule bg-paper px-5 py-[18px]"
+      className="overflow-hidden rounded-[24px]"
     >
-      <Ring value={done / total} size={38} stroke={2.5}>
-        <Text className="font-sans-semibold text-[11px] text-ink">
-          {sub.current_day}
-        </Text>
-      </Ring>
-      <View className="flex-1">
-        <Text className="font-display text-[17px] text-ink" numberOfLines={1}>
-          {plan.title}
-        </Text>
-        <Text className="mt-0.5 text-[12.5px] text-ink-mute">
-          {sub.paused ? "Paused · " : ""}Day {Math.min(sub.current_day, total)} of {total} · one small step
-        </Text>
+      {/* Game-like progress hero: a vivid gradient, a big amber progress ring
+          with the day number, and a Continue pill. */}
+      <Gradient
+        colors={["#2E1F47", "#42305F", "#4B2C53"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <Gradient
+        colors={["rgba(255,197,120,0.20)", "rgba(255,197,120,0)"]}
+        start={{ x: 0.85, y: 0 }}
+        end={{ x: 0.2, y: 0.85 }}
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+      />
+      <View className="p-5">
+        <View className="flex-row items-center gap-4">
+          <Ring
+            value={done / total}
+            size={72}
+            stroke={5}
+            color="#FFC978"
+            trackColor="rgba(255,255,255,0.16)"
+          >
+            <View className="items-center">
+              <Text className="font-display text-[23px] leading-6 text-white">
+                {sub.current_day}
+              </Text>
+              <Text
+                className="text-[8px] uppercase text-white/55"
+                style={{ letterSpacing: 1 }}
+              >
+                day
+              </Text>
+            </View>
+          </Ring>
+          <View className="flex-1">
+            <Text
+              className="font-sans-semibold text-[10px] uppercase"
+              style={{ letterSpacing: 1.6, color: "#FFC978" }}
+            >
+              {sub.paused ? "Paused · pick back up" : "Continue your journey"}
+            </Text>
+            <Text
+              className="mt-1 font-display text-[21px] leading-[25px] text-white"
+              numberOfLines={2}
+            >
+              {plan.title}
+            </Text>
+            <Text className="mt-1 text-[12.5px] text-white/70">
+              Day {day} of {total} · {pct}% complete
+            </Text>
+          </View>
+        </View>
+        <View className="mt-4 flex-row items-center justify-between rounded-full bg-white/10 px-4 py-2.5">
+          <Text className="font-sans-semibold text-[13px] text-white">
+            Continue Day {day}
+          </Text>
+          <ChevronRight color="#fff" size={17} strokeWidth={2} />
+        </View>
       </View>
-      <ChevronRight color={colors.inkMute} size={18} strokeWidth={1.5} />
     </PressableScale>
   );
 }
