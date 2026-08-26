@@ -4,8 +4,10 @@ import {
   Pressable,
   ScrollView,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import {
@@ -49,105 +51,115 @@ export default function You() {
   const house = houses?.find((h) => h.id === profile?.house_id) ?? null;
 
   return (
-    <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
-      {/* Top bar */}
-      <View className="flex-row items-center justify-between px-6 pb-1 pt-4">
-        <Text
-          className="font-sans-medium text-[11px] uppercase text-ink-mute"
-          style={{ letterSpacing: 1.76 }}
-        >
-          Profile
-        </Text>
-        <View className="flex-row items-center gap-4">
-          <Pressable onPress={() => router.push("/profile/edit")}>
-            <Text className="font-sans-medium text-[13px] text-copper-deep">
-              Edit
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => router.push("/settings")}
-            accessibilityLabel="Settings"
-          >
-            <Settings color={colors.inkMute} size={20} strokeWidth={1.6} />
-          </Pressable>
-        </View>
-      </View>
-
+    <View className="flex-1 bg-parchment">
       <Animated.ScrollView
         entering={FadeInDown.duration(380)}
         className="flex-1"
-        contentContainerClassName="px-6 pb-8 pt-1"
+        contentContainerClassName="pb-8"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header card */}
-        <View className="mt-2 overflow-hidden rounded-2xl border border-rule bg-paper">
-          <View className="p-5">
-            {isLoading ? (
-              <ActivityIndicator color={colors.copper} />
-            ) : (
-              <>
-                <View className="flex-row items-center gap-4">
-                  <Avatar
-                    name={profile?.name ?? "Disciple"}
-                    photoUrl={profile?.photo_url}
-                    ringColor={house?.color}
-                    size={70}
-                  />
-                  <View className="flex-1">
-                    <Text className="font-sans-semibold text-[26px] leading-8 text-ink">
-                      {profile?.name ?? "Disciple"}
+        {/* IMMERSIVE PROFILE HERO — avatar + identity over a warm gradient */}
+        <View className="overflow-hidden">
+          <LinearGradient
+            colors={["#2C2027", "#41303C", "#4C3140"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <LinearGradient
+            colors={["rgba(240,200,146,0.20)", "rgba(240,200,146,0)"]}
+            start={{ x: 0.85, y: 0 }}
+            end={{ x: 0.2, y: 0.8 }}
+            style={StyleSheet.absoluteFill}
+            pointerEvents="none"
+          />
+          <SafeAreaView edges={["top"]}>
+            <View className="px-6 pb-9 pt-3">
+              <View className="flex-row items-center justify-between">
+                <Text
+                  className="font-sans-semibold text-[11px] uppercase"
+                  style={{ letterSpacing: 1.8, color: "rgba(255,240,225,0.72)" }}
+                >
+                  Profile
+                </Text>
+                <View className="flex-row items-center gap-2.5">
+                  <PressableScale
+                    onPress={() => router.push("/profile/edit")}
+                    className="rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5"
+                  >
+                    <Text className="font-sans-semibold text-[12px] text-white">Edit</Text>
+                  </PressableScale>
+                  <PressableScale
+                    onPress={() => router.push("/settings")}
+                    accessibilityLabel="Settings"
+                    className="h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-white/10"
+                  >
+                    <Settings color="#fff" size={17} strokeWidth={1.7} />
+                  </PressableScale>
+                </View>
+              </View>
+
+              {isLoading ? (
+                <ActivityIndicator color="#F0C892" className="mt-10 self-center" />
+              ) : (
+                <View className="mt-6 items-center">
+                  <View className="rounded-full border-2 border-white/25 p-1">
+                    <Avatar
+                      name={profile?.name ?? "Disciple"}
+                      photoUrl={profile?.photo_url}
+                      size={92}
+                    />
+                  </View>
+                  <Text
+                    className="mt-3.5 font-display text-[27px] leading-8"
+                    style={{
+                      color: "#FFFFFF",
+                      textShadowColor: "rgba(0,0,0,0.3)",
+                      textShadowRadius: 12,
+                      textShadowOffset: { width: 0, height: 1 },
+                    }}
+                  >
+                    {profile?.name ?? "Disciple"}
+                  </Text>
+                  {house ? (
+                    <Text
+                      className="mt-1 font-sans-semibold text-[11px] uppercase"
+                      style={{ letterSpacing: 1.9, color: "#F0C892" }}
+                    >
+                      {house.name}
                     </Text>
-                    {house ? (
-                      <Text
-                        className="mt-1.5 font-sans-semibold text-[11px] uppercase text-copper-deep"
-                        style={{ letterSpacing: 1.76 }}
-                      >
-                        {house.name}
+                  ) : (
+                    <Text className="mt-1 text-xs" style={{ color: "rgba(255,240,225,0.6)" }}>
+                      No house chosen yet
+                    </Text>
+                  )}
+
+                  <View className="mt-5 flex-row items-center gap-2.5">
+                    <View className="flex-row items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3.5 py-2">
+                      <AnimatedFlame size={14} />
+                      <Text className="text-[12.5px] text-white">
+                        <Text className="font-sans-semibold">{count}</Text> day
                       </Text>
-                    ) : (
-                      <Text className="mt-1 text-xs text-ink-mute">
-                        No house chosen yet
+                    </View>
+                    <View className="rounded-full border border-white/15 bg-white/10 px-3.5 py-2">
+                      <Text className="text-[12.5px] text-white">
+                        <Text className="font-sans-semibold">{bookmarks?.length ?? 0}</Text> saved
                       </Text>
-                    )}
-                    {profile?.pinned_verse_ref ? (
-                      <Text className="mt-1 text-[11.5px] text-ink-mute">
-                        {profile.pinned_verse_ref}
+                    </View>
+                    <View className="rounded-full border border-white/15 bg-white/10 px-3.5 py-2">
+                      <Text className="text-[12.5px] text-white">
+                        <Text className="font-sans-semibold">{highlights?.length ?? 0}</Text> highlights
                       </Text>
-                    ) : null}
+                    </View>
                   </View>
                 </View>
-
-                {profile?.thought ? <View className="mt-4 rounded-2xl bg-copper/8 px-4 py-3"><Text className="font-sans-semibold text-[10px] uppercase text-copper-deep" style={{ letterSpacing: 1.2 }}>Current thought</Text><Text className="mt-1 text-[13px] leading-5 text-ink">{profile.thought}</Text></View> : null}
-                {profile?.bio ? <Text className="mt-4 text-[13px] leading-5 text-ink-soft">{profile.bio}</Text> : null}
-
-                {/* Stats row */}
-                <View className="mt-4 flex-row items-center gap-2">
-                  <View className="flex-row items-center gap-1.5">
-                    <AnimatedFlame size={14} />
-                    <Text className="text-xs text-ink-soft">
-                      <Text className="font-sans-semibold text-ink">{count}-day</Text>{" "}
-                      streak
-                    </Text>
-                  </View>
-                  <Text className="text-ink-faint">·</Text>
-                  <Text className="text-xs text-ink-soft">
-                    <Text className="font-sans-semibold text-ink">
-                      {bookmarks?.length ?? 0}
-                    </Text>{" "}
-                    saved
-                  </Text>
-                  <Text className="text-ink-faint">·</Text>
-                  <Text className="text-xs text-ink-soft">
-                    <Text className="font-sans-semibold text-ink">
-                      {highlights?.length ?? 0}
-                    </Text>{" "}
-                    highlights
-                  </Text>
-                </View>
-              </>
-            )}
-          </View>
+              )}
+            </View>
+          </SafeAreaView>
         </View>
+
+        {/* CONTENT SHEET — rises over the hero */}
+        <View className="-mt-6 rounded-t-[30px] bg-parchment px-6 pt-7">
 
         {/* Quick shortcuts (YouVersion-style) */}
         <View className="mt-3 flex-row gap-2.5">
@@ -261,8 +273,9 @@ export default function You() {
         >
           <Text className="font-sans-medium text-ink">Sign out</Text>
         </PressableScale>
+        </View>
       </Animated.ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
