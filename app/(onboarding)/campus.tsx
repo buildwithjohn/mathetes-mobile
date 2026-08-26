@@ -12,6 +12,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { Check, MapPin } from "lucide-react-native";
 import { useCampuses, useSetMyCampus } from "@/lib/queries/profile";
 import { OnboardingProgress } from "@/components/OnboardingProgress";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 
 // First onboarding step: which campus the member attends. If the parish has no
@@ -75,7 +76,7 @@ export default function CampusPicker() {
                 key={campus.id}
                 entering={FadeInDown.delay(i * 70).duration(380)}
               >
-                <Pressable
+                <PressableScale
                   onPress={() => setSelected(campus.id)}
                   className="flex-row items-center gap-3 rounded-2xl border bg-paper p-5"
                   style={{
@@ -108,7 +109,7 @@ export default function CampusPicker() {
                   ) : (
                     <View className="h-6 w-6 rounded-full border-[1.5px] border-rule" />
                   )}
-                </Pressable>
+                </PressableScale>
               </Animated.View>
             );
           })}
@@ -123,10 +124,11 @@ export default function CampusPicker() {
               : "Could not save your campus. Please try again."}
           </Text>
         ) : null}
-        <Pressable
+        <PressableScale
+          haptic="medium"
           onPress={onContinue}
           disabled={!selected || setMyCampus.isPending}
-          className="h-[52px] items-center justify-center rounded-full bg-ink active:opacity-90 disabled:opacity-40"
+          className="h-[52px] items-center justify-center rounded-full bg-ink"
         >
           {setMyCampus.isPending ? (
             <ActivityIndicator color={colors.parchment} />
@@ -135,7 +137,7 @@ export default function CampusPicker() {
               Continue
             </Text>
           )}
-        </Pressable>
+        </PressableScale>
       </View>
     </SafeAreaView>
   );

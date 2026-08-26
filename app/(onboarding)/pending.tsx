@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import { Clock, RefreshCw } from "lucide-react-native";
 import { useProfile } from "@/lib/queries/profile";
 import { useAuth } from "@/lib/stores/auth";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 
 // Shown to members whose status is not 'active' (pending domain-allowlist
@@ -61,10 +62,11 @@ export default function Pending() {
         </Text>
 
         {status === "pending" ? (
-          <Pressable
+          <PressableScale
+            haptic="medium"
             onPress={() => refetch()}
             disabled={isFetching}
-            className="mt-7 h-12 flex-row items-center justify-center gap-2 rounded-full bg-ink px-7 active:opacity-90 disabled:opacity-50"
+            className="mt-7 h-12 flex-row items-center justify-center gap-2 rounded-full bg-ink px-7"
           >
             {isFetching ? (
               <ActivityIndicator color={colors.parchment} />
@@ -76,17 +78,17 @@ export default function Pending() {
                 </Text>
               </>
             )}
-          </Pressable>
+          </PressableScale>
         ) : null}
       </View>
 
       <View className="px-6 pb-10">
-        <Pressable
+        <PressableScale
           onPress={signOut}
-          className="h-12 items-center justify-center rounded-full border border-rule active:opacity-70"
+          className="h-12 items-center justify-center rounded-full border border-rule"
         >
           <Text className="font-sans-medium text-ink">Sign out</Text>
-        </Pressable>
+        </PressableScale>
       </View>
     </SafeAreaView>
   );

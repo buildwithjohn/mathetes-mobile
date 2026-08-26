@@ -7,6 +7,7 @@ import Animated, {
   FadeInUp,
 } from "react-native-reanimated";
 import { MailCheck, Sparkles } from "lucide-react-native";
+import { PressableScale } from "@/components/PressableScale";
 import { colors } from "@/theme/colors";
 
 // Celebratory post-sign-up screen (shown when email confirmation is required):
@@ -54,14 +55,15 @@ export default function Confirm() {
         entering={FadeInUp.delay(500).duration(500)}
         className="px-6 pb-10"
       >
-        <Pressable
+        <PressableScale
+          haptic="medium"
           onPress={() => router.replace("/(onboarding)/signin")}
-          className="h-14 items-center justify-center rounded-full bg-copper active:opacity-90"
+          className="h-14 items-center justify-center rounded-full bg-copper"
         >
           <Text className="font-sans-semibold text-base text-parchment">
             I have confirmed, sign in
           </Text>
-        </Pressable>
+        </PressableScale>
       </Animated.View>
     </SafeAreaView>
   );

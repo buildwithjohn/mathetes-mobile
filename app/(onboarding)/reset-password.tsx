@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { TextField } from "@/components/TextField";
+import { PressableScale } from "@/components/PressableScale";
 import { useAuth } from "@/lib/stores/auth";
 import { colors } from "@/theme/colors";
 
@@ -99,10 +100,11 @@ export default function ResetPassword() {
             <Text className="mt-4 text-sm text-oxblood">{submitError}</Text>
           ) : null}
 
-          <Pressable
+          <PressableScale
+            haptic="medium"
             onPress={onSubmit}
             disabled={isSubmitting}
-            className="mt-8 h-14 items-center justify-center rounded-full bg-copper active:opacity-90 disabled:opacity-60"
+            className="mt-8 h-14 items-center justify-center rounded-full bg-copper"
           >
             {isSubmitting ? (
               <ActivityIndicator color={colors.parchment} />
@@ -111,7 +113,7 @@ export default function ResetPassword() {
                 Save new password
               </Text>
             )}
-          </Pressable>
+          </PressableScale>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -13,6 +13,8 @@ import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useUpdateProfile } from "@/lib/queries/profile";
 import { OnboardingProgress } from "@/components/OnboardingProgress";
+import { PressableScale } from "@/components/PressableScale";
+import { haptic } from "@/utils/haptics";
 import { colors } from "@/theme/colors";
 import type { Gender } from "@/lib/database.types";
 
@@ -189,10 +191,11 @@ export default function OnboardingProfile() {
                 : "Could not save. Please try again."}
             </Text>
           ) : null}
-          <Pressable
+          <PressableScale
+            haptic="medium"
             onPress={onContinue}
             disabled={!gender || !dobValid || updateProfile.isPending}
-            className="h-[52px] items-center justify-center rounded-full bg-ink active:opacity-90 disabled:opacity-40"
+            className="h-[52px] items-center justify-center rounded-full bg-ink"
           >
             {updateProfile.isPending ? (
               <ActivityIndicator color={colors.parchment} />
@@ -201,7 +204,7 @@ export default function OnboardingProfile() {
                 Continue
               </Text>
             )}
-          </Pressable>
+          </PressableScale>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -224,7 +227,10 @@ function Segmented<T extends string>({
         return (
           <Pressable
             key={o.key}
-            onPress={() => onChange(o.key)}
+            onPress={() => {
+              if (!active) haptic("selection");
+              onChange(o.key);
+            }}
             className={`flex-1 items-center rounded-full py-2.5 ${
               active ? "bg-paper" : ""
             }`}
