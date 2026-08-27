@@ -23,6 +23,7 @@ import {
 import { TextField } from "@/components/TextField";
 import { Avatar } from "@/components/Avatar";
 import { PressableScale } from "@/components/PressableScale";
+import { ScreenHero } from "@/components/ScreenHero";
 import { colors } from "@/theme/colors";
 import type { Gender, PhotoVisibility } from "@/lib/database.types";
 
@@ -149,21 +150,16 @@ export default function EditProfile() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
-      <View className="flex-row items-center px-4 py-2">
-        <Pressable
-          onPress={() => router.back()}
-          className="h-11 w-11 items-center justify-center"
-          accessibilityLabel="Go back"
-        >
-          <ChevronLeft color={colors.ink} size={26} />
-        </Pressable>
-        <Text className="font-display text-xl text-ink">Edit profile</Text>
-      </View>
-
+    <View className="flex-1 bg-parchment">
+      <ScreenHero
+        title="Edit profile"
+        subtitle="Update how your parish sees you"
+        onBack={() => router.back()}
+      />
+      <View className="-mt-6 flex-1 rounded-t-[30px] bg-parchment">
       <ScrollView
         className="flex-1"
-        contentContainerClassName="px-6 pb-16 pt-4 gap-5"
+        contentContainerClassName="px-6 pb-16 pt-5 gap-5"
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -293,6 +289,7 @@ export default function EditProfile() {
           </Text>
         ) : null}
       </ScrollView>
+      </View>
 
       <View className="border-t border-border bg-parchment px-6 pb-8 pt-4">
         <PressableScale
@@ -310,7 +307,7 @@ export default function EditProfile() {
           )}
         </PressableScale>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

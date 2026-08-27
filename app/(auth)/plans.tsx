@@ -12,6 +12,7 @@ import {
 import { Ring } from "@/components/Ring";
 import { EmptyState } from "@/components/EmptyState";
 import { PressableScale } from "@/components/PressableScale";
+import { ScreenHero } from "@/components/ScreenHero";
 import { colors } from "@/theme/colors";
 import type { ReadingPlan } from "@/lib/database.types";
 
@@ -31,21 +32,13 @@ export default function Plans() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
-      <View className="flex-row items-center gap-1 border-b border-rule-soft px-1 py-2">
-        <Pressable
-          onPress={() => router.back()}
-          className="h-11 w-11 items-center justify-center"
-          accessibilityLabel="Go back"
-        >
-          <ChevronLeft color={colors.ink} size={26} />
-        </Pressable>
-        <Text className="flex-1 text-center font-display text-[18px] text-ink">
-          Reading plans
-        </Text>
-        <View className="w-11" />
-      </View>
-
+    <View className="flex-1 bg-parchment">
+      <ScreenHero
+        title="Reading plans"
+        subtitle="Walk a path through Scripture"
+        onBack={() => router.back()}
+      />
+      <View className="-mt-6 flex-1 rounded-t-[30px] bg-parchment pt-2">
       {isLoading ? (
         <ActivityIndicator className="mt-10" color={colors.copper} />
       ) : (
@@ -120,7 +113,8 @@ export default function Plans() {
           )}
         </ScrollView>
       )}
-    </SafeAreaView>
+      </View>
+    </View>
   );
 }
 

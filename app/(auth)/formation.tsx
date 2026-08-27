@@ -27,6 +27,7 @@ import {
 } from "@/lib/queries/formation";
 import type { EarnedFormationBadge } from "@/lib/queries/formation";
 import { PressableScale } from "@/components/PressableScale";
+import { ScreenHero } from "@/components/ScreenHero";
 import { colors } from "@/theme/colors";
 
 export default function Formation() {
@@ -57,16 +58,14 @@ export default function Formation() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-parchment" edges={["top"]}>
-      <View className="flex-row items-center px-1 py-2">
-        <Pressable onPress={() => router.back()} className="h-11 w-11 items-center justify-center" accessibilityLabel="Go back">
-          <ChevronLeft color={colors.ink} size={26} />
-        </Pressable>
-        <Text className="flex-1 text-center font-display text-[19px] text-ink">Grow</Text>
-        <View className="h-11 w-11" />
-      </View>
-
-      <ScrollView className="flex-1" contentContainerClassName="px-5 pb-14 pt-2" showsVerticalScrollIndicator={false}>
+    <View className="flex-1 bg-parchment">
+      <ScreenHero
+        title="Grow"
+        subtitle="House practices, events &amp; your rhythm"
+        onBack={() => router.back()}
+      />
+      <View className="-mt-6 flex-1 rounded-t-[30px] bg-parchment">
+      <ScrollView className="flex-1" contentContainerClassName="px-5 pb-14 pt-4" showsVerticalScrollIndicator={false}>
         <View className="overflow-hidden rounded-3xl bg-ink px-6 py-7">
           <View className="absolute -right-6 -top-8 h-36 w-36 rounded-full bg-copper/20" />
           <Text className="font-sans-semibold text-[10px] uppercase text-parchment/65" style={{ letterSpacing: 1.8 }}>
@@ -151,7 +150,8 @@ export default function Formation() {
           </Pressable>
         </>}
       </ScrollView>
-    </SafeAreaView>
+      </View>
+    </View>
   );
 }
 
