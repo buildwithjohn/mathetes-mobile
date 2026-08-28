@@ -12,7 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#F7F7F8"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "app.mathetes.mobile",
@@ -62,7 +64,8 @@
         }
       ],
       "@livekit/react-native-expo-plugin",
-      "@config-plugins/react-native-webrtc"
+      "@config-plugins/react-native-webrtc",
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true
